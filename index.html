@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Catlary Kütüphane Yönetim Sistemi</title>
+  <!-- CSS dosyasını dahil ediyoruz -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Sayfayı kapsayan ana div -->
+  <div class="container">
+    
+    <h4>Catlary Yönetim Sistemine Hoş geldiniz!</h4>
+    
+    <!-- Giriş butonlarının ve kayıt bölümünün bulunduğu kısım -->
+    <div class="giris_kismi">
+      <!-- Kullanıcı giris butonu (suan icin butonlar devre dısı ilerde db ile baglantı kurulcak) -->
+    <button class="disabled" disabled>Kullanıcı Girişi</button>
+    <!-- Admin giris butonu  -->
+    <button class="disabled" disabled>Admin Girişi</button>
+    <!-- Kullanıcının hesabı yoksa olusturmak icin  kayıt butonu -->
+    <span class="hesap">Hesabın yok mu?</span>
+    <button class="hesapac" disabled>Hemen Aç</button>
+    </div>
+  </div>
+  
+  <div id="giris_formu" style="display:none;">
+     <h4>Kullanıcı Girişi</h4>
+  <input type="text" id="username" placeholder="Kullanıcı Adı"><br><br>
+  <input type="password" id="password" placeholder="Şifre"><br><br>
+  <button id="girisbuton">Giriş Yap</button>
+  <p id="login-error" style="color:red; display:none;">Kullanıcı adı veya şifre yanlış!</p>
+</div>
+
+</div>
+</body>
+</html>

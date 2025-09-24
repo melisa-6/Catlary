@@ -1,0 +1,93 @@
+/* Body icin genel stil ayarlari*/
+body {
+  font-family: Arial, sans-serif; 
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+
+  display: flex; /*  hizalama */
+  justify-content: center; /* Yatayda ortalama */
+  align-items: flex-start; /* Dikeyde üstten başlama */
+  position: relative; /* ::before kullanmak icin gerekli */
+}
+
+/* Arkaplan resmini daha hos gostermek ve bulanıklık efekti eklemek için ::before kullanıyoruz */
+body::before {
+  content: ""; /* Boş içerik */
+  position: fixed; /* Sayfada sabit kalması icin */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("images/kitapokuyankedi1.jpg"); /* Arkaplan resminin baglantısı */
+  background-repeat: no-repeat; /* Arkaplan resminin tekrar etmemesi */
+  background-position: center; /* Arkaplandaki resmin ortalanması */
+  background-size: cover; /* Resmin ekranı tamamen kaplaması */
+  filter: blur(6px); /* Bulanıklık efekti */
+  z-index: -1; /* Yazıların önünde olmaması için katmanlama*/
+}
+
+
+/* Ana container stili */
+.container {
+  text-align: center; /* Yazıları ortala */
+  margin-top: 50px; /* Üstten boşluk */
+  color: white; /* Yazı rengi */
+}
+
+/* Hoş geldiniz baslaginin stili */
+h4 {
+  background-color: rgba(0, 0, 0, 0.5); /* Yarı şeffaf arkaplan */
+  padding: 20px; /* İç boşluk */
+  border-radius: 10px; /* Köşe yuvarlama */
+  font-size: 22px; /* Yazı boyutu */
+}
+/*div için ozellikler*/
+.giris_kismi {
+  display: flex;
+  flex-direction: column; /* Butonları alt alta yerlestirmek icin */
+  align-items: center; /* Ortalamak icin */
+  margin-top: 30px; /* Üstten boşluk bırakmak icin */
+}
+
+/* Tüm butonlar için ortak stil */
+.giris_kismi button {
+  padding: 10px 20px; 
+  margin: 8px; 
+  border: none; 
+  border-radius: 5px; 
+  background-color: #6B2C2C; 
+  color: #FFF8DC; 
+  font-size: 16px;
+  cursor: pointer; 
+  transition: background-color 0.3s ease;/*yumusak bir gecisle hoş dursun diye*/ 
+}
+
+/* ustune gelince rengi degissin */
+.giris_kismi button:hover {
+  background-color: #4B1A1A; 
+}
+
+/* "Hesabın yok mu?" yazısı */
+.hesap {
+  color: #FFF8DC; 
+  margin-top: 15px; 
+  font-size: 14px;
+}
+
+/* "Hemen Aç" butonunu ozellestirme */
+.hesapac {
+  padding: 10px 20px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #B55252; 
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.hesapac:hover {
+  background-color: #8C3D3D; 
+}
