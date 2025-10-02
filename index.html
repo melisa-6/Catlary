@@ -3,35 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <title>Catlary Kütüphane Yönetim Sistemi</title>
-  <!-- CSS dosyasını dahil ediyoruz -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Sayfayı kapsayan ana div -->
   <div class="container">
-    
     <h4>Catlary Yönetim Sistemine Hoş geldiniz!</h4>
-    
-    <!-- Giriş butonlarının ve kayıt bölümünün bulunduğu kısım -->
+
+    <!-- Butonlar yukarıda -->
     <div class="giris_kismi">
-      <!-- Kullanıcı giris butonu (suan icin butonlar devre dısı ilerde db ile baglantı kurulcak) -->
-    <button class="disabled" disabled>Kullanıcı Girişi</button>
-    <!-- Admin giris butonu  -->
-    <button class="disabled" disabled>Admin Girişi</button>
-    <!-- Kullanıcının hesabı yoksa olusturmak icin  kayıt butonu -->
-    <span class="hesap">Hesabın yok mu?</span>
-    <button class="hesapac" disabled>Hemen Aç</button>
+      <button id="kullaniciGirisBtn">Kullanıcı Girişi</button>
+      <button id="adminGirisBtn">Admin Girişi</button>
+      <span class="hesap">Hesabın yok mu?</span>
+      <button id="hesapAcBtn">Hemen Aç</button>
     </div>
   </div>
-  
-  <div id="giris_formu" style="display:none;">
-     <h4>Kullanıcı Girişi</h4>
-  <input type="text" id="username" placeholder="Kullanıcı Adı"><br><br>
-  <input type="password" id="password" placeholder="Şifre"><br><br>
-  <button id="girisbuton">Giriş Yap</button>
-  <p id="login-error" style="color:red; display:none;">Kullanıcı adı veya şifre yanlış!</p>
-</div>
 
-</div>
+  <!-- FORMLAR -->
+  <div class="formlar">
+    <!-- Kullanıcı girişi formu -->
+    <div id="kullaniciGirisFormu" style="display:none;">
+      <h4>Kullanıcı Girişi</h4>
+      <input type="text" id="username" placeholder="Kullanıcı Adı"><br><br>
+      <input type="password" id="password" placeholder="Şifre"><br><br>
+      <button id="girisbuton">Giriş Yap</button>
+      <p id="login-error" style="color:white; display:none;">Kullanıcı adı veya şifre yanlış!</p>
+    </div>
+
+    <!-- Admin girişi formu -->
+    <div id="adminGirisFormu" style="display:none;">
+      <h4>Admin Girişi</h4>
+      <input type="text" id="adminname" placeholder="Admin Adı"><br><br>
+      <input type="password" id="adminpassword" placeholder="Şifre"><br><br>
+      <button id="adminGirisButon">Giriş Yap</button>
+      <p id="admin-login-error" style="color:white; display:none;">Admin adı veya şifre yanlış!</p>
+    </div>
+
+    <!-- Hesap oluşturma formu -->
+    <div id="hesapFormu" style="display:none;">
+      <h4>Hesap Oluştur</h4>
+      <input type="text" id="newUsername" placeholder="Kullanıcı Adı"><br><br>
+      <input type="password" id="newPassword" placeholder="Şifre"><br><br>
+      <button id="hesapOlusturButon">Hesap Oluştur</button>
+      <p id="hesap-error" style="color:white; display:none;">Hesap oluşturulamadı!</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
