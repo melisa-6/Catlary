@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Catlary Kütüphane Yönetim Sistemi</title>
+    <!-- CSS Bağlantısı -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h4>Catlary Yönetim Sistemine Hoş geldiniz!</h4>
+
+      <!-- Butonlar -->
+      <div class="giris_kismi">
+        <button id="kullaniciGirisBtn">Kullanıcı Girişi</button>
+        <button id="adminGirisBtn">Admin Girişi</button>
+        <span class="hesap">Hesabın yok mu?</span>
+        <button id="hesapAcBtn">Hemen Aç</button>
+      </div>
+    </div>
+
+    <!-- FORMLAR -->
+    <div class="formlar">
+      <!-- Kullanıcı girişi formu -->
+      <div id="kullaniciGirisFormu" style="display: none">
+        <h4>Kullanıcı Girişi</h4>
+        <form action="/girisyap" method="POST">
+          <input type="hidden" name="islem" value="kullanici" />
+          <input
+            type="text"
+            name="username"
+            placeholder="Kullanıcı Adı"
+          /><br /><br />
+          <input
+            type="password"
+            name="password"
+            placeholder="Şifre"
+          /><br /><br />
+          <button type="submit">Giriş Yap</button>
+        </form>
+        <p id="login-error" style="color: white; display: none">
+          Kullanıcı adı veya şifre yanlış!
+        </p>
+      </div>
+
+      <!-- Admin girişi formu -->
+      <div id="adminGirisFormu" style="display: none">
+        <h4>Admin Girişi</h4>
+        <form action="/girisyap" method="POST">
+          <input type="hidden" name="islem" value="admin" />
+          <input
+            type="text"
+            name="username"
+            placeholder="Admin Adı"
+          /><br /><br />
+          <input
+            type="password"
+            name="password"
+            placeholder="Şifre"
+          /><br /><br />
+          <button type="submit">Giriş Yap</button>
+        </form>
+        <p id="admin-login-error" style="color: white; display: none">
+          Admin adı veya şifre yanlış!
+        </p>
+      </div>
+
+      <!-- Hesap oluşturma formu -->
+      <div id="hesapFormu" style="display: none">
+        <h4>Hesap Oluştur</h4>
+        <form action="/girisyap" method="POST">
+          <input type="hidden" name="islem" value="yeni" />
+          <input
+            type="text"
+            name="username"
+            placeholder="Kullanıcı Adı"
+          /><br /><br />
+          <input
+            type="password"
+            name="password"
+            placeholder="Şifre"
+          /><br /><br />
+          <button type="submit">Hesap Oluştur</button>
+        </form>
+        <p id="hesap-error" style="color: white; display: none">
+          Hesap oluşturulamadı!
+        </p>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>

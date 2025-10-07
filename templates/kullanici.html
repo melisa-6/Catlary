@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kullanıcı Anasayfa</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+      }
+
+      h2 {
+        margin-bottom: 10px;
+      }
+
+      p {
+        margin-bottom: 40px;
+      }
+
+      .butonlar {
+        display: flex;
+        gap: 20px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      a {
+        margin-top: 50px;
+        color: blue;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Hoşgeldin, {{ username }}!</h2>
+    <p>Burası kullanıcı anasayfasıdır.</p>
+
+    <div class="butonlar">
+      <button
+        onclick="window.location.href='/kitaplari_goruntule/{{ username }}'"
+      >
+        Kitapları Görüntüle
+      </button>
+
+      <button
+        onclick="window.location.href='/oduncalmagecmisim/{{ username }}'"
+      >
+        ödunç alma geçmişimi görüntüle
+      </button>
+
+      <button onclick="window.location.href='/cezalarimigoster/{{ username }}'">
+        cezalarimi goster
+      </button>
+
+      <button onclick="window.location.href='/sifredegis/{{ username }}'">
+        Şifre Değiştir
+      </button>
+
+      <button onclick="window.location.href='/kitapara/{{ username }}'">
+        Kitap Ara
+      </button>
+    </div>
+
+    <a href="/">Çıkış Yap</a>
+  </body>
+</html>

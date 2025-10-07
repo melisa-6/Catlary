@@ -25,17 +25,22 @@ def db_olustur():
 def tablolar_olustur():
     conn = baglanti_olustur()
     cursor = conn.cursor()
-
+    cursor.execute("DROP DATABASE IF EXISTS kutuphane.db")  
     # Kullanıcılar Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS kullanicilar (
             id INT AUTO_INCREMENT PRIMARY KEY,
             username VARCHAR(255) UNIQUE NOT NULL,
             password VARCHAR(255) NOT NULL,
-            role ENUM('kullanici','admin') NOT NULL DEFAULT 'kullanici'
-        )
+            
     """)
-
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS adminler (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(255) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            
+    """)
     # Kitaplar Tablosu
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS kitaplar (

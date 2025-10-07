@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kullanıcı Anasayfa</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+      }
+
+      h2 {
+        margin-bottom: 10px;
+      }
+
+      p {
+        margin-bottom: 40px;
+      }
+
+      .butonlar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        max-width: 900px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      #cezaKullaniciInput {
+        display: none;
+        margin-top: 30px;
+        padding: 10px;
+        font-size: 16px;
+        width: 250px;
+        text-align: center;
+      }
+
+      a {
+        margin-top: 50px;
+        color: blue;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Hoşgeldin, {{ username }}!</h2>
+    <p>Burası admin anasayfasıdır.</p>
+
+    <div class="butonlar">
+      <button
+        onclick="window.location.href='/kitaplari_goruntule/{{ username }}'"
+      >
+        Kitapları Görüntüle
+      </button>
+      <button onclick="window.location.href='/kitapekle/{{ username }}'">
+        Kitap Ekle
+      </button>
+      <button onclick="window.location.href='/kitapsil/{{ username }}'">
+        Kitap Sil
+      </button>
+      <button onclick="window.location.href='/adminekle/{{ username }}'">
+        Admin Ekle
+      </button>
+      <button onclick="window.location.href='/adminsil/{{ username }}'">
+        Admin Sil
+      </button>
+      <button onclick="window.location.href='/kullaniciekle/{{ username }}'">
+        Kullanıcı Ekle
+      </button>
+      <button onclick="window.location.href='/kullanicisil/{{ username }}'">
+        Kullanıcı Sil
+      </button>
+      <button
+        onclick="window.location.href='/adminsifremidegistir/{{ username }}'"
+      >
+        Şifre Değiştir
+      </button>
+      <button onclick="window.location.href='/kitapoduncver/{{ username }}'">
+        Kitap Ödünç Ver
+      </button>
+      <button onclick="window.location.href='/kitapiadeal/{{ username }}'">
+        Kitap İade Al
+      </button>
+      <button
+        onclick="window.location.href='/tumkullanicioduncalmagecmisigoster/{{ username }}'"
+      >
+        Tüm Kullanıcıların Ödünç Geçmişini Göster
+      </button>
+
+      <button
+        onclick="window.location.href='/cezatablosunugoster/{{ username }}'"
+      >
+        Ceza Tablosunu Göster
+      </button>
+      <button onclick="cezaOde()">Ceza Öde</button>
+    </div>
+
+    <input
+      type="text"
+      id="cezaKullaniciInput"
+      placeholder="Kullanıcı Adını Girin"
+    />
+
+    <a href="/">Çıkış Yap</a>
+
+    <script>
+      function cezaOde() {
+        const input = document.getElementById("cezaKullaniciInput");
+
+        if (input.style.display === "none" || input.style.display === "") {
+          // İlk tıklamada inputu gösterip
+          input.style.display = "block";
+          input.focus();
+        } else {
+          // İkinci tıklamada yönlendirmek için
+          const kullaniciAdi = input.value.trim();
+          if (kullaniciAdi !== "") {
+            window.location.href = `/cezaode/${kullaniciAdi}`;
+          } else {
+            alert("Lütfen kullanıcı adını girin!");
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
