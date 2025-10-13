@@ -66,15 +66,45 @@
         cezalarimi goster
       </button>
 
-      <button onclick="window.location.href='/sifredegis/{{ username }}'">
-        Şifre Değiştir
-      </button>
-
-      <button onclick="window.location.href='/kitapara/{{ username }}'">
-        Kitap Ara
-      </button>
+      <button onclick="toggleGizliAlan()">Şifre Değiştir</button>
     </div>
 
+    <!-- gizli alan (sifreAlani) -->
+    <div class="gizli-alan" id="sifreAlani" style="display: none">
+      <h3>Yeni Şifre Belirle</h3>
+
+      <form action="/kullanicisifredegis/{{ username }}" method="POST">
+        <input
+          type="password"
+          name="yeni_sifre"
+          placeholder="Yeni şifrenizi girin"
+          required
+        /><br />
+        <input
+          type="password"
+          name="yeni_sifre_tekrar"
+          placeholder="Yeni şifreyi tekrar girin"
+          required
+        /><br />
+        <button type="submit">Kaydet</button>
+        <button type="button" onclick="iptal()">İptal</button>
+      </form>
+    </div>
+    <script>
+      function toggleGizliAlan() {
+        var gizliAlan = document.getElementById("sifreAlani");
+        if (gizliAlan.style.display === "none") {
+          gizliAlan.style.display = "block";
+        } else {
+          gizliAlan.style.display = "none";
+        }
+      }
+
+      function iptal() {
+        var gizliAlan = document.getElementById("sifreAlani");
+        gizliAlan.style.display = "none";
+      }
+    </script>
     <a href="/">Çıkış Yap</a>
   </body>
 </html>

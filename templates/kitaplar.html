@@ -10,7 +10,7 @@
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f4f6f8;
+        background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
         margin: 0;
         padding: 0;
         display: flex;
@@ -20,7 +20,7 @@
       }
 
       header {
-        background-color: #007bff;
+        background-color: #4a90e2;
         width: 100%;
         color: white;
         text-align: center;
@@ -31,41 +31,73 @@
       main {
         flex: 1;
         width: 90%;
-        max-width: 800px;
+        max-width: 900px;
         background-color: white;
         margin-top: 40px;
         padding: 30px;
         border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
       h2 {
         margin: 0 0 10px 0;
-        font-size: 22px;
+        font-size: 26px;
         color: #333;
       }
 
       h3 {
-        margin: 10px 0 30px 0;
-        font-size: 20px;
-        color: #007bff;
+        margin: 15px 0 25px 0;
+        font-size: 22px;
+        color: #4a90e2;
+      }
+
+      .arama {
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .arama input[type="text"] {
+        padding: 10px 15px;
+        width: 250px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+      }
+
+      .arama button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        background-color: #4a90e2;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .arama button:hover {
+        background-color: #357ab8;
       }
 
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 30px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
 
       th,
       td {
         border: 1px solid #ddd;
-        padding: 12px;
+        padding: 12px 15px;
         text-align: left;
       }
 
       th {
-        background-color: #007bff;
+        background-color: #4a90e2;
         color: white;
         font-weight: 600;
       }
@@ -78,30 +110,34 @@
         background-color: #eaf3ff;
       }
 
-      p {
-        text-align: center;
-        font-size: 18px;
-        color: #555;
+      td {
+        font-size: 16px;
+        color: #333;
       }
 
-      a {
-        display: inline-block;
+      td[colspan] {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+      }
+
+      footer {
+        margin-top: 30px;
+        padding: 20px;
+        text-align: center;
+      }
+
+      footer a {
         text-decoration: none;
-        background-color: #007bff;
+        background-color: #4a90e2;
         color: white;
         padding: 12px 25px;
         border-radius: 8px;
         transition: 0.3s;
       }
 
-      a:hover {
-        background-color: #0056b3;
-      }
-
-      footer {
-        margin-top: auto;
-        padding: 20px;
-        text-align: center;
+      footer a:hover {
+        background-color: #357ab8;
       }
     </style>
   </head>
@@ -114,7 +150,19 @@
     <main>
       <h3>📚 Kitap Listesi</h3>
 
-      {% if kitaplar %}
+      <!-- Arama alanı -->
+      <div class="arama">
+        <form action="/kitapara/{{ username }}" method="GET">
+          <input
+            type="text"
+            name="aranacak_kitap_adi"
+            placeholder="Aramak istediğiniz kitap adı"
+          />
+          <button type="submit">Ara</button>
+        </form>
+      </div>
+
+      <!-- Kitap Tablosu -->
       <table>
         <thead>
           <tr>
@@ -124,22 +172,27 @@
           </tr>
         </thead>
         <tbody>
-          {% for kitap in kitaplar %}
+          {% if kitaplar %} {% for kitap in kitaplar %}
           <tr>
             <td>{{ kitap[0] }}</td>
             <td>{{ kitap[1] }}</td>
             <td>{{ kitap[2] }}</td>
           </tr>
-          {% endfor %}
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="3">Aradığınız kitap bulunamadı</td>
+          </tr>
+          {% endif %}
         </tbody>
       </table>
-      {% else %}
-      <p>Henüz kitap bulunmamaktadır.</p>
-      {% endif %}
     </main>
 
     <footer>
+      {% if admin_mi %}
+      <a href="/admin/{{ username }}">← Geri Dön</a>
+      {% else %}
       <a href="/kullanici/{{ username }}">← Geri Dön</a>
+      {% endif %}
     </footer>
   </body>
 </html>

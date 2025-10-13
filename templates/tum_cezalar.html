@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tüm Cezalar</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f9f9f9;
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 1000px;
+        margin: auto;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      tr:hover {
+        background: #f1f1f1;
+      }
+      input[type="text"] {
+        padding: 8px;
+        margin-bottom: 10px;
+        width: 300px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
+      footer {
+        margin-top: 30px;
+        padding: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Tüm Cezalar</h2>
+    <input type="text" id="searchInput" placeholder="Ara kullanıcı, kitap..." />
+
+    <table id="cezaTable">
+      <thead>
+        <tr>
+          <th>Ceza ID</th>
+          <th>Kullanıcı</th>
+          <th>Kitap</th>
+          <th>Ceza Miktarı</th>
+          <th>Ödünç Tarihi</th>
+          <th>İade Tarihi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ceza in cezalar %}
+        <tr>
+          <td>{{ ceza.id }}</td>
+          <td>{{ ceza.kullanici }}</td>
+          <td>{{ ceza.kitap }}</td>
+          <td>{{ ceza.ceza_miktari }}</td>
+          <td>{{ ceza.odunc_tarihi }}</td>
+          <td>{{ ceza.iade_tarihi }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <script>
+      const searchInput = document.getElementById("searchInput");
+      searchInput.addEventListener("keyup", function () {
+        const filter = searchInput.value.toLowerCase();
+        const rows = document.querySelectorAll("#cezaTable tbody tr");
+        rows.forEach((row) => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(filter) ? "" : "none";
+        });
+      });
+    </script>
+    <footer>
+      <a href="/admin/{{ username }}">← Geri Dön</a>
+    </footer>
+  </body>
+</html>
