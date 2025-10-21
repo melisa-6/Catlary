@@ -40,6 +40,7 @@ def tablolar_olustur():
     CREATE TABLE IF NOT EXISTS kullanicilar (
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(255) UNIQUE NOT NULL,
+        aktiflik BOOLEAN DEFAULT FALSE,
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL
     )
@@ -61,9 +62,10 @@ def tablolar_olustur():
         id INT AUTO_INCREMENT PRIMARY KEY,
         isim VARCHAR(255) NOT NULL,
         yazar VARCHAR(255) NOT NULL,
-        kategori VARCHAR(255),
+         kategori SET('Roman','Bilim','Tarih','Felsefe','Macera','Korku','Fantastik') DEFAULT 'Roman',
         sayfa_sayisi INT NOT NULL,
         stok INT DEFAULT 0,
+        yayinevi VARCHAR(50) NOT NULL,
         raf_no INT DEFAULT 0,
         baski_yili INT DEFAULT 0
     )
@@ -92,6 +94,7 @@ def tablolar_olustur():
         ceza_miktari DECIMAL(10,2) NOT NULL,
         odunc_tarihi DATE NOT NULL,
         iade_tarihi DATE NOT NULL,
+        odeme_durumu BOOLEAN DEFAULT FALSE,
         FOREIGN KEY (kullanici_id) REFERENCES kullanicilar(id),
         FOREIGN KEY (kitap_id) REFERENCES kitaplar(id)
     )
@@ -103,7 +106,7 @@ def tablolar_olustur():
 
     cursor.execute("""
     INSERT IGNORE INTO admin (username, email, password)
-    VALUES ('admin', 'info@catlarykutuphane.com', %s)
+    VALUES ('admin', 'infocatlary@gmail.com', %s)
     """, (hashed1,))
 
     cursor.execute("""
@@ -115,10 +118,6 @@ def tablolar_olustur():
 INSERT IGNORE INTO kullanicilar (username, email, password)
 VALUES ('Melisa', 'taskaramelisa@gmail.com', %s)
 """, (generate_password_hash('666666'),))
-    cursor.execute("""
-    INSERT IGNORE INTO kitaplar (isim, yazar, kategori, sayfa_sayisi, stok, raf_no, baski_yili)
-    VALUES (%s, %s, %s, %s, %s, %s, %s)
-    """, ("Tutunamayanlar", "Oğuz Atay", "Roman", 540, 5, 1, 1971))
-
+   
     conn.commit()
     conn.close()

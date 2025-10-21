@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kitap İşlemi</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(
+            rgba(200, 255, 220, 0.5),
+            /* pastel mint overlay */ rgba(180, 255, 200, 0.5)
+          ),
+          url("{{ url_for('static', filename='images/kedi4.png') }}") no-repeat
+            center center fixed;
+        background-size: cover;
+        background-blend-mode: overlay;
+      }
+
+      .baslik {
+        font-size: 24px;
+        color: #3a6b50; /* koyu mint */
+        background-color: rgba(220, 255, 230, 0.8); /* soft mint */
+        display: inline-block;
+        padding: 15px 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .mesaj {
+        display: block;
+        padding: 25px 30px;
+        background: rgba(200, 255, 220, 0.9); /* pastel mint */
+        border: 1px solid #a4d9b0;
+        border-radius: 12px;
+        text-align: left;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        margin: 0 auto 20px auto;
+      }
+
+      .mesaj p {
+        margin: 8px 0;
+        font-size: 16px;
+        color: #2f5c42; /* koyu mint yazı */
+      }
+
+      .buton {
+        display: inline-block;
+        padding: 12px 25px;
+        background-color: #a4d9b0; /* pastel mint */
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 10px;
+        transition: 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .buton:hover {
+        background-color: #70b387;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="baslik">{{ islem_turu }} Başarıyla Gerçekleşti!</div>
+
+    <div class="mesaj">
+      {% if mesaj %}
+      <p><strong>{{ mesaj }}</strong></p>
+      {% endif %} {% if kitap_id %}
+      <p><strong>Kitap ID:</strong> {{ kitap_id }}</p>
+      {% endif %} {% if isim %}
+      <p><strong>Ad:</strong> {{ isim }}</p>
+      {% endif %} {% if yazar %}
+      <p><strong>Yazar:</strong> {{ yazar }}</p>
+      {% endif %} {% if kategori %}
+      <p><strong>Kategori:</strong> {{ kategori }}</p>
+      {% endif %} {% if sayfa_sayisi %}
+      <p><strong>Sayfa Sayısı:</strong> {{ sayfa_sayisi }}</p>
+      {% endif %} {% if stok is not none %}
+      <p><strong>Stok:</strong> {{ stok }}</p>
+      {% endif %} {% if raf_no %}
+      <p><strong>Raf No:</strong> {{ raf_no }}</p>
+      {% endif %} {% if baski_yili %}
+      <p><strong>Baskı Yılı:</strong> {{ baski_yili }}</p>
+      {% endif %}
+    </div>
+
+    <a href="{{ url_for('admin_anasayfa', username=username) }}" class="buton">
+      Admin Anasayfasına Dön
+    </a>
+  </body>
+</html>

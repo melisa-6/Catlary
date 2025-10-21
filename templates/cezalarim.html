@@ -1,74 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cezalarım</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        background: gradient(135deg, #fb81a4ff, #6a0505ff);
+        font-family: "Segoe UI", Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: url("{{ url_for('static', filename='images/kedi4.png') }}")
+          no-repeat center center fixed;
+        background-size: cover;
+        color: #333;
       }
+
+      /* İçeriği saran şeffaf kutu */
+      .content-wrapper {
+        max-width: 950px;
+        margin: auto;
+        padding: 30px;
+        background: rgba(
+          255,
+          255,
+          255,
+          0.85
+        ); /* sadece içerik kısmı hafif şeffaf */
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      }
+
       h2 {
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        color: #009688; /* turkuaz tema rengi */
+        font-size: 28px;
       }
+
+      input[type="text"] {
+        display: block;
+        margin: 0 auto 20px auto;
+        padding: 10px 15px;
+        width: 320px;
+        border-radius: 8px;
+        border: 1px solid #bbb;
+        font-size: 15px;
+        transition: 0.3s;
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #009688;
+        box-shadow: 0 0 8px rgba(0, 150, 136, 0.3);
+      }
+
       table {
         border-collapse: collapse;
         width: 100%;
-        max-width: 900px;
-        margin: auto;
-        background: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: rgba(
+          255,
+          255,
+          255,
+          0.95
+        ); /* tablo arka planı biraz daha opak */
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
+
       th,
       td {
-        padding: 10px;
+        padding: 14px 12px;
         text-align: left;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid #eee;
       }
+
+      th {
+        background-color: #009688;
+        color: white;
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
       tr:hover {
-        background: #f1f1f1;
+        background-color: #e0f2f1;
+        transition: 0.3s;
       }
-      input[type="text"] {
-        padding: 8px;
-        margin-bottom: 10px;
-        width: 300px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
+
+      .odendi {
+        color: #2ecc71;
+        font-weight: 600;
       }
+
+      .odenmedi {
+        color: #e74c3c;
+        font-weight: 600;
+      }
+
       footer {
         margin-top: 30px;
-        padding: 20px;
         text-align: center;
+      }
+
+      footer a {
+        display: inline-block;
+        text-decoration: none;
+        background-color: #009688;
+        color: white;
+        padding: 10px 22px;
+        border-radius: 8px;
+        transition: 0.3s;
+        font-size: 15px;
+      }
+
+      footer a:hover {
+        background-color: #00796b;
+      }
+
+      @media (max-width: 768px) {
+        th,
+        td {
+          padding: 10px 8px;
+          font-size: 13px;
+        }
+        input[type="text"] {
+          width: 85%;
+        }
       }
     </style>
   </head>
   <body>
-    <h2>Cezalarım - {{ username }}</h2>
+    <div class="content-wrapper">
+      <h2>Cezalarım - {{ username }}</h2>
 
-    <table id="cezaTable">
-      <thead>
-        <tr>
-          <th>Ceza ID</th>
-          <th>Kitap</th>
-          <th>Ceza Miktarı</th>
-          <th>Ödünç Tarihi</th>
-          <th>İade Tarihi</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for ceza in cezalar %}
-        <tr>
-          <td>{{ ceza.id }}</td>
-          <td>{{ ceza.kitap }}</td>
-          <td>{{ ceza.ceza_miktari }}</td>
-          <td>{{ ceza.odunc_tarihi }}</td>
-          <td>{{ ceza.iade_tarihi }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Kitap veya tarih ara..."
+      />
+
+      <table id="cezaTable">
+        <thead>
+          <tr>
+            <th>Ceza ID</th>
+            <th>Kitap</th>
+            <th>Ceza Miktarı (₺)</th>
+            <th>Ödünç Tarihi</th>
+            <th>İade Tarihi</th>
+            <th>Ödenme Durumu</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ceza in cezalar %}
+          <tr>
+            <td>{{ ceza.id }}</td>
+            <td>{{ ceza.kitap }}</td>
+            <td>{{ ceza.ceza_miktari }}</td>
+            <td>{{ ceza.odunc_tarihi }}</td>
+            <td>{{ ceza.iade_tarihi }}</td>
+            <td class="{% if ceza.odendi %}odendi{% else %}odenmedi{% endif %}">
+              {% if ceza.odendi %}Ödendi{% else %}Ödenmedi{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <footer>
+        <a href="/kullanici/{{ username }}">← Geri Dön</a>
+      </footer>
+    </div>
 
     <script>
       const searchInput = document.getElementById("searchInput");
@@ -81,8 +187,5 @@
         });
       });
     </script>
-    <footer>
-      <a href="/kullanici/{{ username }}">← Geri Dön</a>
-    </footer>
   </body>
 </html>

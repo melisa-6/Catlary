@@ -17,24 +17,24 @@
         margin: 0;
         background: #f2f2f2;
         padding-top: 40px;
+         background-image: url("images/kedi4.jpg"); 
       }
 
- #cikisLink {
-    color: #00ffe5ff;
-    font-weight: bold;
-    text-decoration: none;
-    position: fixed;    /* Sayfaya sabitle */
-    bottom: 20px;       /* Alt boşluk */
-    left: 50%;          /* Yatay ortala için başlangıç */
-    transform: translateX(-50%); /* Gerçek ortalama */
-    z-index: 1000;      /* Diğer içeriklerin üstünde */
-}
+      #cikisLink {
+        color: #00ffe5ff;
+        font-weight: bold;
+        text-decoration: none;
+        position: fixed; 
+        bottom: 20px; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        z-index: 1000; 
+      }
 
-#cikisLink:hover {
-    text-decoration: underline;
-    color: #0048ffff;
-}
-  
+      #cikisLink:hover {
+        text-decoration: underline;
+        color: #0048ffff;
+      }
 
       h2 {
         margin-bottom: 10px;
@@ -69,13 +69,36 @@
         border-radius: 4px;
       }
       .gizli-alan {
-        display: none;
-        margin-top: 20px;
-        padding: 20px;
-        border: 1px solid #ccc;
-        background: #fff;
-        border-radius: 5px;
-      }
+    display: none;
+    position: fixed;
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    z-index: 1000; 
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(220, 240, 255, 0.9));
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    width: 400px; 
+        max-width: 90%;
+    color: #333;
+
+}
+.checkbox-group label {
+  display: flex;
+  align-items: center; 
+  gap: 5px;           
+  font-size: 16px;
+  margin: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  vertical-align: middle;
+  margin: 0;
+  padding: 0;
+}
+
+
       #cezaKullaniciInput {
         margin-top: 20px;
         padding: 10px;
@@ -88,6 +111,19 @@
         color: blue;
         text-decoration: none;
       }
+      .checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center; 
+  gap: 5px;           
+  font-size: 16px;
+}
+
     </style>
   </head>
   <body>
@@ -95,89 +131,95 @@
     <p>Burası admin anasayfasıdır.</p>
 
     <div class="butonlar">
-      <button
-        onclick="window.location.href='/kitaplari_goruntule/{{ username }}'"
-      >
-        Kitapları Görüntüle
-      </button>
-
+      <button onclick="window.location.href='/kitaplari_goruntule/{{ username }}'">Kitapları Görüntüle</button>
       <button onclick="toggleAlan('kitapEkleAlani')">Kitap Ekle</button>
       <button onclick="toggleAlan('kitapSilAlani')">Kitap Sil</button>
+      <button onclick="toggleAlan('kitapOduncVerAlani')">Kitap Ödünç Ver</button>
+      <button onclick="toggleAlan('kitapIadeAlani')">Kitap İade Al</button>
+      <button onclick="window.location.href='/tumkullanicioduncalmagecmisigoster/{{username}}'">Tüm Kullanıcıların Ödünç Geçmişini Göster</button>
       <button onclick="toggleAlan('adminEkleAlani')">Admin Ekle</button>
       <button onclick="toggleAlan('adminSilAlani')">Admin Sil</button>
-      <button onclick="toggleAlan('kullaniciSilAlani')">Kullanıcı Sil</button>
       <button onclick="toggleAlan('kullaniciEkleAlani')">Kullanıcı Ekle</button>
-      <button onclick="toggleAlan('sifreAlani')">Şifre Değiştir</button>
-      <button onclick="toggleAlan('kitapOduncVerAlani')">
-        Kitap Ödünç Ver
-      </button>
-      <button onclick="toggleAlan('kitapIadeAlani')">Kitap İade Al</button>
-      <button onclick="window.location.href='/tumkullanicioduncalmagecmisigoster/{{username}}'">
-        Tüm Kullanıcıların Ödünç Geçmişini Göster
-      </button>
-      <button
-        onclick="window.location.href='/cezatablosunugoster/{{ username }}'"
-      >
-        Ceza Tablosunu Göster
-      </button>
-    <button onclick="toggleAlan('cezaAlani')">Ceza Öde</button>
+      <button onclick="toggleAlan('kullanicisifreSifirlaAlani')">Kullanıcı Şifresini Sıfırla</button>
+      <button onclick="window.location.href='/kullanicilar/{{ username }}'"> kullanicilari goster</button>
+      <button onclick="toggleAlan('sifreAlani')">admin Şifremi Değiştir</button>
+      <button onclick="window.location.href='/cezatablosunugoster/{{ username }}'" >Güncel Ceza Tablosunu Göster</button>
+      <button onclick="toggleAlan('cezaAlani')">Ceza Öde</button>
+  
+      <form action="/cezamailleri" method="POST" style="display:inline;">
+  <button type="submit">Ceza Maillerini gonder</button>
+     </form>
+      
+<br><br><br>
 
 
-    <!-- Kitap Ekle -->
-    <div class="gizli-alan" id="kitapEkleAlani">
-      <h3>Yeni Kitap Ekle</h3>
-      <form action="/kitapekle/{{ username }}" method="POST">
-        <input
-          type="text"
-          name="kitap_adi"
-          placeholder="Kitap Adı"
-          required
-        /><br />
-        <input
-          type="text"
-          name="kitap_yazari"
-          placeholder="Kitap Yazarı"
-          required
-        /><br />
-        <input
-          type="text"
-          name="kitap_turu"
-          placeholder="Kitap Türü"
-          required
-        /><br />
-        <input
-          type="number"
-          name="kitap_sayfa_sayisi"
-          placeholder="Sayfa Sayısı"
-          min="1"
-          required
-        /><br />
-        <input
-          type="number"
-          name="stok_miktari"
-          placeholder="Stok Miktarı"
-          min="0"
-          required
-        /><br />
-        <input
-          type="number"
-          name="raf_no"
-          placeholder="Raf No"
-          min="0"
-          required
-        /><br />
-        <input
-          type="number"
-          name="baski_yili"
-          placeholder="Baskı Yılı"
-          min="0"
-          required
-        /><br />
-        <button type="submit">Ekle</button>
-        <button type="button" onclick="toggleAlan('kitapEkleAlani')">
-          İptal
-        </button>
-      </form>
+      <!-- Kitap Ekle -->
+      <div class="gizli-alan" id="kitapEkleAlani">
+        <h3>Yeni Kitap Ekle</h3>
+        <form action="/kitapekle/{{ username }}" method="POST">
+          <input
+            type="text"
+            name="kitap_adi"
+            placeholder="Kitap Adı"
+            required
+          /><br />
+          <input
+            type="text"
+            name="kitap_yazari"
+            placeholder="Kitap Yazarı"
+            required
+          /><br />
+           <input
+            type="text"
+            name="kitap_yayini"
+            placeholder="Kitap Yayini"
+            required
+          /><br />
+      
+          <div class="checkbox-group">
+  <label><input type="checkbox" name="kitap_turu" value="Roman"> Roman</label>
+  <label><input type="checkbox" name="kitap_turu" value="Fantastik"> Fantastik</label>
+  <label><input type="checkbox" name="kitap_turu" value="Bilim"> Bilim</label>
+  <label><input type="checkbox" name="kitap_turu" value="Tarih"> Tarih</label>
+  <label><input type="checkbox" name="kitap_turu" value="Korku"> Korku</label>
+  <label><input type="checkbox" name="kitap_turu" value="Çocuk"> Çocuk</label>
+  <label><input type="checkbox" name="kitap_turu" value="Diğer"> Diğer</label>
+          </div>
+ 
+
+          <input
+            type="number"
+            name="kitap_sayfa_sayisi"
+            placeholder="Sayfa Sayısı"
+            min="1"
+            required
+          /><br />
+          <input
+            type="number"
+            name="stok_miktari"
+            placeholder="Stok Miktarı"
+            min="0"
+            required
+          /><br />
+          <input
+            type="number"
+            name="raf_no"
+            placeholder="Raf No"
+            min="0"
+            required
+          /><br />
+          <input
+            type="number"
+            name="baski_yili"
+            placeholder="Baskı Yılı"
+            min="0"
+            required
+          /><br />
+          <button type="submit">Ekle</button>
+          <button type="button" onclick="toggleAlan('kitapEkleAlani')">
+            İptal
+          </button>
+        </form>
     </div>
 
     <!-- Kitap Sil -->
@@ -207,34 +249,35 @@
       <form action="/kitapoduncver/{{ username }}" method="POST">
         <input
           type="text"
-          name="verilcek_kullanici_id"
-          placeholder="Kullanıcı id"
+          name="verilcek_kullanici_adi"
+          placeholder="Kullanıcı adi"
           required
         />
         <input
           type="text"
-          name="verilcek_kitap_id"
-          placeholder="Kitap id"
+          name="verilcek_kitap_adi"
+          placeholder="Kitap adi"
           required
         />
         <input type="date" name="verildigi_tarih" required />
-        <input type="date" name="gerekli_iade_tarihi" required />
         <button type="submit">Ödünç Ver</button>
         <button type="button" onclick="toggleAlan('kitapOduncVerAlani')">
           İptal
         </button>
       </form>
-
-      {% if odunc_id %}
-      <p style="color: blue">Ödünç ID: {{ odunc_id }}</p>
+      {% if mesaj %}
+      <div style="margin-top: 10px; color: green; font-weight: bold">
+        {{ mesaj | safe }}
+      </div>
       {% endif %}
     </div>
+ 
+ 
     <!-- Kitap İade Al -->
     <div class="gizli-alan" id="kitapIadeAlani">
       <h3>Kitap İade Al</h3>
       <form action="/kitapiadeal/{{ username }}" method="POST">
         <input type="text" name="odunc_id" placeholder="Ödünç ID" required />
-        <input type="date" name="iade_tarihi" required />
         <button type="submit">İade Al</button>
         <button type="button" onclick="toggleAlan('kitapIadeAlani')">
           İptal
@@ -263,6 +306,63 @@
         return false;
       }
     </script>
+
+
+    <!-- Şifre Sıfırlama -->
+<div class="gizli-alan" id="kullanicisifreSifirlaAlani">
+  <h3>Kullanıcı Şifresini Sıfırla</h3>
+  <form action='/kullanici_sifre_sifirla/{{username}}' method="POST">
+    <input
+      type="text"
+      name="sifirla_kullanici_id"
+      placeholder="Kullanıcı ID"
+      required
+    /><br />
+    <input
+      type="email"
+      name="sifirla_kullanici_email"
+      placeholder="Kullanıcı Email"
+      required
+    /><br />
+    
+    <button type="submit">Şifremi Sıfırla</button>
+    <button type="button" onclick="toggleAlan('kullanicisifreSifirlaAlani')">İptal</button>
+  </form>
+</div>
+{% if mesaj %}
+  <div id="sifre-mesaj" style="
+      margin:0;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #d4edda;
+      color: #155724;
+      padding: 15px 25px;
+      border-radius: 5px;
+      z-index: 9999;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      text-align: center;
+  ">
+    {{ mesaj | safe }}
+    <button onclick="kapatMesaj()" style="
+        margin-left:10px;
+        background:red;
+        color:white;
+        border:none;
+        padding:2px 5px;
+        cursor:pointer;
+        border-radius:3px;
+    ">Kapat</button>
+  </div>
+
+  <script>
+    function kapatMesaj() {
+      document.getElementById('sifre-mesaj').style.display = 'none';
+    }
+  </script>
+{% endif %}
+
     <!-- Admin Ekle -->
     <div class="gizli-alan" id="adminEkleAlani">
       <h3>Yeni Admin Ekle</h3>
@@ -271,6 +371,12 @@
           type="text"
           name="yeni_admin_adi"
           placeholder="Admin Adı"
+          required
+        /><br />
+        <input
+          type="text"
+          name="yeni_admin_email"
+          placeholder="Admin maili"
           required
         /><br />
         <input
@@ -355,28 +461,29 @@
       </form>
     </div>
 
-    <!-- Kullanıcı Sil -->
-    <div class="gizli-alan" id="kullaniciSilAlani">
-      <h3>Kullanıcı Sil</h3>
-      <form action="/kullanicisil/{{ username }}" method="POST">
-        <input
-          type="text"
-          name="silinecek_kullanici_adi"
-          placeholder="Silinecek Kullanıcı Adı"
-          required
-        /><br />
-        <input
-          type="text"
-          name="silinecek_kullanici_adi_tekrar"
-          placeholder="Kullanıcı Adını tekrar girin"
-          required
-        /><br />
-        <button type="submit">Sil</button>
-        <button type="button" onclick="toggleAlan('kullaniciSilAlani')">
-          İptal
-        </button>
-      </form>
-    </div>
+
+    <!-- Kullanıcıyı Pasif Yap Butonu -->
+<button id="pasifButton">Kullanıcıyı Pasif Yap</button>
+
+<!-- Gizli form -->
+<form id="pasifForm" action="{{ url_for('kullanici_pasif') }}" method="POST" style="display:none;">
+  <input type="hidden" name="kullanici_adi" id="pasif_kullanici_adi">
+</form>
+
+<script>
+document.getElementById("pasifButton").addEventListener("click", function() {
+    const kullaniciAdi = prompt("Pasif yapmak istediğiniz kullanıcının adını girin:");
+    if(!kullaniciAdi) return alert("Ad girilmedi!");
+
+    const onay = confirm(`Kullanıcı Adı: ${kullaniciAdi}\nBu kullanıcıyı pasif yapmak istediğinize emin misiniz?`);
+    if(!onay) return;
+
+    document.getElementById('pasif_kullanici_adi').value = kullaniciAdi;
+    document.getElementById('pasifForm').submit();
+});
+</script>
+
+
 
     <!-- Şifre Değiştir -->
     <div class="gizli-alan" id="sifreAlani">
@@ -400,76 +507,105 @@
         <button type="button" onclick="toggleAlan('sifreAlani')">İptal</button>
       </form>
     </div>
+    <div class="gizli-alan" id="cezaAlani">
 
-   <!-- Ceza Öde Alanı -->
-<div class="gizli-alan" id="cezaAlani">
-  <h3>Ceza Öde</h3>
-  <input
-    type="number"
-    id="cezaKullaniciInput"
-    placeholder="Kullanıcı ID'sini Girin"
-  />
-  <p id="cezaMiktar" style="color: blue; margin-top: 10px"></p>
-  <button id="cezaOdeBtn">Ödemeyi Başlat</button>
+      
+  <h3>Ceza Ode</h3>
+  <form id="cezaForm">
+    <input type="number" name="kullanici_id" id="cezaKullaniciId" placeholder="Kullanici ID" required><br><br>
+    <button type="submit">Ceza Ode</button>
+    <button type="button" onclick="toggleAlan('cezaAlani')">Iptal</button>
+  </form>
 </div>
-    
 
-    <script>
-      function toggleAlan(id) {
-        const alan = document.getElementById(id);
-        alan.style.display = alan.style.display === "block" ? "none" : "block";
-      }
-    </script>
-
-
-<a href="/" id="cikisLink">Çıkış Yap</a>
 <script>
-const cezaBtn = document.getElementById("cezaOdeBtn");
-const cezaInput = document.getElementById("cezaKullaniciInput");
-const cezaMiktar = document.getElementById("cezaMiktar");
+//  Formu seciyoruz
+const cezaForm = document.getElementById('cezaForm');
 
-cezaBtn.onclick = function () {
-  const kullaniciId = cezaInput.value.trim();
-  if (!kullaniciId) {
-    alert("Lütfen kullanıcı ID'sini girin!");
-    return;
-  }
-
-  fetch(`/cezagoster/${kullaniciId}`)
-    .then(res => res.json())
-    .then(data => {
-      if (!data.id || data.miktar === 0) {
-        alert("Bu kullanıcıya ait ceza bulunamadı!");
-        cezaMiktar.innerText = "";
+//  Form submit islemi icin event listener ekliyoruz
+cezaForm.addEventListener('submit', async function(e){
+    e.preventDefault(); // Formun sayfayi yenilemesini engellemesi icin
+//Yani kullanıcı Ceza Öde butonuna tıkladığında bu fonksiyon çalışacak.
+    //  Kullanici ID'sini al
+    const kullaniciId = document.getElementById('cezaKullaniciId').value;
+//yoksa uygun hata
+    if(!kullaniciId){
+        alert("Lutfen Kullanici ID giriniz!");
         return;
-      }
+    }
 
-      cezaMiktar.innerText = `Ceza miktarı: ${data.miktar} TL`;
+    try {
+        //  Sunucudan toplam tutari aliyoruz, odeme yapmayi false olarak gonderiyoruz
+        const response = await fetch('/cezaode', {//Sunucuda /cezaode route’una istek gönder.
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({//gonderilcek veri
+                kullanici_id: kullaniciId,
+                odeme_yapilsin_mi: false
+            })
+        });
+//await ile  Sunucudan yanıt gelene kadar bekler
+        const data = await response.json();
 
-      if (!confirm(`Kullanıcının cezası: ${data.miktar} TL. Ödemeyi onaylıyor musunuz?`))
-        return;
+        // Toplam tutar yoksa ceza yok
+        if(!data.toplam_tutar || data.toplam_tutar == 0){
+            alert("Bu kullanicinin odenecek cezasi yok!");
+            return;
+        }
 
-      fetch(`/cezaode/${kullaniciId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `ceza_id=${data.id}`,
-      })
-        .then(res => res.json())
-        .then(r => {
-          if (r.success) {
-            alert("Ceza başarıyla ödendi!");
-            cezaInput.value = "";
-            cezaMiktar.innerText = "";
-          } else {
-            alert(r.error || "Ödeme sırasında bir hata oluştu.");
-          }
-        })
-        .catch(err => alert("Hata: " + err));
-    })
-    .catch(err => alert("Hata: " + err));
-};
+        //  Kullaniciya onay sor
+        const onay = confirm(
+            "Kullanici ID: " + kullaniciId + "\n" +
+            "Toplam tutar: " + data.toplam_tutar + " TL\n" +
+            "Tum cezalar odensin mi?"
+        );
+//Kullanıcıya onay penceresi acip
+//Eğer kullanıcı İptal derse (false), işlemi durduruyoruz.
+        if(!onay) return; // Kullanici onaylamazsa islemi bitir
+
+        //  Odeme islemini gerceklestir
+        const odemeResponse = await fetch('/cezaode', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                kullanici_id: kullaniciId,
+                odeme_yapilsin_mi: true
+            })
+        });
+
+        const odemeSonuc = await odemeResponse.json();
+
+        //  Sonucu ekrana yaz
+        alert(odemeSonuc.message);
+
+        if(odemeSonuc.success){
+            cezaForm.reset();          // Formu temizle
+            toggleAlan('cezaAlani');   // Alanı gizle
+        }
+
+    } catch(hata){
+        alert("Hata olustu: " + hata);
+    }
+});
+
+
+function toggleAlan(alanId) {
+    const alan = document.getElementById(alanId);
+    alan.style.display = alan.style.display === 'none' ? 'block' : 'none';
+}
 </script>
 
+<script>
 
+  // Alanı göster/gizle
+  function toggleAlan(id) {
+    const alan = document.getElementById(id);
+    alan.style.display = alan.style.display === "block" ? "none" : "block";
+  }
+</script>
+
+    <a href="/" id="cikisLink">Çıkış Yap</a>
+   
   </body>
 </html>
+
