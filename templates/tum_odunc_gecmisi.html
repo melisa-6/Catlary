@@ -86,18 +86,18 @@
       }
 
       th {
-        background-color: #a28fd0; /* soft pastel mor */
+        background-color: #a28fd0;
         color: white;
         font-weight: 600;
         letter-spacing: 0.5px;
       }
 
       tr:nth-child(even) {
-        background-color: #f9f5ff; /* çok açık lavanta */
+        background-color: #f9f5ff;
       }
 
       tr:hover {
-        background-color: #e6e0f8; /* hover pastel ton */
+        background-color: #e6e0f8;
         transition: 0.3s;
       }
 
@@ -109,7 +109,7 @@
 
       footer a {
         text-decoration: none;
-        color: #c686ff; /* pastel mor-pembe */
+        color: #c686ff;
         font-weight: 500;
         transition: 0.3s;
       }
@@ -120,7 +120,7 @@
       }
 
       button {
-        background-color: #a28fd0; /* pastel mor ton */
+        background-color: #a28fd0;
         color: #fff;
         border: none;
         border-radius: 10px;
@@ -176,11 +176,11 @@
           </tr>
         </thead>
         <tbody>
-          {% for odunc in oduncler %}
+          {% for odunc in odunc_gecmisi %}
           <tr>
             <td>{{ odunc.id }}</td>
-            <td>{{ odunc.kullanici }}</td>
-            <td>{{ odunc.kitap }}</td>
+            <td>{{ odunc.username }}</td>
+            <td>{{ odunc.kitap_adi }}</td>
             <td>{{ odunc.odunc_tarihi }}</td>
             <td>{{ odunc.gerekli_iade_tarihi }}</td>
             <td>{{ odunc.gercek_iade_tarihi or "-" }}</td>

@@ -12,6 +12,22 @@
     <div class="container">
       <h4>Catlary Yönetim Sistemine Hoş geldiniz!</h4>
 
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="flash-messages-container" style="margin-bottom: 20px">
+        {% for category, message in messages %}
+
+        <div
+          class="alert alert-{{ category }}"
+          style="padding: 10px; margin-top: 5px; border-radius: 5px; background-color: {% if category == 'error' %}#f8d7da{% else %}#d4edda{% endif %}; color: {% if category == 'error' %}#721c24{% else %}#155724{% endif %}; border: 1px solid {% if category == 'error' %}#f5c6cb{% else %}#c3e6cb{% endif %};"
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+      <!-- FLASH MESAJLARI SONU -->
+
       <div class="giris_kismi">
         <button id="kullaniciGirisBtn">Kullanıcı Girişi</button>
         <button id="adminGirisBtn">Admin Girişi</button>
@@ -35,7 +51,7 @@
           <input
             type="password"
             name="password"
-            placeholder="Şsifre"
+            placeholder="Şifre"
             required
           /><br /><br />
           <button type="submit">Giriş Yap</button>
@@ -64,37 +80,40 @@
       </div>
 
       <!-- Hesap oluşturma formu -->
-      <div id="hesapFormu" style="display: none">
+      <form
+        id="hesapFormu"
+        action="/kayitol"
+        method="POST"
+        style="display: none"
+      >
         <h4>Hesap Oluştur</h4>
-        <form action="/girisyap" method="POST">
-          <input type="hidden" name="islem" value="yeni" />
-          <input
-            type="text"
-            name="username"
-            placeholder="Kullanıcı Adı"
-            required
-          /><br /><br />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Adresi"
-            required
-          /><br /><br />
-          <input
-            type="password"
-            name="yeni_sifre"
-            placeholder="Yeni Şifre"
-            required
-          /><br /><br />
-          <input
-            type="password"
-            name="yeni_sifre_tekrar"
-            placeholder="Yeni Şifre Tekrar"
-            required
-          /><br /><br />
-          <button type="submit">Hesap Oluştur</button>
-        </form>
-      </div>
+        <input type="hidden" name="islem" value="yeni" />
+        <input
+          type="text"
+          name="username"
+          placeholder="Kullanıcı Adı"
+          required
+        /><br /><br />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email Adresi"
+          required
+        /><br /><br />
+        <input
+          type="password"
+          name="yeni_sifre"
+          placeholder="Yeni Şifre"
+          required
+        /><br /><br />
+        <input
+          type="password"
+          name="yeni_sifre_tekrar"
+          placeholder="Yeni Şifre Tekrar"
+          required
+        /><br /><br />
+        <button type="submit">Hesap Oluştur</button>
+      </form>
     </div>
 
     <script>

@@ -89,6 +89,13 @@
     <div class="sonuc">
       <h2>Ödünç Verme Sonucu</h2>
       <p>{{ mesaj|safe }}</p>
+      {% if kullanici_adi %}
+      <p><strong>Kullanıcı:</strong> {{ kullanici_adi }}</p>
+      {% endif %} {% if kitap_adi %}
+      <p><strong>Kitap:</strong> {{ kitap_adi }}</p>
+      {% endif %} {% if odunc_id %}
+      <p><strong>Ödünç ID:</strong> {{ odunc_id }}</p>
+      {% endif %}
       <button onclick="window.location.href='/admin/{{ username }}'">
         Geri Dön
       </button>

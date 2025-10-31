@@ -156,18 +156,26 @@
           </tr>
         </thead>
         <tbody>
-          {% for ceza in cezalar %}
+          {% if cezalar %} {% for ceza in cezalar %}
           <tr>
             <td>{{ ceza.id }}</td>
-            <td>{{ ceza.kitap }}</td>
-            <td>{{ ceza.ceza_miktari }}</td>
-            <td>{{ ceza.odunc_tarihi }}</td>
-            <td>{{ ceza.iade_tarihi }}</td>
-            <td class="{% if ceza.odendi %}odendi{% else %}odenmedi{% endif %}">
-              {% if ceza.odendi %}Ödendi{% else %}Ödenmedi{% endif %}
+            <td>{{ ceza.kitap_adi or 'BULUNAMADI' }}</td>
+            <td>{{ "%.2f"|format(ceza.ceza_miktari) }} TL</td>
+            <td>{{ ceza.odunc_tarihi or '-' }}</td>
+            <td>{{ ceza.iade_tarihi or '-' }}</td>
+            <td
+              class="{% if ceza.odeme_durumu == 1 %}odendi{% else %}odenmedi{% endif %}"
+            >
+              {% if ceza.odeme_durumu == 1 %}Ödendi{% else %}Ödenmedi{% endif %}
             </td>
           </tr>
-          {% endfor %}
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center">
+              Kayıtlı ceza bulunamadı.
+            </td>
+          </tr>
+          {% endif %}
         </tbody>
       </table>
 

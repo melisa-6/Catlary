@@ -71,6 +71,7 @@
       td {
         padding: 12px 15px;
         text-align: left;
+        border: 1px solid #ddd;
       }
 
       th {
@@ -84,7 +85,7 @@
       }
 
       tr:hover {
-        background-color: rgba(106, 5, 5, 0.2);
+        background-color: rgba(106, 5, 5, 0.1);
         transition: 0.3s;
       }
 
@@ -105,27 +106,6 @@
         text-decoration: underline;
         color: #400303ff;
       }
-
-      @media (max-width: 768px) {
-        th,
-        td {
-          padding: 10px 8px;
-          font-size: 0.9em;
-        }
-        h2 {
-          font-size: 1.5em;
-        }
-      }
-
-      @media (max-width: 480px) {
-        #searchInput {
-          width: 90%;
-        }
-        th,
-        td {
-          padding: 8px 5px;
-        }
-      }
     </style>
   </head>
   <body>
@@ -136,7 +116,6 @@
         id="searchInput"
         placeholder="Ara kullanıcı, kitap..."
       />
-
       <table id="cezaTable">
         <thead>
           <tr>
@@ -150,17 +129,29 @@
           </tr>
         </thead>
         <tbody>
-          {% for ceza in cezalar %}
+          {% if cezalar %} {% for ceza in cezalar %}
           <tr>
             <td>{{ ceza.id }}</td>
-            <td>{{ ceza.kullanici }}</td>
-            <td>{{ ceza.kitap }}</td>
-            <td>{{ ceza.ceza_miktari }}</td>
-            <td>{{ ceza.odunc_tarihi }}</td>
-            <td>{{ ceza.iade_tarihi }}</td>
-            <td>{{ 'Ödendi' if ceza.odeme_durumu else 'Ödenmedi' }}</td>
+            <td>{{ ceza.username or 'BULUNAMADI' }}</td>
+            <td>{{ ceza.isim or 'BULUNAMADI' }}</td>
+            <td>{{ "%.2f"|format(ceza.ceza_miktari) }} TL</td>
+            <td>{{ ceza.odunc_tarihi or '-' }}</td>
+            <td>{{ ceza.iade_tarihi or '-' }}</td>
+            <td>
+              {% if ceza.odeme_durumu == 1 %}
+              <span style="color: green; font-weight: bold">Ödendi</span>
+              {% else %}
+              <span style="color: red; font-weight: bold">Ödenmedi</span>
+              {% endif %}
+            </td>
           </tr>
-          {% endfor %}
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 20px">
+              Kayıtlı ceza bulunamadı.
+            </td>
+          </tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
@@ -171,9 +162,12 @@
 
     <script>
       const searchInput = document.getElementById("searchInput");
+      const table = document.getElementById("cezaTable");
+
       searchInput.addEventListener("keyup", function () {
         const filter = searchInput.value.toLowerCase();
-        const rows = document.querySelectorAll("#cezaTable tbody tr");
+        const rows = table.querySelectorAll("tbody tr");
+
         rows.forEach((row) => {
           const text = row.textContent.toLowerCase();
           row.style.display = text.includes(filter) ? "" : "none";

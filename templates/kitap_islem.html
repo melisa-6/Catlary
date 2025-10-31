@@ -14,7 +14,7 @@
         align-items: center;
         background: linear-gradient(
             rgba(200, 255, 220, 0.5),
-            /* pastel mint overlay */ rgba(180, 255, 200, 0.5)
+            rgba(180, 255, 200, 0.5)
           ),
           url("{{ url_for('static', filename='images/kedi4.png') }}") no-repeat
             center center fixed;
@@ -24,8 +24,8 @@
 
       .baslik {
         font-size: 24px;
-        color: #3a6b50; /* koyu mint */
-        background-color: rgba(220, 255, 230, 0.8); /* soft mint */
+        color: #3a6b50;
+        background-color: rgba(220, 255, 230, 0.8);
         display: inline-block;
         padding: 15px 25px;
         border-radius: 12px;
@@ -36,7 +36,7 @@
       .mesaj {
         display: block;
         padding: 25px 30px;
-        background: rgba(200, 255, 220, 0.9); /* pastel mint */
+        background: rgba(200, 255, 220, 0.9);
         border: 1px solid #a4d9b0;
         border-radius: 12px;
         text-align: left;
@@ -48,13 +48,13 @@
       .mesaj p {
         margin: 8px 0;
         font-size: 16px;
-        color: #2f5c42; /* koyu mint yazı */
+        color: #2f5c42;
       }
 
       .buton {
         display: inline-block;
         padding: 12px 25px;
-        background-color: #a4d9b0; /* pastel mint */
+        background-color: #a4d9b0;
         color: white;
         text-decoration: none;
         font-weight: bold;
@@ -69,32 +69,22 @@
     </style>
   </head>
   <body>
-    <div class="baslik">{{ islem_turu }} Başarıyla Gerçekleşti!</div>
+    <div class="baslik">{{ islem_turu }}</div>
 
     <div class="mesaj">
-      {% if mesaj %}
+      {% if mesaj %} {% if mesaj is mapping %}
+      <p><strong>{{ mesaj['message'] }}</strong></p>
+      {% else %}
       <p><strong>{{ mesaj }}</strong></p>
-      {% endif %} {% if kitap_id %}
-      <p><strong>Kitap ID:</strong> {{ kitap_id }}</p>
-      {% endif %} {% if isim %}
-      <p><strong>Ad:</strong> {{ isim }}</p>
-      {% endif %} {% if yazar %}
-      <p><strong>Yazar:</strong> {{ yazar }}</p>
-      {% endif %} {% if kategori %}
-      <p><strong>Kategori:</strong> {{ kategori }}</p>
-      {% endif %} {% if sayfa_sayisi %}
-      <p><strong>Sayfa Sayısı:</strong> {{ sayfa_sayisi }}</p>
-      {% endif %} {% if stok is not none %}
-      <p><strong>Stok:</strong> {{ stok }}</p>
-      {% endif %} {% if raf_no %}
-      <p><strong>Raf No:</strong> {{ raf_no }}</p>
-      {% endif %} {% if baski_yili %}
-      <p><strong>Baskı Yılı:</strong> {{ baski_yili }}</p>
+      {% endif %} {% endif %} {% if kitap_adi %}
+      <p><strong>Kitap Adı:</strong> {{ kitap_adi }}</p>
+      {% endif %} {% if username %}
+      <p><strong>Kullanıcı:</strong> {{ username }}</p>
       {% endif %}
     </div>
 
-    <a href="{{ url_for('admin_anasayfa', username=username) }}" class="buton">
-      Admin Anasayfasına Dön
-    </a>
+    <a href="{{ url_for('admin_anasayfa', username=username) }}" class="buton"
+      >Geri Dön</a
+    >
   </body>
 </html>

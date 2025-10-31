@@ -18,9 +18,9 @@
             center center fixed;
         background-size: cover;
         background-blend-mode: overlay;
+        background-attachment: fixed;
         color: #333;
       }
-
       .content {
         flex: 1;
         display: flex;
@@ -29,14 +29,12 @@
         justify-content: flex-start;
         padding: 50px 20px;
       }
-
       h2 {
         text-align: center;
         margin-bottom: 30px;
         font-size: 2em;
         color: #b3477a;
       }
-
       table {
         border-collapse: collapse;
         width: 80%;
@@ -47,7 +45,6 @@
         background: rgba(255, 240, 245, 0.95);
         animation: fadeIn 0.8s ease-in-out;
       }
-
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -58,38 +55,31 @@
           transform: translateY(0);
         }
       }
-
       th,
       td {
         padding: 12px 15px;
         text-align: center;
       }
-
       th {
         background-color: #f4a6c1;
         color: white;
         font-weight: 600;
       }
-
       tr:nth-child(even) {
         background-color: rgba(255, 228, 235, 0.6);
       }
-
       tr:hover {
         background-color: rgba(255, 192, 203, 0.3);
         transition: 0.3s;
       }
-
       .aktif {
         color: green;
         font-weight: 600;
       }
-
       .pasif {
         color: #d14f70;
         font-weight: 600;
       }
-
       .aktiflestir-btn {
         margin-left: 5px;
         padding: 4px 8px;
@@ -101,16 +91,13 @@
         color: white;
         transition: 0.3s;
       }
-
       .aktiflestir-btn:hover {
         background-color: #d14f70;
       }
-
       footer {
         text-align: center;
         padding: 20px 0;
       }
-
       footer a {
         text-decoration: none;
         color: white;
@@ -121,12 +108,10 @@
         border-radius: 8px;
         transition: 0.3s;
       }
-
       footer a:hover {
         background-color: #d14f70;
         color: white;
       }
-
       @media (max-width: 768px) {
         th,
         td {
@@ -137,7 +122,6 @@
           font-size: 1.5em;
         }
       }
-
       @media (max-width: 480px) {
         table {
           width: 95%;
@@ -155,29 +139,118 @@
           <th>Email</th>
           <th>Durum</th>
         </tr>
-        {% for id, username, email, aktiflik in kullanicilar %}
+        {% if kullanicilar %} {% for kullanici in kullanicilar %}
         <tr>
-          <td>{{ id }}</td>
-          <td>{{ username }}</td>
-          <td>{{ email }}</td>
-          <td class="{{ 'aktif' if aktiflik else 'pasif' }}">
-            {{ 'Aktif' if aktiflik else 'Pasif' }} {% if not aktiflik %}
-            <form
-              method="POST"
-              action="{{ url_for('kullanici_aktiflestir', kullanici_id=id) }}"
-              style="display: inline"
+          <td>{{ kullanici.id }}</td>
+          <td>{{ kullanici.username }}</td>
+          <td>{{ kullanici.email }}</td>
+          <td class="durum-{{ kullanici.username }}">
+            <span class="{{ 'aktif' if kullanici.aktiflik else 'pasif' }}">
+              {{ 'Aktif' if kullanici.aktiflik else 'Pasif' }}
+            </span>
+            <button
+              class="aktiflestir-btn"
+              onclick="degistirDurum('{{ kullanici.username }}', {{ 'true' if kullanici.aktiflik else 'false' }})"
             >
-              <button type="submit" class="aktiflestir-btn">Aktifleştir</button>
-            </form>
-            {% endif %}
+              {% if kullanici.aktiflik %}Pasif Yap{% else %}Aktifleştir{% endif
+              %}
+            </button>
           </td>
         </tr>
-        {% endfor %}
+        {% endfor %} {% else %}
+        <tr>
+          <td colspan="4">Kullanıcı bulunamadı.</td>
+        </tr>
+        {% endif %}
       </table>
     </div>
 
+    <script>
+      async function degistirDurum(username, aktif) {
+        const yeniDurum = !aktif;
+        const durumAciklama = yeniDurum ? "aktifleştir" : "pasifleştir";
+
+        const onay = confirm(
+          `${username} kullanıcısını ${durumAciklama}mek istediğinizden emin misiniz?`
+        );
+        if (!onay) {
+          return;
+        }
+
+        try {
+          const response = await fetch("/kullanici_durum_degistir", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              kullanici_adi: username,
+              aktiflik: yeniDurum,
+            }),
+          });
+
+          if (!response.ok) {
+            if (response.status === 401) {
+              const errorData = await response.json();
+              alert(
+                `Oturum Hatası (401): ${errorData.message} Lütfen tekrar giriş yapın.`
+              );
+              window.location.href = "/";
+              return;
+            }
+
+            const contentType = response.headers.get("content-type");
+
+            if (
+              !contentType ||
+              contentType.indexOf("application/json") === -1
+            ) {
+              alert(`KRİTİK SUNUCU HATASI: İşlem başarısız oldu `);
+              throw new Error(
+                "Sunucudan beklenmeyen bir HTML yanıtı alındı. Lütfen app.py dosyanızdaki Flask rotasını kontrol edin."
+              );
+            }
+
+            const errorData = await response.json();
+            alert(`İşlem Başarısız: ${errorData.message}`);
+            return;
+          }
+
+          const data = await response.json();
+          alert(data.message || "İşlem başarıyla tamamlandı.");
+
+          const tdSpan = document.querySelector(`.durum-${username} span`);
+          const btn = document.querySelector(`.durum-${username} button`);
+
+          if (tdSpan && btn) {
+            if (yeniDurum) {
+              tdSpan.textContent = "Aktif";
+              tdSpan.className = "aktif";
+              btn.textContent = "Pasif Yap";
+
+              btn.setAttribute("onclick", `degistirDurum('${username}', true)`);
+            } else {
+              tdSpan.textContent = "Pasif";
+              tdSpan.className = "pasif";
+              btn.textContent = "Aktifleştir";
+
+              btn.setAttribute(
+                "onclick",
+                `degistirDurum('${username}', false)`
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Durum Değiştirme Hatası:", error);
+          alert(
+            `İşlem sırasında beklenmeyen bir hata oluştu: ${error.message}`
+          );
+        }
+      }
+    </script>
+
     <footer>
-      <a href="/admin/{{ admin_username }}">← Geri Dön</a>
+      <a href="/admin/{{ session['username'] }}">← Geri Dön</a>
     </footer>
   </body>
 </html>

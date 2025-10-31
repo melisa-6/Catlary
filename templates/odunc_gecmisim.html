@@ -132,10 +132,10 @@
           </tr>
         </thead>
         <tbody>
-          {% for odunc in oduncler %}
+          {% for odunc in odunc_gecmisi %}
           <tr>
             <td>{{ odunc.id }}</td>
-            <td>{{ odunc.kitap }}</td>
+            <td>{{ odunc.kitap_adi }}</td>
             <td>{{ odunc.odunc_tarihi }}</td>
             <td>{{ odunc.gerekli_iade_tarihi }}</td>
             <td>{{ odunc.gercek_iade_tarihi or "-" }}</td>

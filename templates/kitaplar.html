@@ -22,7 +22,6 @@
         width: 100%;
         text-align: center;
         padding: 20px 0;
-
         color: #ffb266;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       }
@@ -136,6 +135,21 @@
         font-style: italic;
       }
 
+      .sil-btn {
+        background-color: #ff4444;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.3s;
+      }
+
+      .sil-btn:hover {
+        background-color: #cc0000;
+      }
+
       footer {
         margin: 30px 0;
         text-align: center;
@@ -199,32 +213,60 @@
       <table>
         <thead>
           <tr>
+            <th>ID</th>
             <th>Kitap İsmi</th>
             <th>Yazar</th>
             <th>Kategori</th>
+            <th>Stok</th>
+
+            {% if admin_mi %}
+            <th>İşlem</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
           {% if kitaplar %} {% for kitap in kitaplar %}
           <tr>
-            <td>{{ kitap[0] }}</td>
-            <td>{{ kitap[1] }}</td>
-            <td>{{ kitap[2] }}</td>
+            <td>{{ kitap.id }}</td>
+            <td>{{ kitap.isim }}</td>
+            <td>{{ kitap.yazar }}</td>
+            <td>{{ kitap.kategori }}</td>
+            <td>{{ kitap.stok }}</td>
+
+            {% if admin_mi %}
+            <td>
+              <form
+                action="/kitapsil/{{ username }}"
+                method="POST"
+                style="display: inline"
+              >
+                <input type="hidden" name="kitap_id" value="{{ kitap.id }}" />
+                <button
+                  type="submit"
+                  class="sil-btn"
+                  onclick="return confirm('{{ kitap.isim }} (ID: {{ kitap.id }}) adlı kitabı silmek istediğinizden emin misiniz?')"
+                >
+                  Sil
+                </button>
+              </form>
+            </td>
+            {% endif %}
           </tr>
           {% endfor %} {% else %}
           <tr>
-            <td colspan="3">Aradığınız kitap bulunamadı</td>
+            <td colspan="{% if admin_mi %}6{% else %}5{% endif %}">
+              Kitap bulunamadı
+            </td>
           </tr>
           {% endif %}
         </tbody>
       </table>
     </main>
-
     <footer>
       {% if admin_mi %}
-      <a href="/admin/{{ username }}">← Geri Dön</a>
+      <a href="/admin/{{ username }}">← Admin Anasayfasına Dön</a>
       {% else %}
-      <a href="/kullanici/{{ username }}">← Geri Dön</a>
+      <a href="/kullanici/{{ username }}">← Kullanıcı Anasayfasına Dön</a>
       {% endif %}
     </footer>
   </body>

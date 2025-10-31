@@ -2,13 +2,21 @@ import mysql.connector
 from werkzeug.security import generate_password_hash
 
 #Veritabanı bağlantısı oluşturmak
-def baglanti_olustur():
+def baglanti_olustur(db_config=None):
+    import mysql.connector
+    cfg = db_config or {
+        "host": "localhost",
+        "user": "melisa",
+        "password": "Mtz0504*",
+        "database": "kutuphane_db"
+    }
     return mysql.connector.connect(
-        host="localhost",
-        user="melisa",
-        password="Mtz0504*",
-        database="kutuphane_db"
+        host=cfg["host"],
+        user=cfg["user"],
+        password=cfg["password"],
+        database=cfg["database"]
     )
+
 
 # Veritabanını silmek
 def db_sil():
