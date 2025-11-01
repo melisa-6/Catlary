@@ -115,7 +115,7 @@ class KullaniciService:
                 f"Sayın Admin,\n\n"
                 f"{user['username']} ({user['email']}) kullanıcısının şifresi başarıyla sıfırlanmıştır.\n"
                 f"Yeni şifre, kullanıcının e-posta adresine gönderilmiştir.\n"
-                f"Lütfen güvenlik nedeniyle yeni şifreyi bu e-posta içerisinde GÖSTERMEYİNİZ."
+                
             )
             self.mail_service.gonder(admin_user['email'], admin_konu, admin_icerik)
 
