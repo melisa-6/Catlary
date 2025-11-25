@@ -124,7 +124,7 @@
             <th>Kitap</th>
             <th>Ceza Miktarı</th>
             <th>Ödünç Tarihi</th>
-            <th>İade Tarihi</th>
+            <th>Gerçek İade Tarihi</th>
             <th>Ödeme Durumu</th>
           </tr>
         </thead>
@@ -136,7 +136,7 @@
             <td>{{ ceza.isim or 'BULUNAMADI' }}</td>
             <td>{{ "%.2f"|format(ceza.ceza_miktari) }} TL</td>
             <td>{{ ceza.odunc_tarihi or '-' }}</td>
-            <td>{{ ceza.iade_tarihi or '-' }}</td>
+            <td>{{ ceza.gercek_iade_tarihi or '-' }}</td>
             <td>
               {% if ceza.odeme_durumu == 1 %}
               <span style="color: green; font-weight: bold">Ödendi</span>

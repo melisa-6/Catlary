@@ -111,6 +111,13 @@
       </button>
 
       <button onclick="toggleGizliAlan()">Şifre Değiştir</button>
+      <form
+        action="/borc_ode/{{ username }}"
+        method="POST"
+        style="display: inline"
+      >
+        <button type="submit">Borcu Öde</button>
+      </form>
     </div>
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %}

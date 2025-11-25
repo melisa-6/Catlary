@@ -191,3 +191,35 @@ Cezalar listesinde ödenen ceza
 işaretlenir.
 
 ![login](static/images/Catlary51.png)
+
+### 25.11.2025 tarihinde;
+
+\*Kullanıcı kitap ödünç aldığında
+
+![login](static/images/Catlary53.png)
+
+\*Kullanıcıda ödünç durumunda olup gerekli iade tarihi geldiğinde
+
+![login](static/images/Catlary57.png)
+
+\*Gerekli iade tarihinde iade edilmediğinde oluşacak cezaları bildirmek için
+
+![login](static/images/Catlary55.png)
+
+\*İade edilmeyen her gün cezanın arttığını belirtmek için
+
+![login](static/images/Catlary56.png)
+
+\*Kitap iade edildiğinde onaylandığını göstermek için
+
+![login](static/images/Catlary58.png)
+
+\*Ceza ödemenin gerçekleştiğini belirten
+
+![login](static/images/Catlary59.png)
+
+\* Yetkili admine günlük rapor
+
+![login](static/images/Catlary59.png)
+
+' trigger ve stored procedureler eklenmiştir.

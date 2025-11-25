@@ -152,6 +152,7 @@
             <th>Ceza Miktarı (₺)</th>
             <th>Ödünç Tarihi</th>
             <th>İade Tarihi</th>
+            <!-- Gerçek iade -->
             <th>Ödenme Durumu</th>
           </tr>
         </thead>
@@ -162,7 +163,8 @@
             <td>{{ ceza.kitap_adi or 'BULUNAMADI' }}</td>
             <td>{{ "%.2f"|format(ceza.ceza_miktari) }} TL</td>
             <td>{{ ceza.odunc_tarihi or '-' }}</td>
-            <td>{{ ceza.iade_tarihi or '-' }}</td>
+            <td>{{ ceza.gercek_iade_tarihi or 'Henüz iade edilmedi' }}</td>
+
             <td
               class="{% if ceza.odeme_durumu == 1 %}odendi{% else %}odenmedi{% endif %}"
             >

@@ -5,7 +5,7 @@ from services.adminService import AdminService
 db_config = {
     "host": "localhost",
     "user": "melisa",
-    "password": "Mtz0504*",
+    "password": "",
     "database": "kutuphane_db"
 }
 admin_service = AdminService(db_config)
@@ -37,12 +37,16 @@ def admin_sil_controller(admin_username):
     username_tekrar = request.form.get('silinecek_admin_adi_tekrar')
 
     silinen = admin_service.admin_sil(username, username_tekrar)
-    if silinen > 0:
+
+    if silinen == -1:
+        flash("Default admin silinemez!", "error")
+    elif silinen > 0:
         flash(f"{username} silindi.", "success")
     else:
         flash(f"{username} bulunamadı veya eşleşme hatası.", "error")
 
     return redirect(url_for('admin_anasayfa', username=admin_username))
+
 
 
 def admin_sifre_degistir_controller():

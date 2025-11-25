@@ -11,7 +11,7 @@ def setup_database():
     # Varsayılan admin ekler
     admin_username = "admin"
     admin_email = "infocatlary@gmail.com"
-    admin_sifre = "123456"
+    admin_sifre = ""
     hashed_admin_sifre = generate_password_hash(admin_sifre)
     cursor.execute(
         "INSERT INTO admin (username, email, password) VALUES (%s, %s, %s)",
@@ -21,7 +21,7 @@ def setup_database():
     # Varsayılan kullanıcı ekle
     user_username = "melisa"
     user_email = "taskaramelisa@gmail.com"
-    user_sifre = "666666"
+    user_sifre = ""
     hashed_user_sifre = generate_password_hash(user_sifre)
     cursor.execute(
         "INSERT INTO kullanicilar (username, email, password) VALUES (%s, %s, %s)",

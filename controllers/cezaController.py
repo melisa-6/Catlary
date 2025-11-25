@@ -4,7 +4,7 @@ from services.kullaniciService import KullaniciService
 db_config = {
     "host": "localhost",
     "user": "melisa",
-    "password": "Mtz0504*",
+    "password": "",
     "database": "kutuphane_db"
 }
 

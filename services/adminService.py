@@ -21,11 +21,17 @@ class AdminService:
 
 
     def admin_sil(self, username, username_tekrar):
-        #gelen usernamelerin eslesip eslesmedigine bakar
+        # gelen usernamelerin eşleşmesini kontrol eder
         if username != username_tekrar:
             return 0  # Controller mesaj oluşturur
+
+        #  Default admin kontrolü
+        if username.lower() == 'admin':  # default adminin usernamei
+            return -1  # özel kod, controller bunu yorumlar
+
         silinen = self.repo.admin_sil(username)
-        return silinen  
+        return silinen
+  
 
 
     # belirtilen isimde admin var mi ogrenmek icin repoya yonlendirir

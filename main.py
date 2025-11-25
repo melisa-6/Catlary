@@ -19,8 +19,9 @@ from services.adminService import AdminService
 from services.kullaniciService import KullaniciService
 from services.kitapService import KitapService
 from services.cezaService import CezaService
-from services.mailServices import MailService
 from services.oduncService import OduncService
+from send_mail import send_pending_mails
+
 
 # ------------------- VERİTABANI -------------------
 from database import baglanti_olustur
@@ -35,7 +36,7 @@ from decorators import admin_required, login_required
 db_config = {
     "host": "127.0.0.1",
     "user": "melisa",
-    "password": "Mtz0504*",
+    "password": "",
     "database": "kutuphane_db",
     "port": 3306
 }
@@ -43,7 +44,6 @@ db_config = {
 # ------------------- OBJELER -------------------
 ceza_islemleri = CezaService(db_config)
 kitap_islemleri = KitapService()
-mail_service = MailService()
 kullanici_islemleri = KullaniciService(db_config)
 odunc_islemleri = OduncService(db_config)
 admin_service = AdminService(db_config)
@@ -225,6 +225,8 @@ def kitap_sil(username):
 def kitap_odunc_ver(username):
     #admin kullaniciya kitap odunc vermeye calistiginda bu route a yonlendirir
     mesaj_dict = odunccontroller.odunc_ver_controller(request.form)
+    send_pending_mails()
+
  #Formdan gelen veriler odunc_ver_controller fonksiyonuna iletilir
 # Kullanıcıya ödünç verme işleminin sonucunu gösteren sayfaya yonlendirir
     return render_template(
@@ -242,6 +244,8 @@ def kitap_iade_al(username):
     #admin kullanicidan kitap iade aldigind bu route a yonlendirilir
     #formdaki bilgiler ile ilgili controllerin ilgili fonksiyonuna yonlendirilir ve gelen degiskenlerle oduncçhtml e yonlendirilir
     mesaj = odunccontroller.odunc_iade_controller(request.form)
+    send_pending_mails()
+
     return render_template("odunc.html", username=username, mesaj=mesaj)
 
 
@@ -341,6 +345,8 @@ def admin_sifre_degistir():
 @admin_required
 def admin_kullanici_sifre_sifirla_route():
     #admin tarafinda kullanicinin sifresini sifirlamak icin bu route kullanilir
+    send_pending_mails()
+
     return kullanicikontroller.admin_kullanici_sifre_sifirla_controller()
     
 

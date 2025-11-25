@@ -1,7 +1,8 @@
 from werkzeug.security import check_password_hash, generate_password_hash
 from repository.kullanicilarRepository import KullaniciRepository
 from repository.AdminRepository import AdminRepository 
-from services.mailServices import MailService
+from send_mail import send_pending_mails, send_mail_to_user
+
 from database import baglanti_olustur 
 import secrets
 import string
@@ -9,7 +10,7 @@ import string
 db_config = {
     "host": "127.0.0.1",
     "user": "melisa",
-    "password": "Mtz0504*",
+    "password": "",
     "database": "kutuphane_db",
     "port": 3306
 }
@@ -18,7 +19,7 @@ class KullaniciService:
     def __init__(self, db_config=None):
         self.db_config = db_config
         self.repo = KullaniciRepository(db_config)
-        self.mail_service = MailService() 
+        
         
         #kullanicinin id si ile kullaniciyi almak icin repoya yonlendirir
     def get_kullanici_by_id(self, user_id):
@@ -102,26 +103,26 @@ class KullaniciService:
         if not guncellendi:
             return {"success": False, "message": "Şifre veritabanına güncellenemedi."}
 
+        # Kullanıcıya mail gönder
         konu = "Şifre Sıfırlama"
         icerik = f"Merhaba {user['username']},\n\nŞifreniz sıfırlanmıştır. Yeni şifreniz: {yeni_sifre}\nLütfen giriş yaptıktan sonra değiştiriniz."
-        self.mail_service.gonder(user['email'], konu, icerik)
+        send_mail_to_user(user['email'], konu, icerik)
 
+        # Admin kullanıcıyı al
         admin_repo = AdminRepository(self.db_config)
         admin_user = admin_repo.get_first_admin() 
-        
+
         if admin_user:
             admin_konu = "Kullanıcı Şifre Sıfırlama Bildirimi"
             admin_icerik = (
                 f"Sayın Admin,\n\n"
                 f"{user['username']} ({user['email']}) kullanıcısının şifresi başarıyla sıfırlanmıştır.\n"
                 f"Yeni şifre, kullanıcının e-posta adresine gönderilmiştir.\n"
-                
             )
-            self.mail_service.gonder(admin_user['email'], admin_konu, admin_icerik)
-
+            send_mail_to_user(admin_user['email'], admin_konu, admin_icerik)
 
         return {"success": True, "message": f"Kullanıcının şifresi sıfırlandı ve mail gönderildi: {user['email']}", "yeni_sifre": yeni_sifre}
-   
+
    
     def kayit_ol(self, username: str, email: str, sifre: str, sifre_tekrar: str) -> dict:
       

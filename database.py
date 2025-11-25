@@ -103,8 +103,10 @@ def tablolar_olustur():
         odunc_tarihi DATE NOT NULL,
         iade_tarihi DATE NOT NULL,
         odeme_durumu BOOLEAN DEFAULT FALSE,
+        ilk_gecikme_mail_tarihi DATETIME NULL,
         FOREIGN KEY (kullanici_id) REFERENCES kullanicilar(id),
         FOREIGN KEY (kitap_id) REFERENCES kitaplar(id)
+       
     )
     """)
 

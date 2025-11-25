@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # Varsayılan admin
     admin_username = "varsayilan admin"
     admin_email = "infocatlary@gmail.com"
-    admin_sifre = "123456"
+    admin_sifre = ""
     hashed_admin_sifre = generate_password_hash(admin_sifre)
 
     cursor.execute(
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # Varsayılan kullanıcı
     user_username = "melisa"
     user_email = "taskaramelisa@gmail.com"
-    user_sifre = "666666"
+    user_sifre = ""
     hashed_user_sifre = generate_password_hash(user_sifre)
     cursor.execute(
         "INSERT INTO kullanicilar (username, email, password) VALUES (%s, %s, %s)",

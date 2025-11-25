@@ -78,25 +78,41 @@ class OduncRepository:
         finally:
             cursor.close()
             conn.close()
-
-   #gelen odunc id si ve gercek iade tarihi ile tabloda arar ve iade edilip edilmedigini veya olup olmadigini kontrol eder
+            
     def odunc_iade(self, odunc_id, gercek_iade_tarihi):
-        cursor = self.conn.cursor(dictionary=True)
-        try:
-            cursor.execute("SELECT * FROM oduncler WHERE id=%s", (odunc_id,))
-            odunc = cursor.fetchone()
-            if not odunc:
-                return "Geçersiz ödünç ID."
-            if odunc['gercek_iade_tarihi'] is not None:
-                return "Bu ödünç zaten iade edilmiş!"
-           
-            self.conn.commit()
-            return odunc
-        except Exception as e:
-            self.conn.rollback()
-            raise e
-        finally:
-            cursor.close()
+      cursor = self.conn.cursor(dictionary=True)
+      try:
+        # Ödünç kaydını kontrol et
+        cursor.execute("SELECT * FROM oduncler WHERE id=%s", (odunc_id,))
+        odunc = cursor.fetchone()
+
+        if not odunc:
+            return "Geçersiz ödünç ID."
+            
+        #  İade edilip edilmediğini kontrol et
+        if odunc['gercek_iade_tarihi'] is not None:
+            return "Bu ödünç zaten iade edilmiş!"
+            
+        # Kitabı iade etme işlemi (UPDATE)
+        cursor.execute(
+            "UPDATE oduncler SET gercek_iade_tarihi = %s WHERE id = %s",
+            (gercek_iade_tarihi, odunc_id)
+        )
+        
+        # Değişiklikleri kaydet
+        self.conn.commit()
+        
+        #  Başarılı mesajı döndür
+        return f"Ödünç ID: {odunc_id} başarıyla iade edildi."
+
+      except Exception as e:
+        self.conn.rollback()
+        # Hata fırlatmak yerine mesajı döndürmek daha kullanıcı dostu olabilir.
+        return f"İade işlemi hatası: {e}" 
+        # Ya da raise e  (önceki kodunuzdaki gibi)
+        
+      finally:
+        cursor.close()
 
    #odunc id nin olup olmadigini ceker
     def get_odunc_by_id(self, odunc_id):
