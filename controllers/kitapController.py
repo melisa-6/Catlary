@@ -15,7 +15,6 @@ class kitapController:
     def kitaplari_goruntule_controller(username, role, aranan_kitap=""):
         #Kullanıcının ya da adminin kitapları görüntülemesini saglar
         #Arama kelimesi verilmişse filtreleme yapar yoksa tüm kitapları döndürür
-
         if aranan_kitap:
             # Arama kelimesi varsa service de uygun fonksiyon ile filtreler
             kitaplar = kitapService.kitap_ara(aranan_kitap)
@@ -25,7 +24,6 @@ class kitapController:
 
         # Kullanıcı admin mi kontrol eder buna gore anasayfalarina geri dondurur
         admin_mi = role == 'admin'
-
         # Route'a döndür
         return kitaplar, admin_mi
     
@@ -57,7 +55,6 @@ class kitapController:
             "baski_yili": baski_yili
         }
 
-        # basarili_mi değerini de ekle
         basarili_mi = True if kitap_id else False
 
         return mesaj, kitap_id, kitap_bilgileri, basarili_mi

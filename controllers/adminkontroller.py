@@ -9,14 +9,9 @@ db_config = {
     "database": "kutuphane_db"
 }
 admin_service = adminService(db_config)
-# controllers/kullanicikontroller.py içinde
-
-# AdminService'e erişim sağlandığını varsayıyoruz
-# from main import admin_service 
 class adminkontroller:
     def tum_adminleri_getir():
-        """Tüm adminleri AdminService üzerinden çeker ve döndürür."""
-        # admin_service, main.py'de oluşturulan AdminService örneği olmalıdır.
+        #Tüm adminleri AdminService üzerinden çeker ve döndürür
         try:
             adminler = admin_service.tum_adminleri_getir() 
             return adminler
@@ -27,8 +22,6 @@ class adminkontroller:
         # Tüm alanların doluluğunu kontrol et
         if not all([username, email, sifre, sifre_tekrar]):
             return {"success": False, "message": "Tüm alanları doldurunuz!"}
-
-        # Service ile ekleme
         admin_id = admin_service.admin_ekle(username, email, sifre, sifre_tekrar)
         if admin_id:
             return {"success": True, "message": f"Admin başarıyla eklendi. ID: {admin_id}"}

@@ -67,17 +67,12 @@ class odunccontroller:
             return "Hata: Ödünç ID geçerli bir sayı formatında değil."
             
         return self.service.odunc_iade(odunc_id)
-    # [OduncController.py]
-
-    # [OduncController.py dosyası]
+  
 
     def odeme_tamamla_controller(self, username, borc_miktari):
         
         try:
-            # Service'ten (success, message) ikilisi döner.
             success, message = self.service.odeme_tamamla_service(username, borc_miktari) 
-            
-            # Rota'ya {'success': False, 'message': 'HATA: Kitap iade edilmeden ceza ödenemez.'} sözlüğünü gönderir.
             return {"success": success, "message": message} 
             
         except Exception as e:

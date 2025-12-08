@@ -11,29 +11,25 @@ class personelService:
         self.admin_service = adminService(db_config)
         self.kullanici_service = kullaniciService(db_config)
 
-    # ------------------------------------------------
-    # PERSONEL EKLE (Mevcut haliyle bırakıldı)
-    # ------------------------------------------------
     def personel_ekle(self, ad_soyad, email, sifre, sifre_tekrar):
 
         if not all([ad_soyad, email, sifre, sifre_tekrar]):
             return {"success": False, "message": "Tüm alanlar doldurulmalıdır."}
 
-        # 2) Şifre eşleşme
         if sifre != sifre_tekrar:
             return {"success": False, "message": "Şifreler eşleşmiyor!"}
-        # Admin kontrol
+        
         if self.admin_service.repo.get_by_username(ad_soyad) or \
         self.admin_service.repo.get_by_email(email):
             return {"success": False, "message": "Bu isim veya email ADMIN tablosunda zaten kayıtlı!"}
-        # Personel kontrol
+        
         if self.repo.personel_getir_username(ad_soyad) or self.repo.get_personel_by_email(email):
             return {"success": False, "message": "Bu isim veya email PERSONEL tablosunda zaten kayıtlı!"}
-        # Kullanıcı kontrol
+        
         if self.kullanici_service.kullanici_var_mi(ad_soyad) or \
         self.kullanici_service.kullanici_email_var_mi(email):
             return {"success": False, "message": "Bu isim veya email KULLANICI tablosunda zaten kayıtlı!"}
-        # Şifre hash ve kayıt
+        
         sifre_hash = generate_password_hash(sifre)
         sonuc = self.repo.personel_ekle(ad_soyad, email, sifre_hash)
         if sonuc:

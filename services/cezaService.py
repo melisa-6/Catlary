@@ -5,7 +5,7 @@ class cezaService:
   
     def __init__(self, db_config):
         self.repo = cezalarRepository(db_config)
-        self.odunc_repo = odunclerRepository(db_config)  # <- buraya db_config ekledik
+        self.odunc_repo = odunclerRepository(db_config) 
         self.repo = cezalarRepository(db_config)
 
     def odeme_durumu_var_mi(self, kullanici_id):

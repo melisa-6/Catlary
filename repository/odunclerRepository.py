@@ -93,7 +93,7 @@ class odunclerRepository:
         if odunc['gercek_iade_tarihi'] is not None:
             return "Bu ödünç zaten iade edilmiş!"
             
-        # Kitabı iade etme işlemi (UPDATE)
+        # Kitabı iade eder
         cursor.execute(
             "UPDATE oduncler SET gercek_iade_tarihi = %s WHERE id = %s",
             (gercek_iade_tarihi, odunc_id)
@@ -107,9 +107,7 @@ class odunclerRepository:
 
       except Exception as e:
         self.conn.rollback()
-        # Hata fırlatmak yerine mesajı döndürmek daha kullanıcı dostu olabilir.
         return f"İade işlemi hatası: {e}" 
-        # Ya da raise e  (önceki kodunuzdaki gibi)
         
       finally:
         cursor.close()
@@ -246,7 +244,6 @@ class odunclerRepository:
             cursor.execute(query, (kullanici_id,))
             conn.commit()
 
-            # işlem başarılı → True
             return True
 
         except Exception as e:
@@ -259,10 +256,8 @@ class odunclerRepository:
             conn.close()
 
     def kullanici_odenecek_cezalarini_getir_repo(self, kullanici_id):
-        """
-        Kullanıcının ödenmemiş (odeme_durumu='Odenecek') tüm kayıtlı cezalarını çeker.
-        Bu fonksiyon 'cezalar' adında ayrı bir tabloya ihtiyac duyar.
-        """
+     # Kullanıcının ödenmemiş (odeme_durumu=0) tüm kayıtlı cezalarını çeker.
+       
         conn = self._get_conn()
         cursor = conn.cursor(dictionary=True)
         try:
@@ -286,12 +281,11 @@ class odunclerRepository:
         kullanici_id = None
         
         try:
-            # Kullanıcı tablonuzun 'kullanicilar' ve username sütununun 'username' olduğunu varsayıyoruz.
             cursor.execute("SELECT id FROM kullanicilar WHERE username = %s", (username,))
             result = cursor.fetchone()
             
             if result:
-                kullanici_id = result[0] # ID'yi tuple'dan çıkar
+                kullanici_id = result[0] 
                 
         except Exception as e:
             print(f"Kullanıcı ID çekilirken hata oluştu: {e}")

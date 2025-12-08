@@ -12,7 +12,6 @@ class AdminRepository:
         try:
             return database.baglanti_olustur(self.db_config)
         except Exception as e:
-            # Bağlantı kurulamıyorsa hemen hata fırlat
             raise Exception(f"Admin DB Bağlantı Hatası: {e}")
     
     def admin_sil(self, username):
@@ -20,13 +19,11 @@ class AdminRepository:
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-
-            # Silme sorgusu
             sql = "DELETE FROM admin WHERE username = %s"
             cursor.execute(sql, (username,))
             conn.commit()
 
-            silinen_sayi = cursor.rowcount  # Kaç satır silindiğini alır
+            silinen_sayi = cursor.rowcount  
 
             return silinen_sayi  # 1: silindi, 0: bulunamadı olur
         except Exception as e:
@@ -81,34 +78,25 @@ class AdminRepository:
             raise e
         finally:
             if conn: conn.close()
-    # repository/veriRepository.py (veya ilgili Repo sınıfınız)
-
-    # repository/veriRepository.py veya ilgili dosya
-
+    
     def adminler(self):
         conn = None
         try:
             conn = self._get_connection()
-            # Bağlantı kurulamazsa burada patlar.
-            
-            # dictionary=True olduğundan emin olun
             cursor = conn.cursor(dictionary=True) 
-            
-            # Sorgu hatalıysa burada patlar.
             cursor.execute("SELECT id, username,email FROM admin") 
             
             adminler = cursor.fetchall()
             return adminler
             
         except Exception as e:
-            # KRİTİK: Hatanın TAM NE OLDUĞUNU GÖSTEREN PRINT SATIRI
             print("-" * 50)
             print(f"!!! KRİTİK VERİTABANI HATASI !!!: {e}") 
             print(f"!!! KOD HATA NEDENİYLE 'None' DÖNDÜRDÜ !!!")
             print("-" * 50)
             
             logging.error(f"Admin listesi çekme hatası: {e}") 
-            return None # Hata oluştuğu için None döndürüyoruz.
+            return None 
             
         finally:
             if conn: conn.close()
@@ -128,7 +116,6 @@ class AdminRepository:
         except Exception as e:
             if conn: conn.rollback()
             logging.error(f"Admin ekleme hatası: {e}")
-            # Hata fırlatmak yerine -1 döndürelim
             return -1 
         finally:
             if conn: conn.close()
@@ -145,7 +132,6 @@ class AdminRepository:
             )
             conn.commit()
             
-            # Etkilenen satır sayısını döndür
             return {"success": True, "message": f"{cursor.rowcount} admin kullanıcısının şifresi güncellendi."}
             
         except Exception as e:
@@ -155,7 +141,6 @@ class AdminRepository:
         finally:
             if conn: conn.close()      
     
-    # ilk admini alır
     def get_first_admin(self):
         conn = None
         try:

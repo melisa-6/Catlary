@@ -12,9 +12,7 @@ class oduncService:
         self.ceza_service = cezaService(db_config)
         self.kullanici_service = kullaniciService(db_config)
         self.kitap_service = kitapService(db_config)
-
-    # Tüm kullanıcıların ödünç gecmisini dondurmesi icin repoya yonlendirir
-    # Tüm kullanıcıların ödünç geçmişi (admin ve personel için)
+        
     def tum_kullanicilarin_odunc_gecmisi(self):
       return self.repo.tum_kullanici_odunc_gecmisi_getir()
 
@@ -83,16 +81,13 @@ class oduncService:
         kullanici_id = self._get_kullanici_id(username)
         
         if kullanici_id is None:
-             return [] # Kullanıcı bulunamazsa boş liste dön
-
-        # Repo'yu doğru örnek (self.repo) üzerinden ve ID ile çağırıyoruz.
+             return [] 
         aktif_oduncler = self.repo.kullanici_aktif_odunc_detaylari_getir_repo(kullanici_id)
         
         gecikmis_kayitlar = []
         bugunun_tarihi = datetime.now().date()
         
         for odunc in aktif_oduncler:
-            # Not: 'beklenen_iade_tarihi' formatının datetime.date objesi olduğundan emin olun.
             if odunc['beklenen_iade_tarihi'] < bugunun_tarihi:
                 gecikmis_kayitlar.append(odunc)
                 
@@ -100,10 +95,6 @@ class oduncService:
 
  
     def odeme_tamamla_service(self, username, borc_miktari):
-        # Kullanılan hata sınıfını import ettiğinizden emin olun (Örn: mysql.connector.Error)
-        # from mysql.connector import Error as MySQLError 
-        # veya sadece 'Exception' bırakıp log çıktısına güvenin.
-
         kullanici_id = self._get_kullanici_id(username)
         
         if kullanici_id is None:
@@ -114,35 +105,21 @@ class oduncService:
         if not odenmemis_cezalar:
             return True, "Ödenecek aktif borç bulunmamaktadır."
             
-        # 1. PYTHON IÇINDEKI IADE KONTROLÜ
         for ceza in odenmemis_cezalar:
             ceza_id = ceza['ceza_id'] 
             kitap_iade_edildi_mi = self.repo.cezanin_iade_edilmis_olup_olmadigini_kontrol_et(ceza_id)
             
             if not kitap_iade_edildi_mi:
-                # 🔥 Eğer buraya düşerse, net hata mesajı döner ve alttaki try bloğu çalışmaz.
                 mesaj = f"HATA: Ödeme yapabilmeniz için {ceza_id} ID'li cezaya konu olan kitabı önce iade etmelisiniz."
                 return False, mesaj 
                 
-        # 3. Ödeme İşlemi
         try:
             sonuc = self.repo.cezalar_odendi_yap_repo(kullanici_id)
             
             if sonuc:
                 return True, f"{str(borc_miktari)} TL tutarındaki borç başarıyla ödendi."
             else:
-                # Bu, ödenecek ceza bulunmadığında veya güncelleme başarısız olduğunda tetiklenir.
                 return False, "HATA: Veritabanı güncellemesi sırasında bir sorun oluştu."
-                
-        except DBError as e: # DBError yerine kullandığınız spesifik MySQL hata sınıfını yazın!
-            
-            # MySQL/Constraint/Trigger 1644 hatasını yakala
-            if getattr(e, 'errno', None) == 1644:
-                # Service'in kendi kontrolü başarısız olsa bile, MySQL'in net mesajını kullanıcıya ver.
-                return False, f"HATA: Kitap iade edilmeden ceza ödenemez. Lütfen önce iade yapınız." 
-            else:
-                print(f"Bilinmeyen MySQL Hatası: {e}")
-                return False, "HATA: Veritabanında beklenmeyen bir sorun oluştu."
                 
         except Exception as e:
             print(f"Genel Python Hatası: {e}")

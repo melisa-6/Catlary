@@ -12,7 +12,7 @@ class cezaController:
         except Exception as e:
             print(f"Controller hatası - ödeme yap: {e}")
             return {"toplam_tutar": 0, "success": False, "message": "Ödeme işlemi başarısız."}
-    # Tüm cezaları getir (admin)
+
     def tum_cezalari_getir(self):
         try:
             return self.ceza_service.tum_cezalari_getir()

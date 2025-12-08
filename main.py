@@ -1,5 +1,6 @@
 # ------------------- FLASK VE TEMEL KÜTÜPHANELER -------------------
 
+from mysql.connector.errors import DatabaseError, ProgrammingError, IntegrityError
 from ssl import SSLError
 from flask import Flask, abort, flash, request, session, render_template, redirect, url_for, jsonify,g
 from functools import wraps
@@ -244,12 +245,13 @@ def kullanici_ekle_route():
         return redirect(url_for("personel_sayfasi"))
 
     return render_template("admin.html", username=getattr(g, "username", ""))
+
 @app.route('/kendiborc_ode/<username>', methods=['GET', 'POST'])
 @login_required
 def kendiborc_ode(username):
-    
+
     is_api_request = request.accept_mimetypes.best == "application/json"
-    
+
     if username != g.username:
         mesaj = "Bu işlem için yetkiniz yok."
         if is_api_request:
@@ -257,7 +259,7 @@ def kendiborc_ode(username):
         flash(mesaj, "danger")
         return redirect(url_for("kullanici_sayfasi", username=g.username))
 
-    toplam_borc = odunc_controller_instance.kullanici_toplam_borc_miktari_getir_controller(username)
+    toplam_borc = ceza_controller_instance.borc_getir_controller(username)
 
     if toplam_borc is None:
         mesaj = "Borç bilgisi alınamadı."
@@ -265,23 +267,26 @@ def kendiborc_ode(username):
             return jsonify({"success": False, "message": mesaj}), 500
         flash(mesaj, "danger")
         return redirect(url_for("kullanici_sayfasi", username=username))
-    
+
     if request.method == "POST":
         if toplam_borc <= 0:
             mesaj = "Ödenecek aktif borcunuz bulunmamaktadır."
             if is_api_request:
                 return jsonify({"success": False, "message": mesaj}), 400
-            
             flash(mesaj, "info")
             return redirect(url_for("kullanici_sayfasi", username=username))
-        sonuc = odunc_controller_instance.odeme_tamamla_controller(username, toplam_borc)
+
+        sonuc = ceza_controller_instance.ceza_odendi_yap(
+            kullanici_id=g.user_id,
+            odeme_yapilsin_mi=True,
+            admin=False
+        )
+
         if not sonuc.get("success"):
             mesaj = sonuc.get("message", "Ödeme gerçekleştirilemedi.")
-            
             if is_api_request:
                 return jsonify({"success": False, "message": mesaj}), 400
-            
-            flash(mesaj, "danger")  
+            flash(mesaj, "danger")
             return redirect(url_for("kendiborc_ode", username=username))
 
         if is_api_request:
@@ -289,15 +294,15 @@ def kendiborc_ode(username):
 
         flash("Borç ödeme işlemi başarıyla tamamlandı.", "success")
         return redirect(url_for("kullanici_sayfasi", username=username))
-    if request.method == "GET":
-        if is_api_request:
-            return jsonify({
-                "success": True,
-                "toplam_borc": toplam_borc,
-                "message": "Borç bilgisi getirildi"
-            }), 200
-        
-        return render_template("borcode.html", toplam_borc=toplam_borc, username=username)
+
+    if is_api_request:
+        return jsonify({
+            "success": True,
+            "toplam_borc": toplam_borc,
+            "message": "Borç bilgisi getirildi"
+        }), 200
+
+    return render_template("borcode.html", toplam_borc=toplam_borc, username=username)
 
 @app.route('/kullanici_durum_degistir', methods=['POST'])
 @admin_or_personel_required
@@ -347,8 +352,6 @@ def kitaplari_goruntule():
     username = g.username
     role = g.role 
     aranan_kitap = request.args.get('aranacak_kitap', '')
-
-    # Kitapları controller’dan al
     kitaplar, admin_mi = kitapController.kitaplari_goruntule_controller(
         username, role, aranan_kitap
     )
@@ -358,7 +361,6 @@ def kitaplari_goruntule():
     else:
         admin_mi = False
 
-    # JSON isteği gelmişse JSON döner
     if request.accept_mimetypes.best == "application/json":
         return jsonify({
             "kitaplar": make_json_compatible(kitaplar),
@@ -380,8 +382,7 @@ def kitaplari_goruntule():
 @admin_or_personel_required 
 def kullanicilar():
     username = g.username
-    role = g.role  # admin / personel
-    # DB’den tüm kullanıcıları çeker
+    role = g.role 
     try:
         kullanicilar_listesi = kullanici_islemleri.tum_kullanicilari_getir()
     except Exception as e:
@@ -669,7 +670,6 @@ def ceza_tablosunu_goster():
         print("TİPİ:", type(cezalar))
         
         cezalar_json = make_json_compatible(cezalar)
-        # Bu satır çalışırken bir hata oluşursa, 'cezalar' hala yukarıdaki boş liste kalır.
         cezalar = ceza_controller_instance.tum_cezalari_getir()
         cezalar_json = make_json_compatible(cezalar)
 
@@ -824,6 +824,7 @@ def ceza_sorgula_api_route():
         "borc_miktari": sorgu_sonucu['miktar'],
         "username": sorgu_sonucu['username']
     }), 200
+
 @app.route('/cezaode', methods=['POST'])
 @admin_or_personel_required
 def ceza_ode():
@@ -840,6 +841,12 @@ def ceza_ode():
 
     try:
         success, message = ceza_controller_instance.ceza_ode(ceza_id)
+
+    except (DatabaseError, IntegrityError, ProgrammingError) as e:
+        if "1644" in str(e) or "45000" in str(e):
+            return jsonify({"success": False, "message": "Kitap iade edilmeden ceza ödenemez."}), 400
+        
+        return jsonify({"success": False, "message": "Veritabanı hatası oluştu."}), 500
 
     except Exception as e:
         print("CEZA ÖDEME HATA:", e)

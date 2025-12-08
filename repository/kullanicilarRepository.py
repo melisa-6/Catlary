@@ -151,7 +151,7 @@ class kullanicilarRepository:
             sorgu = "UPDATE kullanicilar SET aktiflik = %s WHERE id = %s"
             cursor.execute(sorgu, (aktiflik_degeri, user_id))
             conn.commit()
-            return cursor.rowcount # Güncellenen satır sayısı
+            return cursor.rowcount 
 
         except Exception as e:
             if conn:

@@ -1,4 +1,4 @@
-# controllers/kullanici_controller.py
+
 import traceback
 from flask import flash, session, request, jsonify, redirect, url_for
 from werkzeug.security import check_password_hash
@@ -50,11 +50,10 @@ class kullanicikontroller:
         )
         return redirect(url_for('anasayfa'))
         # Kullanıcıyı ana sayfaya yönlendir
-    import traceback
+  
 
     def giris_yap_controller(form, SECRET):
         print("\n--- [DEBUG] Giriş işlemi başladı ---")
-
         try:
             email = form.get('email')
             sifre = form.get('password') or form.get('sifre')
@@ -66,7 +65,7 @@ class kullanicikontroller:
                  if is_web: return {"basarili": False, "mesaj": mesaj} 
                  return jsonify({"basarili": False, "mesaj": mesaj}), 400
 
-            # Rol Bazlı Veri Çekme
+            # Rol Bazlı Veri Çeker
             user_data = None
             if islem == 'admin':
                 user_data = admin_service.get_admin_by_email(email)
@@ -146,18 +145,12 @@ class kullanicikontroller:
     #ilgili service fonksiyonuna yonlendirir
         return kullaniciService.tum_kullanicilari_getir()
 
-    # controllers/KullaniciController.py içinde
-
     def kullanici_sifre_degistir_controller(self, user_id, form_data):
-        """Normal kullanıcının kendi şifresini değiştirmesini sağlar."""
-        
-        # 1. Formdan gerekli bilgileri alın
+        # formdan gerekli bilgileri alır
         eski_sifre = form_data.get('eski_sifre')
         yeni_sifre = form_data.get('yeni_sifre')
         yeni_sifre_tekrar = form_data.get('yeni_sifre_tekrar')
 
-        # 2. Service katmanını çağırın
-        # (user_id, g.user_id'den geliyor)
         sonuc = kullanici_service.sifre_degistir(
             user_id, 
             eski_sifre, 

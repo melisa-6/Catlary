@@ -9,7 +9,7 @@ def setup_database():
     service = VeriService(conn)
 
     try:
-        # Varsayılan şifreler (PBKDF2 formatında)
+        # Varsayılan şifreler 
         hashed1 = generate_password_hash('123456')
         hashed2 = generate_password_hash('1234567')
         personel1_sifre_hash = generate_password_hash('sifrepersonel1')
@@ -17,7 +17,7 @@ def setup_database():
         kullanici_sifre = generate_password_hash('666666')
         bugunun_tarihi = date.today()
 
-        # Personelleri ekle (aynı email tekrar ederse hata verir)
+        # Personelleri ekler
         cursor.execute("""
         INSERT INTO personeller (isim, email, password, giristarihi)
         VALUES (%s, %s, %s, %s)
@@ -28,7 +28,7 @@ def setup_database():
         VALUES (%s, %s, %s, %s)
         """, ('Ayşe Demir', 'ayse.demir@catlarykutuphane.com', personel2_sifre_hash, '2024-05-20'))
 
-        # Adminleri ekle
+        # Adminleri ekler
         cursor.execute("""
         INSERT INTO admin (username, email, password)
         VALUES (%s, %s, %s)
@@ -39,13 +39,13 @@ def setup_database():
         VALUES (%s, %s, %s)
         """, ('admin2', 'admin2@catlarykutuphane.com', hashed2))
 
-        # Kullanıcıları ekle
+        # Kullanıcıları ekler
         cursor.execute("""
         INSERT INTO kullanicilar (username, email, password)
         VALUES (%s, %s, %s)
         """, ('Melisa', 'taskaramelisa@gmail.com', kullanici_sifre))
 
-        # Değişiklikleri kaydet
+        # Değişiklikleri kaydeder
         conn.commit()
         print("Varsayılan veriler başarıyla eklendi!")
 

@@ -6,7 +6,7 @@ class cezalarRepository:
         self.db_config = db_config
 
     def ceza_detaylari_getir(self, ceza_id):
-        """Belirtilen Ceza ID'sine ait ceza miktarı, ödeme durumu ve kullanıcı adını getirir."""
+        #Belirtilen Ceza ID'sine ait ceza miktarı, ödeme durumu ve kullanıcı adını getirir
         conn = database.baglanti_olustur(self.db_config)
         cursor = conn.cursor(dictionary=True)
         try:
@@ -83,10 +83,9 @@ class cezalarRepository:
             conn.close()
  
     def cezanin_iade_edilmis_olup_olmadigini_kontrol_et(self, ceza_id):
-        """
-        Belirtilen ceza ID'sine konu olan ödünç kaydının iade edilip edilmediğini kontrol eder 
-        (cezalar tablosundaki iade_tarihi NULL değilse iade edilmiştir).
-        """
+        #Belirtilen ceza ID'sine konu olan ödünç kaydının iade edilip edilmediğini kontrol eder 
+        #(cezalar tablosundaki iade_tarihi NULL değilse iade edilmiştir).
+        
         conn = database.baglanti_olustur(self.db_config)
         cursor = conn.cursor(dictionary=True)
         try:
@@ -137,7 +136,6 @@ class cezalarRepository:
 
 
     def ceza_durumu_getir(self, ceza_id):
-        """Ceza odeme_durumu ve iade_tarihi getirir"""
         conn = database.baglanti_olustur(self.db_config)
         cursor = conn.cursor(dictionary=True)
         try:
@@ -152,7 +150,6 @@ class cezalarRepository:
             conn.close()
 
     def ceza_ode(self, ceza_id):
-        """Ceza odeme_durumu = 1 yapar"""
         conn = database.baglanti_olustur(self.db_config)
         cursor = conn.cursor()
         try:
