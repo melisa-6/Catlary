@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sistem Yöneticileri</title>
+
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background: linear-gradient(
+            rgba(168, 218, 220, 0.4),
+            rgba(69, 123, 157, 0.4)
+          ),
+          url("{{ url_for('static', filename='img/bg.jpg') }}") no-repeat center
+            center fixed;
+        background-size: cover;
+        background-blend-mode: overlay;
+        background-attachment: fixed;
+        color: #1d3557;
+      }
+
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 50px 20px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.2em;
+        color: #1d3557;
+        font-weight: 700;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 80%;
+        max-width: 900px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        border-radius: 14px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.85);
+        animation: fadeIn 0.8s ease-in-out;
+        backdrop-filter: blur(6px);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: center;
+      }
+
+      th {
+        background-color: #457b9d;
+        color: white;
+        font-weight: 600;
+        font-size: 1.05em;
+      }
+
+      tr:nth-child(even) {
+        background-color: rgba(168, 218, 220, 0.25);
+      }
+
+      tr:hover {
+        background-color: rgba(69, 123, 157, 0.25);
+        transition: 0.3s;
+      }
+
+      .empty-message {
+        padding: 20px;
+        background: rgba(255, 245, 230, 0.7);
+        border-left: 5px solid #e76f51;
+        border-radius: 10px;
+        font-weight: 600;
+        margin-top: 20px;
+        text-align: center;
+        color: #8d6d45;
+      }
+
+      footer {
+        text-align: center;
+        padding: 20px 0;
+      }
+
+      footer a {
+        text-decoration: none;
+        color: white;
+        font-weight: 500;
+        font-size: 0.9em;
+        background-color: #457b9d;
+        padding: 10px 16px;
+        border-radius: 8px;
+        transition: 0.3s;
+      }
+
+      footer a:hover {
+        background-color: #1d3557;
+      }
+
+      @media (max-width: 768px) {
+        th,
+        td {
+          padding: 10px 8px;
+          font-size: 0.9em;
+        }
+
+        h2 {
+          font-size: 1.7em;
+        }
+
+        table {
+          width: 90%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        table {
+          width: 95%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="content">
+      <h2>Sistem Yöneticileri Listesi</h2>
+
+      {% if adminler %}
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Kullanıcı Adı</th>
+          <th>Email</th>
+        </tr>
+
+        {% for admin in adminler %}
+        <tr>
+          <td>{{ admin.id }}</td>
+          <td>{{ admin.username }}</td>
+          <td>{{ admin.email }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p class="empty-message">Sistemde kayıtlı yönetici bulunmamaktadır.</p>
+      {% endif %}
+    </div>
+
+    <footer>
+      <a href="{{ url_for('admin_anasayfa') }}">← Geri Dön</a>
+    </footer>
+  </body>
+</html>

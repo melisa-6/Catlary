@@ -14,29 +14,20 @@
         background-size: cover;
         color: #333;
       }
-
-      /* İçeriği saran şeffaf kutu */
       .content-wrapper {
         max-width: 950px;
         margin: auto;
         padding: 30px;
-        background: rgba(
-          255,
-          255,
-          255,
-          0.85
-        ); /* sadece içerik kısmı hafif şeffaf */
+        background: rgba(255, 255, 255, 0.85);
         border-radius: 12px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
       }
-
       h2 {
         text-align: center;
         margin-bottom: 25px;
-        color: #009688; /* turkuaz tema rengi */
+        color: #009688;
         font-size: 28px;
       }
-
       input[type="text"] {
         display: block;
         margin: 0 auto 20px auto;
@@ -47,34 +38,25 @@
         font-size: 15px;
         transition: 0.3s;
       }
-
       input[type="text"]:focus {
         outline: none;
         border-color: #009688;
         box-shadow: 0 0 8px rgba(0, 150, 136, 0.3);
       }
-
       table {
         border-collapse: collapse;
         width: 100%;
-        background: rgba(
-          255,
-          255,
-          255,
-          0.95
-        ); /* tablo arka planı biraz daha opak */
+        background: rgba(255, 255, 255, 0.95);
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
-
       th,
       td {
         padding: 14px 12px;
         text-align: left;
         border-bottom: 1px solid #eee;
       }
-
       th {
         background-color: #009688;
         color: white;
@@ -82,31 +64,25 @@
         font-size: 14px;
         letter-spacing: 0.5px;
       }
-
       tr:nth-child(even) {
         background-color: #f9f9f9;
       }
-
       tr:hover {
         background-color: #e0f2f1;
         transition: 0.3s;
       }
-
       .odendi {
         color: #2ecc71;
         font-weight: 600;
       }
-
       .odenmedi {
         color: #e74c3c;
         font-weight: 600;
       }
-
       footer {
         margin-top: 30px;
         text-align: center;
       }
-
       footer a {
         display: inline-block;
         text-decoration: none;
@@ -117,11 +93,9 @@
         transition: 0.3s;
         font-size: 15px;
       }
-
       footer a:hover {
         background-color: #00796b;
       }
-
       @media (max-width: 768px) {
         th,
         td {
@@ -152,7 +126,6 @@
             <th>Ceza Miktarı (₺)</th>
             <th>Ödünç Tarihi</th>
             <th>İade Tarihi</th>
-            <!-- Gerçek iade -->
             <th>Ödenme Durumu</th>
           </tr>
         </thead>
@@ -163,12 +136,12 @@
             <td>{{ ceza.kitap_adi or 'BULUNAMADI' }}</td>
             <td>{{ "%.2f"|format(ceza.ceza_miktari) }} TL</td>
             <td>{{ ceza.odunc_tarihi or '-' }}</td>
-            <td>{{ ceza.gercek_iade_tarihi or 'Henüz iade edilmedi' }}</td>
-
+            <td>{{ ceza.iade_tarihi or 'Henüz iade edilmedi' }}</td>
             <td
-              class="{% if ceza.odeme_durumu == 1 %}odendi{% else %}odenmedi{% endif %}"
+              class="{% if ceza.odeme_durumu in [1, True, '1', 'True'] %}odendi{% else %}odenmedi{% endif %}"
             >
-              {% if ceza.odeme_durumu == 1 %}Ödendi{% else %}Ödenmedi{% endif %}
+              {% if ceza.odeme_durumu in [1, True, '1', 'True'] %}Ödendi{% else
+              %}Ödenmedi{% endif %}
             </td>
           </tr>
           {% endfor %} {% else %}
@@ -182,7 +155,7 @@
       </table>
 
       <footer>
-        <a href="/kullanici/{{ username }}">← Geri Dön</a>
+        <a href="{{ url_for('kullanici_sayfasi') }}">← Geri Dön</a>
       </footer>
     </div>
 

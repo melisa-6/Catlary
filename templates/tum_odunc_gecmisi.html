@@ -176,7 +176,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for odunc in odunc_gecmisi %}
+          {% for odunc in tum_odunc_gecmisi %}
           <tr>
             <td>{{ odunc.id }}</td>
             <td>{{ odunc.username }}</td>
@@ -191,7 +191,19 @@
     </div>
 
     <footer>
-      <a href="/admin/{{ username }}">← Geri Dön</a>
+      {% if role == "admin" %}
+      <a href="{{ url_for('admin_anasayfa', username=username) }}"
+        >← Geri Dön</a
+      >
+      {% elif role == "personel" %}
+      <a href="{{ url_for('personel_sayfasi', username=username) }}"
+        >← Geri Dön</a
+      >
+      {% else %}
+      <a href="{{ url_for('kullanici_sayfasi', username=username) }}"
+        >← Geri Dön</a
+      >
+      {% endif %}
     </footer>
 
     <script>

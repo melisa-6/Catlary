@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Personel Yönetim Paneli</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+
+    <style>
+      /* Pastel Renk Paleti */
+      :root {
+        --color-pastel-bg: #f5f5f5; /* Açık Gri/Beyaz */
+        --color-pastel-primary: #a8dadc; /* Açık Mavi */
+        --color-pastel-secondary: #457b9d; /* Koyu Mavi */
+        --color-pastel-success: #70e000; /* Açık Yeşil */
+        --color-pastel-danger: #ffb703; /* Pastel Sarı/Turuncu */
+        --color-pastel-warning: #ffb4a2; /* Pastel Somon */
+        --color-text: #333;
+        --color-border: #e0e0e0;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding: 40px 20px;
+        text-align: center;
+        background-color: var(--color-pastel-bg);
+        color: var(--color-text);
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Sayfa içeriğini dikey ortala */
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      /* Başlık ve Geri Dön Linki */
+      h2 {
+        margin-bottom: 25px;
+        color: var(--color-pastel-secondary);
+      }
+      .back-link {
+        color: var(--color-pastel-secondary);
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 30px; /* Tablonun altına boşluk bırak */
+        display: block;
+      }
+      .back-link:hover {
+        text-decoration: underline;
+        color: var(--color-pastel-primary);
+      }
+
+      /* Tablo Stili - Ortalanmış ve Yumuşak */
+      .table-container {
+        width: 95%;
+        max-width: 1100px;
+        margin: 0 auto; /* Dikeyde ortalamayı sağlar */
+        background: white;
+        border-radius: 12px; /* Yumuşak köşeler */
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+      }
+      th {
+        background-color: var(--color-pastel-primary); /* Pastel ana renk */
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9em;
+      }
+      tr:hover td {
+        background-color: #f0f8ff; /* Çok açık mavi hover efekti */
+      }
+
+      /* Buton Stilleri */
+      .action-group {
+        display: flex;
+        gap: 8px;
+      }
+      .action-group button,
+      .gizli-alan button {
+        padding: 8px 12px;
+        font-size: 0.9em;
+        cursor: pointer;
+        border: none;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+      }
+
+      .aktif-btn {
+        background-color: var(--color-pastel-success);
+        color: white;
+      }
+      .pasif-btn {
+        background-color: var(--color-pastel-danger);
+        color: white;
+      }
+      .sifirla-btn {
+        background-color: var(--color-pastel-warning);
+        color: var(--color-text);
+      }
+
+      /* Durum Etiketleri */
+      .status-aktif {
+        color: var(--color-pastel-success);
+        font-weight: bold;
+      }
+      .status-pasif {
+        color: var(--color-pastel-danger);
+        font-weight: bold;
+      }
+
+      /* Gizli Alan Stili (Modal) */
+      .gizli-alan {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4); /* Daha hafif gölge */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .gizli-alan > div {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Personel Yönetim Paneli 👥</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% endwith
+    %} {% if personeller %}
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Adı Soyadı</th>
+            <th>Email</th>
+            <th>Giriş Tarihi</th>
+            <th>Durum</th>
+            <th>İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for personel in personeller %}
+          <tr>
+            <td>{{ personel.id }}</td>
+            <td>{{ personel.isim }}</td>
+            <td>{{ personel.email }}</td>
+            <td>{{ personel.giristarihi }}</td>
+            <td>
+              {% if personel.aktif == 1 %}
+              <span class="status-aktif">Aktif</span>
+              {% else %}
+              <span class="status-pasif">Pasif</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-group">
+                <form
+                  action="{{ url_for('personel_aktiflik_degistir_route') }}"
+                  method="POST"
+                  style="display: inline"
+                >
+                  <input
+                    type="hidden"
+                    name="personel_id"
+                    value="{{ personel.id }}"
+                  />
+                  <input
+                    type="hidden"
+                    name="yeni_durum"
+                    value="{{ '0' if personel.aktif == 1 else '1' }}"
+                  />
+                  <button
+                    type="submit"
+                    class="{{ 'pasif-btn' if personel.aktif == 1 else 'aktif-btn' }}"
+                  >
+                    {{ 'Pasif Yap' if personel.aktif == 1 else 'Aktif Yap' }}
+                  </button>
+                </form>
+
+                <button
+                  onclick="toggleSifirlaAlani('{{ personel.email }}')"
+                  class="sifirla-btn"
+                >
+                  Şifre Sıfırla
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p>Sistemde kayıtlı personel bulunmamaktadır.</p>
+    {% endif %}
+
+    <a href="{{ url_for('admin_anasayfa') }}" class="back-link"
+      >← Yönetici Ana Sayfasına Dön</a
+    >
+
+    <div id="sifirla_alani" class="gizli-alan" style="display: none">
+      <div>
+        <h3>Personel Şifresini Sıfırlama Onayı</h3>
+        <p id="sifirla_mesaj"></p>
+        <p style="color: var(--color-pastel-danger); font-size: 0.9em">
+          Bu işlem geri alınamaz ve personele yeni şifresi e-posta ile
+          gönderilecektir.
+        </p>
+        <form
+          action="{{ url_for('admin_personel_sifre_sifirla_route') }}"
+          method="POST"
+        >
+          <input type="hidden" name="personel_email" id="sifirla_email_input" />
+
+          <button type="submit" class="pasif-btn" style="margin-right: 10px">
+            Onayla ve Sıfırla
+          </button>
+          <button
+            type="button"
+            onclick="document.getElementById('sifirla_alani').style.display='none'"
+            style="background-color: #6c757d"
+          >
+            İptal
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Modal açma mantığı güncellendi
+      function toggleSifirlaAlani(email) {
+        const alan = document.getElementById("sifirla_alani");
+        document.getElementById("sifirla_email_input").value = email;
+        document.getElementById("sifirla_mesaj").innerHTML =
+          "<strong>" +
+          email +
+          "</strong> adresli personelin şifresi rastgele sıfırlanacaktır.";
+        alan.style.display = "flex"; // Modal'ı göster
+      }
+    </script>
+  </body>
+</html>

@@ -1,15 +1,15 @@
 import mysql.connector
 from werkzeug.security import generate_password_hash
+from datetime import date 
 
-#Veritabanı bağlantısı oluşturmak
 def baglanti_olustur(db_config=None):
-    import mysql.connector
     cfg = db_config or {
         "host": "localhost",
         "user": "melisa",
         "password": "Mtz0504*",
         "database": "kutuphane_db"
-    }
+    }    
+    
     return mysql.connector.connect(
         host=cfg["host"],
         user=cfg["user"],
@@ -17,28 +17,6 @@ def baglanti_olustur(db_config=None):
         database=cfg["database"]
     )
 
-
-# Veritabanını silmek
-def db_sil():
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="melisa",
-        password="Mtz0504*"
-    )
-    cursor = conn.cursor()
-    cursor.execute("DROP DATABASE IF EXISTS kutuphane_db")
-    conn.close()
-
-# Veritabanını oluşturmak
-def db_olustur():
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="melisa",
-        password="Mtz0504*"
-    )
-    cursor = conn.cursor()
-    cursor.execute("CREATE DATABASE IF NOT EXISTS kutuphane_db")
-    conn.close()
 def tablolar_olustur():
     conn = baglanti_olustur()
     cursor = conn.cursor()
@@ -51,17 +29,7 @@ def tablolar_olustur():
         aktiflik BOOLEAN DEFAULT FALSE,
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL
-    )
-    """)
-
-    # Admin tablosu
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS admin (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(255) UNIQUE NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL
-    )
+    );
     """)
 
     # Kitaplar tablosu
@@ -70,30 +38,30 @@ def tablolar_olustur():
         id INT AUTO_INCREMENT PRIMARY KEY,
         isim VARCHAR(255) NOT NULL,
         yazar VARCHAR(255) NOT NULL,
-         kategori SET('Roman','Bilim','Tarih','Felsefe','Macera','Korku','Fantastik') DEFAULT 'Roman',
+        kategori SET('Roman','Bilim','Tarih','Felsefe','Macera','Korku','Fantastik') DEFAULT 'Roman',
         sayfa_sayisi INT NOT NULL,
         stok INT DEFAULT 0,
         yayinevi VARCHAR(50) NOT NULL,
         raf_no INT DEFAULT 0,
         baski_yili INT DEFAULT 0
-    )
+    );
     """)
 
-    # Ödünç tablosu
+    # Ödünçler tablosu
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS oduncler (
         id INT AUTO_INCREMENT PRIMARY KEY,
         kullanici_id INT NOT NULL,
         kitap_id INT NOT NULL,
         odunc_tarihi DATE NOT NULL,
-        gerekli_iade_tarihi DATE,
-        gercek_iade_tarihi DATE,
+        gerekli_iade_tarihi DATE NULL,
+        gercek_iade_tarihi DATE NULL,
         FOREIGN KEY (kullanici_id) REFERENCES kullanicilar(id),
         FOREIGN KEY (kitap_id) REFERENCES kitaplar(id)
-    )
+    );
     """)
 
-    # Ceza tablosu
+    # Cezalar tablosu
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS cezalar (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -102,32 +70,47 @@ def tablolar_olustur():
         ceza_miktari DECIMAL(10,2) NOT NULL,
         odunc_tarihi DATE NOT NULL,
         iade_tarihi DATE NOT NULL,
-        odeme_durumu BOOLEAN DEFAULT FALSE,
+        odeme_durumu TINYINT(1) DEFAULT 0,
         ilk_gecikme_mail_tarihi DATETIME NULL,
+        son_mail_tarihi DATE NULL,
         FOREIGN KEY (kullanici_id) REFERENCES kullanicilar(id),
         FOREIGN KEY (kitap_id) REFERENCES kitaplar(id)
-       
-    )
+    );
     """)
 
-    # Varsayılan admin eklemek (kütüphane e-postası)
-    hashed1 = generate_password_hash('123456')
-    hashed2 = generate_password_hash('1234567')
+    # Admin tablosu
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS admins (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL
+    );
+    """)
 
+    # Personeller tablosu
     cursor.execute("""
-    INSERT IGNORE INTO admin (username, email, password)
-    VALUES ('admin', 'infocatlary@gmail.com', %s)
-    """, (hashed1,))
-
+    CREATE TABLE IF NOT EXISTS personeller (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        isim VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        giristarihi DATE NOT NULL,
+        aktif BOOLEAN NOT NULL DEFAULT 1
+    );
+    """)
     cursor.execute("""
-    INSERT IGNORE INTO admin (username, email, password)
-    VALUES ('admin2', 'admin2@catlarykutuphane.com', %s)
-    """, (hashed2,))
-    
-    cursor.execute("""
-INSERT IGNORE INTO kullanicilar (username, email, password)
-VALUES ('Melisa', 'taskaramelisa@gmail.com', %s)
-""", (generate_password_hash('666666'),))
-   
+ CREATE TABLE IF NOT EXISTS MailKuyrugu (
+    MailId INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    AliciMail VARCHAR(255) NOT NULL,
+    AliciAdi VARCHAR(255) NOT NULL,
+    Konu VARCHAR(255) NOT NULL,
+    Mesajicerigi TEXT NOT NULL,
+    GonderimDurumu ENUM('Beklemede', 'Gonderiliyor', 'Gonderildi', 'Hata olustu') NOT NULL,
+    BeklemedeOlusmaZamaniti TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    HataDetaylari TEXT NULL
+);
+    """)
     conn.commit()
     conn.close()
+    print("Tablolar oluşturuldu.")

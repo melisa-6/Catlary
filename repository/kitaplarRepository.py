@@ -1,7 +1,10 @@
 
+from errno import errorcode
+
+import mysql
 import database
 
-class KitaplarRepository:
+class kitaplarRepository:
     def __init__(self, db_config=None):
         try:
             self.conn = database.baglanti_olustur(db_config)
@@ -66,23 +69,23 @@ class KitaplarRepository:
             cursor.close()
 
 
-    #parametre gelen id ile kitabi siler
-    def kitap_sil_by_id(self, kitap_id):
-        cursor = self.conn.cursor(dictionary=True)
+    def kitap_sil_db_islemi(self, kitap_id):
+        cursor = self.conn.cursor()
         try:
-            cursor.execute("SELECT * FROM kitaplar WHERE id=%s", (kitap_id,))
-            kitap = cursor.fetchone()
-            if not kitap:
-                return f"Kitap bulunamadi: ID {kitap_id}", None
-
             cursor.execute("DELETE FROM kitaplar WHERE id=%s", (kitap_id,))
             self.conn.commit()
-            return f"Kitap basariyla silindi! (ID: {kitap_id})", kitap
-        except Exception as e:
+            if cursor.rowcount == 0:
+                return f"Kitap ID {kitap_id} bulunamadı veya silinmiş.", None
+            return f"Kitap başarıyla silindi. (ID: {kitap_id})", True
+        except mysql.connector.Error as e:
             self.conn.rollback()
-            return f"Hata olustu: {str(e)}", None
+            if e.errno == 1451:
+                return "Bu kitap ödünç kayıtları içerdiği için silinemiyor.", None
+            return f"Veritabanı Hatası: {e.msg}", None
         finally:
             cursor.close()
+
+
     def get_by_id(self, kitap_id):
         cursor = self.conn.cursor(dictionary=True)
         try:

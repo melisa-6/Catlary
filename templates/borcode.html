@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Borç Ödeme</title>
+    <style>
+      /* --- Stil Kodları (Kullanıcının sağladığı CSS) --- */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f0f4f8, #d6f0f0);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #333;
+      }
+
+      header {
+        width: 100%;
+        text-align: center;
+        padding: 25px 0;
+        color: #4b4b8f;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        font-size: 28px;
+        font-weight: bold;
+        background-color: #e0f7fa;
+      }
+
+      main {
+        flex: 1;
+        width: 90%;
+        max-width: 500px;
+        background: #ffffffcc;
+        margin: 30px 0;
+        padding: 30px 25px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.8s ease-in-out;
+        text-align: center;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      p {
+        font-size: 18px;
+        margin: 20px 0;
+      }
+
+      .borc {
+        font-size: 26px;
+        font-weight: bold;
+        color: #ff6b6b;
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .alert-danger {
+        background-color: #ffe5e5;
+        color: #d32f2f;
+      }
+
+      .alert-success {
+        background-color: #e5fff2;
+        color: #388e3c;
+      }
+
+      .alert-info {
+        background-color: #e1f5fe;
+        color: #0277bd;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="month"] {
+        width: 100%;
+        padding: 12px 15px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        transition: 0.3s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #4b4b8f;
+        box-shadow: 0 0 8px rgba(75, 75, 143, 0.2);
+      }
+
+      .button {
+        background: linear-gradient(90deg, #4b4b8f, #6a6aff);
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .button:hover {
+        background: linear-gradient(90deg, #6a6aff, #4b4b8f);
+        transform: scale(1.05);
+      }
+
+      a {
+        display: inline-block;
+        margin-top: 25px;
+        text-decoration: none;
+        color: #4b4b8f;
+        font-weight: 600;
+        transition: 0.3s;
+      }
+
+      a:hover {
+        color: #1a237e;
+      }
+
+      @media (max-width: 480px) {
+        main {
+          padding: 20px;
+        }
+        .borc {
+          font-size: 22px;
+        }
+        .button,
+        input[type="text"],
+        input[type="number"],
+        input[type="month"] {
+          width: 100%;
+        }
+      }
+      /* --- Stil Kodları Bitişi --- */
+    </style>
+  </head>
+
+  <body>
+    <!-- g.username'i kullanıcının oturum açmış adı olarak varsayıyoruz -->
+    <header>Merhaba, {{ g.username }}!</header>
+
+    <main>
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div
+        class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }}"
+      >
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <p>Toplam Borç Miktarı:</p>
+      <!-- Rota tarafından sağlanan 'toplam_borc' değişkeni kullanılır -->
+      <p class="borc">{{ toplam_borc }} TL</p>
+
+      <!-- Borç miktarı 0'dan büyükse formu göster -->
+      {% if toplam_borc|float > 0 %}
+
+      <p>Borç ödemeden yeni kitap ödünç alamazsınız!</p>
+      <!-- Formun action URL'i rotadaki gibi ayarlandı -->
+      <form
+        method="POST"
+        action="{{ url_for('kendiborc_ode', username=g.username) }}"
+      >
+        <!-- g.user_id'nin rotadan gelmesi yerine g.username ile çalışılmalı
+               ancak eğer g.user_id mevcutsa kullanılabilir. Flask bağlamında g globaldir. -->
+        <input type="hidden" name="username" value="{{ g.username }}" />
+
+        <input
+          type="text"
+          name="kart_sahibi"
+          placeholder="Kart Sahibinin Adı"
+          required
+        />
+        <input
+          type="text"
+          name="kart_numarasi"
+          placeholder="Kart Numarası"
+          maxlength="16"
+          required
+        />
+        <input
+          type="month"
+          name="kart_son_kullanma"
+          placeholder="Son Kullanma Tarihi"
+          required
+        />
+        <input
+          type="number"
+          name="cvv"
+          placeholder="CVV"
+          maxlength="4"
+          required
+        />
+
+        <button type="submit" class="button">
+          Ödemeyi Tamamla ({{ toplam_borc }} TL)
+        </button>
+      </form>
+      {% else %}
+      <!-- Borç 0 ise uyarıyı göster -->
+      <div class="alert alert-success">Ödenecek borç bulunmamaktadır!</div>
+      {% endif %}
+
+      <!-- Anasayfa dönüş linki -->
+      <a href="{{ url_for('kullanici_sayfasi', username=g.username) }}">
+        ← Anasayfaya Dön
+      </a>
+    </main>
+  </body>
+</html>

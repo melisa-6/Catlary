@@ -2,7 +2,7 @@ import logging
 import database
 from werkzeug.security import generate_password_hash, check_password_hash
 
-class KullaniciRepository:
+class kullanicilarRepository:
   
 
     def __init__(self, db_config=None):
@@ -15,30 +15,31 @@ class KullaniciRepository:
             conn = database.baglanti_olustur(self.db_config)
             cursor = conn.cursor()
 
-            # Çakışma Kontrolu
-            cursor.execute("SELECT id FROM kullanicilar WHERE username=%s OR email=%s", (username, email))
+            # Çakışma kontrolü
+            cursor.execute(
+                "SELECT id FROM kullanicilar WHERE username=%s OR email=%s",
+                (username, email)
+            )
             if cursor.fetchone():
-                return False # Kullanıcı zaten var
+                return False
 
-            #cakisma yoksa ekler
+            # Kullanıcı ekle
             cursor.execute(
                 "INSERT INTO kullanicilar (username, email, password) VALUES (%s,%s,%s)",
                 (username, email, hashed_password)
             )
             conn.commit()
-            return True # Ekleme başarılı
+            return True
 
         except Exception as e:
             if conn:
                 conn.rollback()
-            logging.error(f"Kullanıcı kayıt hatası: {e}")
-            return False # Hata oluştuğunda False döndürerek Service katmanına bildir
+            logging.error(f"Kullanıcı kayıt hatası (Repo): {e}")
+            return False
 
         finally:
             if cursor: cursor.close()
-            if conn: conn.close() # KRİTİK: Bağlantıyı metot sonunda kapat
-
-#email ile kullaniciyi getirir
+            if conn: conn.close()
     def kullanici_by_email(self, email):
         conn = None
         cursor = None
@@ -160,3 +161,4 @@ class KullaniciRepository:
         finally:
             if cursor: cursor.close()
             if conn: conn.close()
+        

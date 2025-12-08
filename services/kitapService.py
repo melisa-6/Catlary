@@ -1,15 +1,16 @@
-from repository.kitaplarRepository import KitaplarRepository
+from repository.kitaplarRepository import kitaplarRepository
 
-class KitapService:
+class kitapService:
     def __init__(self, db_config=None, odunc_service=None):
 
-        self.repo = KitaplarRepository(db_config)  
+        self.repo = kitaplarRepository(db_config)  
         self.odunc_service = odunc_service  
 
     # Tüm kitapları getirir
     def tum_kitaplari_getir(self):
         return self.repo.tum_kitaplari_getir()
 
+        
     def kitap_ekle(self, isim, yazar, kategori, yayinevi, sayfa_sayisi, stok, raf_no, baski_yili):
         try:
       #gelen sayisal degerleri int e cevirir ve bosluklari siler 
@@ -22,15 +23,19 @@ class KitapService:
 #uygun repoya yonlendirir
         return self.repo.kitap_ekle(isim, yazar, kategori, yayinevi, sayfa_sayisi, stok, raf_no, baski_yili)
 
-
     def kitap_sil_by_id(self, kitap_id):
         if not kitap_id:
-            return "Lütfen bir kitap seçin!", None
+            return {"success": False, "message": "Lütfen bir kitap seçin!"}
 
-        mesaj, silinen_kitap = self.repo.kitap_sil_by_id(kitap_id)
-        return mesaj, silinen_kitap
+        try:
+            mesaj, silinen_kitap = self.repo.kitap_sil_db_islemi(kitap_id)
+            if silinen_kitap:
+                return {"success": True, "message": mesaj}
+            else:
+                return {"success": False, "message": mesaj}
+        except Exception as e:
+            return {"success": False, "message": f"Servis Katmanı Hatası: {str(e)}"}
 
-    #repoya yonlendirir
     def kitap_ara(self, aranan):
         return self.repo.kitap_ara(aranan)
 

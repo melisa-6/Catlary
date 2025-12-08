@@ -3,7 +3,7 @@ from email.mime.text import MIMEText
 import mysql.connector
 
 SMTP_USER = "infocatlary@gmail.com"
-SMTP_PASS = "" 
+SMTP_PASS = "gngj tare hkrf yvbf" 
 
 def send_mail_to_user(to_email, subject, content):
     """Tek bir kullanıcıya mail gönderir"""
@@ -71,3 +71,4 @@ def send_pending_mails():
     db.close()
 if __name__ == "__main__":
     send_pending_mails()        
+    

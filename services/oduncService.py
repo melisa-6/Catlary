@@ -1,20 +1,22 @@
-# services/oduncService.py
 from datetime import datetime, timedelta
-from repository.odunclerRepository import OduncRepository
-from services.cezaService import CezaService
-from services.kullaniciService import KullaniciService
-from services.kitapService import KitapService
-
-class OduncService:
+from ssl import SSLError
+from repository.odunclerRepository import odunclerRepository
+from services.cezaService import cezaService
+from services.kullaniciService import kullaniciService
+from services.kitapService import kitapService
+from decimal import Decimal
+from datetime import datetime, timedelta
+class oduncService:
     def __init__(self, db_config):
-        self.repo = OduncRepository(db_config)
-        self.ceza_service = CezaService(db_config)
-        self.kullanici_service = KullaniciService(db_config)
-        self.kitap_service = KitapService(db_config)
+        self.repo = odunclerRepository(db_config)
+        self.ceza_service = cezaService(db_config)
+        self.kullanici_service = kullaniciService(db_config)
+        self.kitap_service = kitapService(db_config)
 
     # Tüm kullanıcıların ödünç gecmisini dondurmesi icin repoya yonlendirir
+    # Tüm kullanıcıların ödünç geçmişi (admin ve personel için)
     def tum_kullanicilarin_odunc_gecmisi(self):
-        return self.repo.tum_kullanici_odunc_gecmisi_getir()
+      return self.repo.tum_kullanici_odunc_gecmisi_getir()
 
 
     def kullanici_odunc_gecmisi(self, username):        
@@ -44,6 +46,7 @@ class OduncService:
 
         # kullanicinin cezasi varsa buna uygun hata verir
         if self.ceza_service.odeme_durumu_var_mi(kullanici["id"]):
+            print("DEBUG: odeme_durumu_var_mi:", self.ceza_service.odeme_durumu_var_mi(kullanici["id"]))
             return {"success": False, "message": "Kullanıcının ödenmemiş cezası var!"}
 
         # Gerekli iade tarihini uygun sekilde hesaplar
@@ -54,7 +57,14 @@ class OduncService:
         sonuc = self.repo.odunc_ver(kullanici["id"], kitap["id"], verildigi_tarih_str, gerekli_iade_tarihi)
         return sonuc
   
-  
+    def _get_kullanici_id(self,username):
+        kullanici_id = self.repo.get_kullanici_id_by_username_repo(username)
+        
+        if kullanici_id is None:
+            # ID bulunamazsa veya hata olursa uygun bir uyarı verilebilir.
+            print(f"HATA: '{username}' adında kullanıcı ID'si bulunamadı.") 
+            
+        return kullanici_id
     def odunc_iade(self, odunc_id):
         #su ani iade_tarihi yapar ve parametre olarak repoya gonderir
         iade_tarihi = datetime.now().strftime("%Y-%m-%d")
@@ -68,3 +78,86 @@ class OduncService:
         #stok guncelleme kısmı trigger ile yapılıyor!
 
         return f"{kitap['isim']} kitabı iade alındı. Kullanıcı: {kullanici['username']}"
+    
+    def iade_edilmemis_gecikmis_kayitlari_getir_service(self, username):
+        kullanici_id = self._get_kullanici_id(username)
+        
+        if kullanici_id is None:
+             return [] # Kullanıcı bulunamazsa boş liste dön
+
+        # Repo'yu doğru örnek (self.repo) üzerinden ve ID ile çağırıyoruz.
+        aktif_oduncler = self.repo.kullanici_aktif_odunc_detaylari_getir_repo(kullanici_id)
+        
+        gecikmis_kayitlar = []
+        bugunun_tarihi = datetime.now().date()
+        
+        for odunc in aktif_oduncler:
+            # Not: 'beklenen_iade_tarihi' formatının datetime.date objesi olduğundan emin olun.
+            if odunc['beklenen_iade_tarihi'] < bugunun_tarihi:
+                gecikmis_kayitlar.append(odunc)
+                
+        return gecikmis_kayitlar
+
+ 
+    def odeme_tamamla_service(self, username, borc_miktari):
+        # Kullanılan hata sınıfını import ettiğinizden emin olun (Örn: mysql.connector.Error)
+        # from mysql.connector import Error as MySQLError 
+        # veya sadece 'Exception' bırakıp log çıktısına güvenin.
+
+        kullanici_id = self._get_kullanici_id(username)
+        
+        if kullanici_id is None:
+            return False, f"HATA: '{username}' adında kullanıcı bulunamadı."
+        
+        odenmemis_cezalar = self.repo.kullanici_odenecek_cezalarini_getir_repo(kullanici_id)
+        
+        if not odenmemis_cezalar:
+            return True, "Ödenecek aktif borç bulunmamaktadır."
+            
+        # 1. PYTHON IÇINDEKI IADE KONTROLÜ
+        for ceza in odenmemis_cezalar:
+            ceza_id = ceza['ceza_id'] 
+            kitap_iade_edildi_mi = self.repo.cezanin_iade_edilmis_olup_olmadigini_kontrol_et(ceza_id)
+            
+            if not kitap_iade_edildi_mi:
+                # 🔥 Eğer buraya düşerse, net hata mesajı döner ve alttaki try bloğu çalışmaz.
+                mesaj = f"HATA: Ödeme yapabilmeniz için {ceza_id} ID'li cezaya konu olan kitabı önce iade etmelisiniz."
+                return False, mesaj 
+                
+        # 3. Ödeme İşlemi
+        try:
+            sonuc = self.repo.cezalar_odendi_yap_repo(kullanici_id)
+            
+            if sonuc:
+                return True, f"{str(borc_miktari)} TL tutarındaki borç başarıyla ödendi."
+            else:
+                # Bu, ödenecek ceza bulunmadığında veya güncelleme başarısız olduğunda tetiklenir.
+                return False, "HATA: Veritabanı güncellemesi sırasında bir sorun oluştu."
+                
+        except DBError as e: # DBError yerine kullandığınız spesifik MySQL hata sınıfını yazın!
+            
+            # MySQL/Constraint/Trigger 1644 hatasını yakala
+            if getattr(e, 'errno', None) == 1644:
+                # Service'in kendi kontrolü başarısız olsa bile, MySQL'in net mesajını kullanıcıya ver.
+                return False, f"HATA: Kitap iade edilmeden ceza ödenemez. Lütfen önce iade yapınız." 
+            else:
+                print(f"Bilinmeyen MySQL Hatası: {e}")
+                return False, "HATA: Veritabanında beklenmeyen bir sorun oluştu."
+                
+        except Exception as e:
+            print(f"Genel Python Hatası: {e}")
+            return False, "HATA: İşlem sırasında beklenmeyen bir teknik sorun oluştu."
+    def kullanici_toplam_borc_miktari_getir_service(self, username):
+      
+        kullanici_id = self._get_kullanici_id(username)
+        
+        if kullanici_id is None:
+            return 0.0 
+        toplam_borc=Decimal('0.0')
+       
+        odenecek_cezalar = self.repo.kullanici_odenecek_cezalarini_getir_repo(kullanici_id)
+        
+        for ceza in odenecek_cezalar:
+            toplam_borc += ceza['ceza_miktari']
+        
+        return toplam_borc

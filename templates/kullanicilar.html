@@ -2,14 +2,22 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <title>Kullanıcılar</title>
+    <title>Kullanıcı Listesi ve Yönetimi</title>
     <style>
+      /* Pastel Renk Paleti (Personel Sayfasıyla Aynı Temel Renkler Korundu) */
+      :root {
+        --color-pastel-bg: #f5f5f5; /* Açık Gri/Beyaz */
+        --color-pastel-primary: #a8dadc; /* Açık Mavi */
+        --color-pastel-secondary: #457b9d; /* Koyu Mavi */
+        --color-pastel-success: #70e000; /* Açık Yeşil */
+        --color-pastel-danger: #ffb4a2; /* Pastel Somon */
+        --color-pastel-warning: #ffc107; /* Pastel Sarı */
+        --color-text: #333;
+        --color-border: #e0e0e0;
+      }
+
       body {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
+        /* Sizin orijinal arka planınız */
         background: linear-gradient(
             rgba(255, 192, 203, 0.5),
             rgba(255, 182, 193, 0.5)
@@ -20,14 +28,24 @@
         background-blend-mode: overlay;
         background-attachment: fixed;
         color: #333;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 40px 20px;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
       }
+
       .content {
         flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        padding: 50px 20px;
+        padding: 20px 0;
       }
       h2 {
         text-align: center;
@@ -35,35 +53,29 @@
         font-size: 2em;
         color: #b3477a;
       }
+
+      /* Tablo Stili - Ortalanmış ve Yumuşak */
       table {
         border-collapse: collapse;
-        width: 80%;
-        max-width: 800px;
+        width: 90%;
+        max-width: 1100px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         border-radius: 12px;
         overflow: hidden;
         background: rgba(255, 240, 245, 0.95);
-        animation: fadeIn 0.8s ease-in-out;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
       }
       th,
       td {
         padding: 12px 15px;
         text-align: center;
+        border-bottom: 1px solid var(--color-border);
       }
       th {
         background-color: #f4a6c1;
         color: white;
         font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9em;
       }
       tr:nth-child(even) {
         background-color: rgba(255, 228, 235, 0.6);
@@ -72,31 +84,40 @@
         background-color: rgba(255, 192, 203, 0.3);
         transition: 0.3s;
       }
+
+      /* Durum ve Buton Stilleri */
       .aktif {
-        color: green;
-        font-weight: 600;
+        color: var(--color-pastel-success);
+        font-weight: bold;
       }
       .pasif {
-        color: #d14f70;
-        font-weight: 600;
+        color: var(--color-pastel-danger);
+        font-weight: bold;
       }
       .aktiflestir-btn {
-        margin-left: 5px;
-        padding: 4px 8px;
-        font-size: 0.8em;
-        cursor: pointer;
-        border-radius: 8px;
-        border: none;
-        background-color: #f4a6c1;
+        background-color: var(--color-pastel-secondary);
         color: white;
+        border-radius: 4px;
+        padding: 6px 10px;
+        border: none;
+        cursor: pointer;
         transition: 0.3s;
       }
       .aktiflestir-btn:hover {
-        background-color: #d14f70;
+        background-color: #3f6888;
       }
+      .sifirla-btn {
+        background-color: var(--color-pastel-warning);
+        color: var(--color-text);
+      }
+
+      /* Gizli Alan ve Footer Stilleri */
+      /* (Diğer HTML kodundan kopyalandığı varsayıldı) */
+
       footer {
         text-align: center;
         padding: 20px 0;
+        margin-top: auto; /* Footer'ı alta sabitler */
       }
       footer a {
         text-decoration: none;
@@ -112,145 +133,188 @@
         background-color: #d14f70;
         color: white;
       }
-      @media (max-width: 768px) {
-        th,
-        td {
-          padding: 10px 8px;
-          font-size: 0.9em;
-        }
-        h2 {
-          font-size: 1.5em;
-        }
+      .gizli-alan {
+        /* Tüm ekranı kaplayan, arka planı karartan katman (Overlay) */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        z-index: 1000;
       }
-      @media (max-width: 480px) {
-        table {
-          width: 95%;
-        }
+
+      .modal-icerik {
+        /* Modalın kendisi (Küçük pencere) */
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+
+        /* PENCERE BOYUTUNU BELİRLİYORUZ */
+        max-width: 400px; /* Maksimum genişlik */
+        width: 90%; /* %90 genişlik, küçük ekranlarda daralır */
+        min-height: 150px; /* Minimum yükseklik */
+
+        /* Giriş Animasyonu */
+        transform: scale(1);
+        transition: transform 0.3s ease-out;
       }
     </style>
   </head>
   <body>
     <div class="content">
-      <h2>Kullanıcı Listesi</h2>
+      <h2>Kullanıcı Listesi ve Yönetimi</h2>
       <table>
-        <tr>
-          <th>ID</th>
-          <th>Kullanıcı Adı</th>
-          <th>Email</th>
-          <th>Durum</th>
-        </tr>
-        {% if kullanicilar %} {% for kullanici in kullanicilar %}
-        <tr>
-          <td>{{ kullanici.id }}</td>
-          <td>{{ kullanici.username }}</td>
-          <td>{{ kullanici.email }}</td>
-          <td class="durum-{{ kullanici.username }}">
-            <span class="{{ 'aktif' if kullanici.aktiflik else 'pasif' }}">
-              {{ 'Aktif' if kullanici.aktiflik else 'Pasif' }}
-            </span>
-            <button
-              class="aktiflestir-btn"
-              onclick="degistirDurum('{{ kullanici.username }}', {{ 'true' if kullanici.aktiflik else 'false' }})"
-            >
-              {% if kullanici.aktiflik %}Pasif Yap{% else %}Aktifleştir{% endif
-              %}
-            </button>
-          </td>
-        </tr>
-        {% endfor %} {% else %}
-        <tr>
-          <td colspan="4">Kullanıcı bulunamadı.</td>
-        </tr>
-        {% endif %}
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Kullanıcı Adı</th>
+            <th>Email</th>
+            <th>Giriş Tarihi</th>
+            <th>Durum</th>
+            <th>Aktiflik İşlemi</th>
+            <th>Şifre İşlemi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if kullanicilar %} {% for kullanici in kullanicilar %}
+          <tr>
+            <td>{{ kullanici.id }}</td>
+            <td>{{ kullanici.username }}</td>
+            <td>{{ kullanici.email }}</td>
+            <td>
+              {{ kullanici.giristarihi if kullanici.giristarihi is not none else
+              '-' }}
+            </td>
+            <td class="durum-{{ kullanici.username }}">
+              <span class="{{ 'aktif' if kullanici.aktiflik else 'pasif' }}">
+                {{ 'Aktif' if kullanici.aktiflik else 'Pasif' }}
+              </span>
+            </td>
+
+            <td>
+              <button
+                class="aktiflestir-btn"
+                onclick="degistirDurum('{{ kullanici.username }}', {{ 'true' if kullanici.aktiflik else 'false' }})"
+              >
+                {{ 'Pasif Yap' if kullanici.aktiflik else 'Aktifleştir' }}
+              </button>
+            </td>
+
+            <td>
+              <button
+                class="aktiflestir-btn sifirla-btn"
+                onclick="toggleSifirlaAlani('{{ kullanici.username }}', '{{ kullanici.id }}')"
+              >
+                Şifre Sıfırla
+              </button>
+            </td>
+          </tr>
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="7">Kullanıcı bulunamadı.</td>
+          </tr>
+          {% endif %}
+        </tbody>
       </table>
+    </div>
+
+    <div id="sifirla_alani" class="gizli-alan" style="display: none">
+      <div class="modal-icerik">
+        <h3>Kullanıcı Şifresini Sıfırlama Onayı</h3>
+        <p id="sifirla_mesaj"></p>
+        <p style="color: #d14f70; font-size: 0.9em">
+          Bu işlem, kullanıcıya yeni şifresinin e-posta ile gönderilmesini
+          sağlar.
+        </p>
+
+        <form
+          action="{{ url_for('admin_kullanici_sifre_sifirla_route') }}"
+          method="POST"
+          style="margin-top: 15px"
+        >
+          <input type="hidden" name="kullanici_id" id="sifirla_id_input" />
+
+          <button
+            type="submit"
+            class="aktiflestir-btn"
+            style="background-color: #b3477a; margin-right: 10px"
+          >
+            Onayla ve Sıfırla
+          </button>
+          <button
+            type="button"
+            onclick="document.getElementById('sifirla_alani').style.display='none'"
+            class="aktiflestir-btn"
+            style="background-color: #6c757d"
+          >
+            İptal
+          </button>
+        </form>
+      </div>
     </div>
 
     <script>
       async function degistirDurum(username, aktif) {
         const yeniDurum = !aktif;
-        const durumAciklama = yeniDurum ? "aktifleştir" : "pasifleştir";
-
-        const onay = confirm(
-          `${username} kullanıcısını ${durumAciklama}mek istediğinizden emin misiniz?`
-        );
-        if (!onay) {
-          return;
-        }
-
         try {
+          // ... (Mevcut AJAX isteği) ...
           const response = await fetch("/kullanici_durum_degistir", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              kullanici_adi: username,
-              aktiflik: yeniDurum,
-            }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ kullanici_adi: username }),
           });
 
+          const data = await response.json();
           if (!response.ok) {
-            if (response.status === 401) {
-              const errorData = await response.json();
-              alert(
-                `Oturum Hatası (401): ${errorData.message} Lütfen tekrar giriş yapın.`
-              );
-              window.location.href = "/";
-              return;
-            }
-
-            const contentType = response.headers.get("content-type");
-
-            if (
-              !contentType ||
-              contentType.indexOf("application/json") === -1
-            ) {
-              alert(`KRİTİK SUNUCU HATASI: İşlem başarısız oldu `);
-              throw new Error(
-                "Sunucudan beklenmeyen bir HTML yanıtı alındı. Lütfen app.py dosyanızdaki Flask rotasını kontrol edin."
-              );
-            }
-
-            const errorData = await response.json();
-            alert(`İşlem Başarısız: ${errorData.message}`);
+            alert(data.message || "Durum değiştirme başarısız!");
             return;
           }
 
-          const data = await response.json();
-          alert(data.message || "İşlem başarıyla tamamlandı.");
+          alert(data.message || "Durum başarıyla değiştirildi.");
 
-          const tdSpan = document.querySelector(`.durum-${username} span`);
-          const btn = document.querySelector(`.durum-${username} button`);
+          // HTML güncelle (Ayrı sütunlara rağmen DOM güncellemesi doğru çalışacaktır)
+          const row = document
+            .querySelector(`.durum-${username}`)
+            .closest("tr");
+          const durumCell = row.querySelector(`.durum-${username} span`);
+          const btnCell = row.cells[5].querySelector("button"); // 6. sütundaki (index 5) butonu seç
 
-          if (tdSpan && btn) {
-            if (yeniDurum) {
-              tdSpan.textContent = "Aktif";
-              tdSpan.className = "aktif";
-              btn.textContent = "Pasif Yap";
-
-              btn.setAttribute("onclick", `degistirDurum('${username}', true)`);
-            } else {
-              tdSpan.textContent = "Pasif";
-              tdSpan.className = "pasif";
-              btn.textContent = "Aktifleştir";
-
-              btn.setAttribute(
-                "onclick",
-                `degistirDurum('${username}', false)`
-              );
-            }
+          if (durumCell && btnCell) {
+            durumCell.textContent = yeniDurum ? "Aktif" : "Pasif";
+            durumCell.className = yeniDurum ? "aktif" : "pasif";
+            btnCell.textContent = yeniDurum ? "Pasif Yap" : "Aktifleştir";
+            btnCell.setAttribute(
+              "onclick",
+              `degistirDurum('${username}', ${yeniDurum})`
+            );
           }
-        } catch (error) {
-          console.error("Durum Değiştirme Hatası:", error);
-          alert(
-            `İşlem sırasında beklenmeyen bir hata oluştu: ${error.message}`
-          );
+        } catch (err) {
+          console.error(err);
+          alert("Beklenmeyen bir hata oluştu.");
         }
+      }
+
+      function toggleSifirlaAlani(username, id) {
+        const alan = document.getElementById("sifirla_alani");
+        document.getElementById("sifirla_id_input").value = id;
+        document.getElementById("sifirla_mesaj").innerHTML =
+          "<strong>" +
+          username +
+          "</strong> kullanıcısının şifresi sıfırlanacaktır.";
+        alan.style.display = "flex";
       }
     </script>
 
     <footer>
-      <a href="/admin/{{ session['username'] }}">← Geri Dön</a>
+      <a href="{{ geri_url }}" class="back-link">← Geri Dön</a>
     </footer>
   </body>
 </html>

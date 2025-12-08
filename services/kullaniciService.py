@@ -1,5 +1,7 @@
+import logging
 from werkzeug.security import check_password_hash, generate_password_hash
-from repository.kullanicilarRepository import KullaniciRepository
+import database
+from repository.kullanicilarRepository import kullanicilarRepository
 from repository.AdminRepository import AdminRepository 
 from send_mail import send_pending_mails, send_mail_to_user
 
@@ -10,48 +12,39 @@ import string
 db_config = {
     "host": "127.0.0.1",
     "user": "melisa",
-    "password": "",
+    "password": "Mtz0504*",
     "database": "kutuphane_db",
     "port": 3306
 }
 
-class KullaniciService:
+class kullaniciService:
     def __init__(self, db_config=None):
         self.db_config = db_config
-        self.repo = KullaniciRepository(db_config)
+        self.repo = kullanicilarRepository(db_config)
         
-        
-        #kullanicinin id si ile kullaniciyi almak icin repoya yonlendirir
-    def get_kullanici_by_id(self, user_id):
-        return self.repo.kullanici_by_id(user_id)
-
 #kullanicinin username i ile kullaniciyi almak icin repoya yonlendirir
     def get_by_username(self, username):
         return self.repo.kullanici_by_username(username)
-
 #kullanicinin  email i ile kullaniciyi almak icin repoya yonlendirir
     def get_kullanici_by_email(self, email):
         return self.repo.kullanici_by_email(email)
-    
+    def kullanici_email_var_mi(self, email):
+    #repositorydeki ilgili kısma yonlendirir
+        return self.repo.kullanici_by_email(email) is not None
     def sifre_dogrula(self, user_data, sifre):
-        # Eğer veri boşsa veya 'password' alanı yoksa False dondurur 
         if not user_data or 'password' not in user_data:
             return False
-            
         #check_password_hash ile sifreyi kontrol eder 
         return check_password_hash(user_data['password'], sifre)
-        
+    def kullanici_var_mi(self, username):
+    #repositorydeki ilgili kısma yonlendirir
+        return self.repo.kullanici_by_username(username) is not None 
     def tum_kullanicilari_getir(self):
     #repositorydeki ilgili kısma yonlendirir
         return self.repo.tum_kullanicilari_getir()
-
-    def kullanici_ekle(self, username, email, sifre):
-    #Controller'dan hashlenmiş şifreyi aldığından, direkt repo'ya gönderir
-        return self.repo.kullanici_ekle(username, email, sifre)
-    
-    
+    def kullanici_ekle(self, username, email, hashed_password):
+        return self.repo.kullanici_ekle(username, email, hashed_password)
     def sifre_degistir(self, user_id, eski_sifre, yeni_sifre, yeni_sifre_tekrar):
-        #sifrelerin eslesme kontrolunu yapar 
         if yeni_sifre != yeni_sifre_tekrar:
             return {"success": False, "message": "Yeni şifreler eşleşmiyor!"}
  #kullanicinin id si ile kullaniciyi almak icin repoya yonlendirir
@@ -69,7 +62,6 @@ class KullaniciService:
 
     def kullanici_aktiflik_durumu_degistir(self, user_id):
         #gelen kullanici idsine gore mevcut aktiflik durumunu tersine çevirir
-        
         try:
             #krepositoryden ullanici bilgilerini id ile alir
             user = self.repo.kullanici_by_id(user_id) 
@@ -95,34 +87,31 @@ class KullaniciService:
             print(f"Kullanıcı aktiflik durumu değiştirme hatası: {e}")
             return {"success": False, "message": "Durum değiştirme sırasında beklenmedik bir hata oluştu."}
             
+    def get_kullanici_by_id(self, user_id):
+        return self.repo.kullanici_by_id(user_id)
+
     def sifre_sifirla_by_user(self, user):
-        yeni_sifre = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(10))
+        yeni_sifre = ''.join(secrets.choice("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(10))
         yeni_hash = generate_password_hash(yeni_sifre)
-        
+
         guncellendi = self.repo.sifre_guncelle(user['id'], yeni_hash)
         if not guncellendi:
             return {"success": False, "message": "Şifre veritabanına güncellenemedi."}
 
         # Kullanıcıya mail gönder
         konu = "Şifre Sıfırlama"
-        icerik = f"Merhaba {user['username']},\n\nŞifreniz sıfırlanmıştır. Yeni şifreniz: {yeni_sifre}\nLütfen giriş yaptıktan sonra değiştiriniz."
+        icerik = f"Merhaba {user['username']},\nYeni şifreniz: {yeni_sifre}"
         send_mail_to_user(user['email'], konu, icerik)
 
-        # Admin kullanıcıyı al
+        # Admin kullanıcıyı bilgilendir
         admin_repo = AdminRepository(self.db_config)
-        admin_user = admin_repo.get_first_admin() 
-
+        admin_user = admin_repo.get_first_admin()
         if admin_user:
             admin_konu = "Kullanıcı Şifre Sıfırlama Bildirimi"
-            admin_icerik = (
-                f"Sayın Admin,\n\n"
-                f"{user['username']} ({user['email']}) kullanıcısının şifresi başarıyla sıfırlanmıştır.\n"
-                f"Yeni şifre, kullanıcının e-posta adresine gönderilmiştir.\n"
-            )
+            admin_icerik = f"{user['username']} kullanıcısının şifresi sıfırlanmıştır."
             send_mail_to_user(admin_user['email'], admin_konu, admin_icerik)
 
-        return {"success": True, "message": f"Kullanıcının şifresi sıfırlandı ve mail gönderildi: {user['email']}", "yeni_sifre": yeni_sifre}
-
+        return {"success": True, "message": f"Kullanıcının şifresi sıfırlandı: {user['email']}", "yeni_sifre": yeni_sifre}
    
     def kayit_ol(self, username: str, email: str, sifre: str, sifre_tekrar: str) -> dict:
       
@@ -133,17 +122,12 @@ class KullaniciService:
                 "message": "Şifreler eşleşmiyor. Lütfen tekrar kontrol edin."
             }
         admin_repo = AdminRepository(self.db_config)
-        
-        
         # kullanıcı tablosunda ayni username ya da mailden bir kullanıccı daha var mı kontrol eder 
         kullanici_username_var = self.repo.kullanici_by_username(username)
         kullanici_email_var = self.repo.kullanici_by_email(email)
-        
-       
         # admin tablosunda ayni username ya da mailden bir kullanıccı daha var mı kontrol eder 
         admin_username_var = admin_repo.get_by_username(username) 
         admin_email_var = admin_repo.get_by_email(email)
-        
         if kullanici_username_var or admin_username_var:
             return {
                 "success": False, 
@@ -155,8 +139,6 @@ class KullaniciService:
                 "success": False, 
                 "message": f"'{email}' e-posta adresi zaten kullanımda."
             }
-
-
         try:
             # gelen sifreyi hashler
             hashed_sifre = generate_password_hash(sifre)

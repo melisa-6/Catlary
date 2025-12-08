@@ -1,53 +1,66 @@
-from services.cezaService import CezaService
-from services.kullaniciService import KullaniciService
+from services import cezaService
+from services.cezaService import cezaService
+from services.kullaniciService import kullaniciService
 
-db_config = {
-    "host": "localhost",
-    "user": "melisa",
-    "password": "",
-    "database": "kutuphane_db"
-}
-
-class CezaController:
+class cezaController:
     def __init__(self, db_config):
-        self.ceza_service = CezaService(db_config)
-        self.kullanici_service = KullaniciService(db_config)
-
+        self.ceza_service = cezaService(db_config)
+        self.kullanici_service = kullaniciService(db_config)
+    def odeme_yap_controller(self, kullanici_id):
+        try:
+            return self.ceza_service.ceza_odendi_yap(kullanici_id, odeme_yapilsin_mi=True)
+        except Exception as e:
+            print(f"Controller hatası - ödeme yap: {e}")
+            return {"toplam_tutar": 0, "success": False, "message": "Ödeme işlemi başarısız."}
+    # Tüm cezaları getir (admin)
     def tum_cezalari_getir(self):
         try:
-            #tum cezalari getirmesi icin service e yonlendirir
-            cezalar = self.ceza_service.tum_cezalari_getir()
-            return cezalar
+            return self.ceza_service.tum_cezalari_getir()
         except Exception as e:
             print(f"Controller hatası - tüm cezalar: {e}")
             return []
+    def ceza_odendi_yap(self, kullanici_id, odeme_yapilsin_mi, kart_numarasi=None, admin=False):
+        return self.ceza_service.ceza_odendi_yap(kullanici_id, odeme_yapilsin_mi, admin=admin)
+    def ceza_ode(self, ceza_id):
+        success, message = self.ceza_service.ceza_ode(ceza_id)
+        return success, message
 
     def kullanici_cezalarini_goster(self, username):
-        #kullaniciyi bulmak icin serviceden uygun fonksiyon username ile gonderilir
-     kullanici = self.kullanici_service.get_by_username(username)
-     if not kullanici:
-         #kullanici bulunamadiysa hata verir
-        print(f"Kullanıcı bulunamadı: {username}")
-        return []  
-    #kullanici id si ile kullanicinin cezalari getirmek icin uygun kontrollere gonderilir
-     cezalar = self.ceza_service.kullanici_cezalari_getir(kullanici['id'])
-     return cezalar
+        kullanici = self.kullanici_service.get_by_username(username)
+        if not kullanici:
+            return []
+        return self.ceza_service.kullanici_cezalari_getir(kullanici['id'])
 
+    def borc_getir_controller(self, username):
+        
+        kullanici = self.kullanici_service.get_by_username(username)
+        if not kullanici:
+            print(f"Kullanıcı bulunamadı: {username}")
+            return 0  # Borç yok
 
-    def ceza_odendi_yap(self, kullanici_id, odeme_yapilsin_mi=False):
+        user_id = kullanici['id']
+        print(f"DEBUG: user_id: {user_id}")
+        toplam_borc = self.ceza_service.kullanici_borc_getir_by_id(user_id)
+        print(f"DEBUG: {username} ödenmemiş toplam borç: {toplam_borc}")
+
+        return toplam_borc
+
+    def borc_getir_by_id(self, kullanici_id):
+       
         try:
-            #kullaniic id int e donusturulut 
-            kullanici_id = int(kullanici_id)
-            
-            # Service toplam tutarı hesaplar ve ödeme yaparsa güncellemek icin service e yonlendirir
-            toplam_tutar = self.ceza_service.ceza_odendi_yap(kullanici_id, odeme_yapilsin_mi)
-            
-            success = odeme_yapilsin_mi and toplam_tutar > 0
-            message = "Ödeme tamamlandı" if success else f"Toplam tutar: {toplam_tutar} TL"
-            
-            return {"toplam_tutar": toplam_tutar, "success": success, "message": message}
-
-        except ValueError:
-            return {"toplam_tutar": 0, "success": False, "message": "Geçersiz Kullanıcı ID"}
+            return self.ceza_service.kullanici_borc_getir_by_id(kullanici_id)
         except Exception as e:
-            return {"toplam_tutar": 0, "success": False, "message": f"Hata: {str(e)}"}
+            print(f"Controller hatası - borç getirme: {e}")
+            return 0
+
+    def iade_edilmemis_kitap_var_mi_controller(self, username):
+        kullanici = self.kullanici_service.get_by_username(username)
+        if not kullanici:
+            return True
+        return self.ceza_service.iade_edilmemis_kitap_var_mi(kullanici['id'])
+    def ceza_bilgilerini_getir(self, ceza_id):
+        try:
+            return self.ceza_service.ceza_bilgilerini_getir(ceza_id)
+        except Exception as e:
+            print("Controller hata - ceza sorgula:", e)
+            return None

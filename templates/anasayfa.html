@@ -16,28 +16,29 @@
       messages %}
       <div class="flash-messages-container" style="margin-bottom: 20px">
         {% for category, message in messages %}
-
         <div
           class="alert alert-{{ category }}"
-          style="padding: 10px; margin-top: 5px; border-radius: 5px; background-color: {% if category == 'error' %}#f8d7da{% else %}#d4edda{% endif %}; color: {% if category == 'error' %}#721c24{% else %}#155724{% endif %}; border: 1px solid {% if category == 'error' %}#f5c6cb{% else %}#c3e6cb{% endif %};"
+          style="
+              padding: 10px; margin-top: 5px; border-radius: 5px; 
+              background-color: {% if category == 'error' %}#f8d7da{% else %}#d4edda{% endif %}; 
+              color: {% if category == 'error' %}#721c24{% else %}#155724{% endif %}; 
+              border: 1px solid {% if category == 'error' %}#f5c6cb{% else %}#c3e6cb{% endif %};"
         >
           {{ message }}
         </div>
         {% endfor %}
       </div>
       {% endif %} {% endwith %}
-      <!-- FLASH MESAJLARI SONU -->
 
       <div class="giris_kismi">
         <button id="kullaniciGirisBtn">Kullanıcı Girişi</button>
         <button id="adminGirisBtn">Admin Girişi</button>
+        <button id="personelGirisBtn">Personel Girişi</button>
         <span class="hesap">Hesabın yok mu?</span>
         <button id="hesapAcBtn">Hemen Aç</button>
       </div>
-    </div>
 
-    <div class="formlar">
-      <!-- Kullanıcı girişi formu -->
+      <!-- Kullanıcı Girişi Formu -->
       <div id="kullaniciGirisFormu" style="display: none">
         <h4>Kullanıcı Girişi</h4>
         <form action="/girisyap" method="POST">
@@ -58,7 +59,7 @@
         </form>
       </div>
 
-      <!-- Admin girişi formu -->
+      <!-- Admin Girişi Formu -->
       <div id="adminGirisFormu" style="display: none">
         <h4>Admin Girişi</h4>
         <form action="/girisyap" method="POST">
@@ -78,64 +79,95 @@
           <button type="submit">Giriş Yap</button>
         </form>
       </div>
+      <!-- Personel Girişi Formu -->
+      <div id="personelGirisFormu" style="display: none">
+        <h4>Personel Girişi</h4>
+        <form action="/girisyap" method="POST">
+          <input type="hidden" name="islem" value="personel" />
 
-      <!-- Hesap oluşturma formu -->
-      <form
-        id="hesapFormu"
-        action="/kayitol"
-        method="POST"
-        style="display: none"
-      >
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Adresi"
+            required
+          /><br /><br />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Şifre"
+            required
+          /><br /><br />
+
+          <button type="submit">Giriş Yap</button>
+        </form>
+      </div>
+
+      <!-- Hesap Oluşturma Formu -->
+      <div id="hesapFormu" style="display: none">
         <h4>Hesap Oluştur</h4>
-        <input type="hidden" name="islem" value="yeni" />
-        <input
-          type="text"
-          name="username"
-          placeholder="Kullanıcı Adı"
-          required
-        /><br /><br />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email Adresi"
-          required
-        /><br /><br />
-        <input
-          type="password"
-          name="yeni_sifre"
-          placeholder="Yeni Şifre"
-          required
-        /><br /><br />
-        <input
-          type="password"
-          name="yeni_sifre_tekrar"
-          placeholder="Yeni Şifre Tekrar"
-          required
-        /><br /><br />
-        <button type="submit">Hesap Oluştur</button>
-      </form>
+        <form action="/kayitol" method="POST">
+          <input type="hidden" name="islem" value="yeni" />
+          <input
+            type="text"
+            name="username"
+            placeholder="Kullanıcı Adı"
+            required
+          /><br /><br />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Adresi"
+            required
+          /><br /><br />
+          <input
+            type="password"
+            name="yeni_sifre"
+            placeholder="Yeni Şifre"
+            required
+          /><br /><br />
+          <input
+            type="password"
+            name="yeni_sifre_tekrar"
+            placeholder="Yeni Şifre Tekrar"
+            required
+          /><br /><br />
+          <button type="submit">Hesap Oluştur</button>
+        </form>
+      </div>
     </div>
 
     <script>
       const kullaniciBtn = document.getElementById("kullaniciGirisBtn");
       const adminBtn = document.getElementById("adminGirisBtn");
+      const personelBtn = document.getElementById("personelGirisBtn");
       const hesapBtn = document.getElementById("hesapAcBtn");
 
       kullaniciBtn.onclick = () => {
         document.getElementById("kullaniciGirisFormu").style.display = "block";
         document.getElementById("adminGirisFormu").style.display = "none";
+        document.getElementById("personelGirisFormu").style.display = "none";
         document.getElementById("hesapFormu").style.display = "none";
       };
 
       adminBtn.onclick = () => {
         document.getElementById("kullaniciGirisFormu").style.display = "none";
         document.getElementById("adminGirisFormu").style.display = "block";
+        document.getElementById("personelGirisFormu").style.display = "none";
+        document.getElementById("hesapFormu").style.display = "none";
+      };
+
+      personelBtn.onclick = () => {
+        document.getElementById("kullaniciGirisFormu").style.display = "none";
+        document.getElementById("adminGirisFormu").style.display = "none";
+        document.getElementById("personelGirisFormu").style.display = "block";
         document.getElementById("hesapFormu").style.display = "none";
       };
 
       hesapBtn.onclick = () => {
         document.getElementById("kullaniciGirisFormu").style.display = "none";
         document.getElementById("adminGirisFormu").style.display = "none";
+        document.getElementById("personelGirisFormu").style.display = "none";
         document.getElementById("hesapFormu").style.display = "block";
       };
     </script>

@@ -1,6 +1,6 @@
+import mysql
 import database
-
-class OduncRepository:
+class odunclerRepository:
     def __init__(self, db_config):
         self.db_config = db_config  
         try:
@@ -113,7 +113,24 @@ class OduncRepository:
         
       finally:
         cursor.close()
-
+        
+    def cezanin_iade_edilmis_olup_olmadigini_kontrol_et(self, ceza_id):
+        conn = database.baglanti_olustur(self.db_config)
+        cursor = conn.cursor(dictionary=True)
+        try:
+            query = """
+                SELECT iade_tarihi
+                FROM cezalar
+                WHERE id=%s
+            """
+            cursor.execute(query, (ceza_id,))
+            result = cursor.fetchone()
+            
+            # iade_tarihi NULL değilse (yani bir tarih varsa), True döner.
+            return result is not None and result.get('iade_tarihi') is not None
+        finally:
+            cursor.close()
+            conn.close()
    #odunc id nin olup olmadigini ceker
     def get_odunc_by_id(self, odunc_id):
         cursor = self.conn.cursor(dictionary=True)
@@ -152,7 +169,7 @@ class OduncRepository:
         cursor = self.conn.cursor(dictionary=True)
         try:
             cursor.execute(
-                "SELECT * FROM oduncler WHERE kitap_id=%s AND gercek_iade_tarihi IS NULL",
+                "SELECT * FROM oduncler WHERE kitap_id=%s",
                 (kitap_id,)
             )
             return cursor.fetchone() is not None
@@ -174,17 +191,122 @@ class OduncRepository:
         finally:
             cursor.close()
             
-#oduncler tablosundaki tum degerleri ceker
     def tum_kullanici_odunc_gecmisi_getir(self):
         cursor = self.conn.cursor(dictionary=True)
         try:
             cursor.execute("""
-                SELECT o.id, u.username, k.isim AS kitap_adi, o.odunc_tarihi, o.gerekli_iade_tarihi, o.gercek_iade_tarihi
-                FROM oduncler o
-                JOIN kullanicilar u ON o.kullanici_id = u.id
-                JOIN kitaplar k ON o.kitap_id = k.id
-                ORDER BY o.odunc_tarihi DESC
-            """)
+    SELECT 
+        o.id, 
+        COALESCE(u.username, 'Bilinmeyen Kullanıcı') AS username, 
+        k.isim AS kitap_adi, 
+        o.odunc_tarihi, 
+        o.gerekli_iade_tarihi, 
+        o.gercek_iade_tarihi
+    FROM oduncler o
+    LEFT JOIN kullanicilar u ON o.kullanici_id = u.id
+    JOIN kitaplar k ON o.kitap_id = k.id
+    ORDER BY o.odunc_tarihi DESC
+""")
             return cursor.fetchall()
         finally:
             cursor.close()
+
+    def kullanici_aktif_odunc_detaylari_getir_repo(self, kullanici_id):
+        """
+        Kullanıcının henüz iade etmediği kitapların tüm ödünç detaylarını (özellikle gerekli_iade_tarihi'ni) çeker.
+        """
+        conn = self._get_conn()
+        cursor = conn.cursor(dictionary=True)
+        try:
+            cursor.execute("""
+                SELECT 
+                    o.id, o.kitap_id, o.odunc_tarihi, o.gerekli_iade_tarihi
+                FROM 
+                    oduncler o
+                WHERE 
+                    o.kullanici_id=%s AND o.gercek_iade_tarihi IS NULL
+                """, (kullanici_id,))
+            return cursor.fetchall()
+        finally:
+            cursor.close()
+            conn.close()
+    def cezalar_odendi_yap_repo(self, kullanici_id):
+        """
+        Kullanıcının tüm ödenmemiş cezalarını (odeme_durumu = 0) 'ödendi' yapar.
+        """
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        try:
+            query = """
+                UPDATE cezalar
+                SET odeme_durumu = 1
+                WHERE kullanici_id = %s AND odeme_durumu = 0
+            """
+
+            cursor.execute(query, (kullanici_id,))
+            conn.commit()
+
+            # işlem başarılı → True
+            return True
+
+        except Exception as e:
+            conn.rollback()
+            print("Repo hata (cezalar_odendi_yap_repo):", e)
+            return False
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    def kullanici_odenecek_cezalarini_getir_repo(self, kullanici_id):
+        """
+        Kullanıcının ödenmemiş (odeme_durumu='Odenecek') tüm kayıtlı cezalarını çeker.
+        Bu fonksiyon 'cezalar' adında ayrı bir tabloya ihtiyac duyar.
+        """
+        conn = self._get_conn()
+        cursor = conn.cursor(dictionary=True)
+        try:
+            cursor.execute("""
+                SELECT 
+    id AS ceza_id,         
+    ceza_miktari, 
+    odunc_tarihi 
+                FROM 
+                    cezalar 
+                WHERE 
+                    kullanici_id=%s AND odeme_durumu=0
+                """, (kullanici_id,))
+            return cursor.fetchall()
+        finally:
+            cursor.close()
+            conn.close()
+    def get_kullanici_id_by_username_repo(self,username):
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        kullanici_id = None
+        
+        try:
+            # Kullanıcı tablonuzun 'kullanicilar' ve username sütununun 'username' olduğunu varsayıyoruz.
+            cursor.execute("SELECT id FROM kullanicilar WHERE username = %s", (username,))
+            result = cursor.fetchone()
+            
+            if result:
+                kullanici_id = result[0] # ID'yi tuple'dan çıkar
+                
+        except Exception as e:
+            print(f"Kullanıcı ID çekilirken hata oluştu: {e}")
+        finally:
+            cursor.close()
+            conn.close()
+            
+        return kullanici_id
+    def get_odunc_by_id(self, odunc_id):
+        conn = mysql.connector.connect(**self.db_config)
+        cursor = conn.cursor(dictionary=True)
+        try:
+            cursor.execute("SELECT * FROM oduncler WHERE id=%s", (odunc_id,))
+            return cursor.fetchone()
+        finally:
+            cursor.close()
+            conn.close()
+            

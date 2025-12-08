@@ -189,17 +189,33 @@
       }
     </style>
   </head>
-
   <body>
     <header>
       <h2>Hoşgeldin, {{ username }}!</h2>
     </header>
 
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div style="margin-bottom: 15px">
+      {% for category, message in messages %}
+      <div
+        class="alert alert-{{ category }}"
+        style="padding: 10px 15px; border-radius: 6px; margin-bottom: 5px;
+                     background-color: {% if category=='success' %}#d4edda{% else %}#f8d7da{% endif %};
+                     color: {% if category=='success' %}#155724{% else %}#721c24{% endif %};
+                     border: 1px solid {% if category=='success' %}#c3e6cb{% else %}#f5c6cb{% endif %};"
+      >
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
     <main>
       <h3>Kitap Listesi</h3>
 
       <div class="arama">
-        <form action="/kitaplari_goruntule/{{ username }}" method="GET">
+        <form action="/kitaplari_goruntule" method="GET">
           <input
             type="text"
             name="aranacak_kitap"
@@ -218,7 +234,6 @@
             <th>Yazar</th>
             <th>Kategori</th>
             <th>Stok</th>
-
             {% if admin_mi %}
             <th>İşlem</th>
             {% endif %}
@@ -235,11 +250,7 @@
 
             {% if admin_mi %}
             <td>
-              <form
-                action="/kitapsil/{{ username }}"
-                method="POST"
-                style="display: inline"
-              >
+              <form action="/kitapsil" method="POST" style="display: inline">
                 <input type="hidden" name="kitap_id" value="{{ kitap.id }}" />
                 <button
                   type="submit"
@@ -262,11 +273,18 @@
         </tbody>
       </table>
     </main>
+
     <footer>
-      {% if admin_mi %}
-      <a href="/admin/{{ username }}">← Admin Anasayfasına Dön</a>
+      {% if role == 'admin' %}
+      <a href="{{ url_for('admin_anasayfa') }}">← Admin Anasayfasına Dön</a>
+      {% elif role == 'personel' %}
+      <a href="{{ url_for('personel_sayfasi') }}"
+        >← Personel Anasayfasına Dön</a
+      >
       {% else %}
-      <a href="/kullanici/{{ username }}">← Kullanıcı Anasayfasına Dön</a>
+      <a href="{{ url_for('kullanici_sayfasi') }}"
+        >← Kullanıcı Anasayfasına Dön</a
+      >
       {% endif %}
     </footer>
   </body>

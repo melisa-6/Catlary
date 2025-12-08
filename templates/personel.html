@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Admin Anasayfa</title>
+    <title>Personel Anasayfa</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
@@ -90,23 +90,6 @@
         flex-direction: column;
         gap: 6px;
       }
-      .flash-message {
-        margin-bottom: 10px;
-        font-family: Arial, sans-serif;
-        font-size: 13px;
-        line-height: 1.3;
-        text-align: center;
-        position: relative;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-        padding: 10px 15px;
-        width: fit-content;
-        max-width: 300px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
       .checkbox-group label {
         display: flex;
         align-items: center;
@@ -119,54 +102,43 @@
         color: blue;
         text-decoration: none;
       }
-
-      .flash-message-container {
-        position: relative;
-        width: 100%;
-        max-width: 600px;
-        padding: 0 20px;
-      }
-      .flash-message {
-        margin-bottom: 10px;
-        font-family: Arial, sans-serif;
-        font-size: 16px;
-        line-height: 1.5;
-        text-align: center;
-        position: relative;
-        border-radius: 12px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-      }
     </style>
   </head>
   <body>
     <h2>Hoşgeldin, {{ username }}!</h2>
-    <p>Burası admin anasayfasıdır.</p>
+    <p>Burası personel anasayfasıdır.</p>
 
-    <div class="flash-message-container">
+    <div
+      id="mesaj-container"
+      style="
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        width: auto;
+        max-width: 600px;
+      "
+    >
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %} {% for category, message in messages %} {% set lower_message =
-      message | lower %} {% set is_success_category = category == 'success' %}
-      {% set is_error_category = category == 'error' or category == 'danger' %}
-      {# Mesaj içeriğinde "başarıyla" kelimesi geçiyorsa kategoriye
-      bakılmaksızın başarı sayarız (frontend geçici düzeltme) #} {% set
-      has_success_text = 'başarıyla' in lower_message %} {% if
-      is_success_category or has_success_text %} {% set bg_color = '#e8f5e9' %}
-      {% set text_color = '#2e7d32' %} {% set title_text = 'Başarılı' %} {% elif
-      is_error_category %} {% set bg_color = '#ffebee' %} {% set text_color =
-      '#c62828' %} {% set title_text = 'Hata' %} {% else %} {# Varsayılan (info,
-      warning, veya yanlış kategorilenmiş başarı mesajları için) nötr mavi #} {%
-      set bg_color = '#e3f2fd' %} {% set text_color = '#01579b' %} {% set
-      title_text = 'Bilgi' %} {% endif %}
-
+      messages %} {% for category, message in messages %}
       <div
-        class="flash-message"
         style="
-                  background-color: {{ bg_color }};
-                  color: {{ text_color }};
-              "
+            background-color: {% if category == 'success' %}#e8f5e9{% else %}#ffebee{% endif %};
+            color: {% if category == 'success' %}#2e7d32{% else %}#c62828{% endif %};
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: center;
+        "
       >
-        <strong> {{ title_text }} </strong>
+        <strong>
+          {% if category == 'success' %}Başarılı{% else %} Hata{% endif %}
+        </strong>
         <p style="margin: 10px 0 0 0">{{ message | safe }}</p>
         <button
           onclick="this.parentElement.style.display='none';"
@@ -180,11 +152,7 @@
             position: absolute;
             top: 5px;
             right: 10px;
-            /* Butonun hover rengi */
-            opacity: 0.7;
           "
-          onmouseover="this.style.opacity='1'"
-          onmouseout="this.style.opacity='0.7'"
         >
           &times;
         </button>
@@ -201,37 +169,64 @@
         Kitap Ödünç Ver
       </button>
       <button onclick="toggleAlan('kitapIadeAlani')">Kitap İade Al</button>
-
       <button
         onclick="window.location.href='{{ url_for('tum_odunc_gecmisi') }}'"
       >
         Tüm Kullanıcıların Ödünç Geçmişini Göster
       </button>
+
+      <button onclick="toggleAlan('kullaniciEkleAlani')">Kullanıcı Ekle</button>
+      <button onclick="window.location.href='/kullanicilar'">
+        Kullanıcıları Göster
+      </button>
+
       <button
         onclick="window.location.href='{{ url_for('ceza_tablosunu_goster') }}'"
       >
         Tüm cezaları Göster
       </button>
+
       <button onclick="toggleAlan('cezaAlani')">Ceza Öde</button>
-
-      <button onclick="window.location.href='/kullanicilar'">
-        Kullanıcı Listesi ve Yönetimi
+      <button onclick="toggleAlan('personelSifreDegistirAlani')">
+        Şifremi Değiştir
       </button>
-      <button onclick="toggleAlan('kullaniciEkleAlani')">Kullanıcı Ekle</button>
-
-      <button onclick="toggleAlan('personelEkleAlani')">Personel Ekle</button>
-      <button
-        onclick="window.location.href='{{ url_for('personel_listesi_goster') }}'"
+    </div>
+    <div
+      class="gizli-alan"
+      id="personelSifreDegistirAlani"
+      style="display: none"
+    >
+      <h3>Şifremi Değiştir</h3>
+      <form
+        action="{{url_for('personel_sifre_degistir_route') }}"
+        method="POST"
       >
-        Personel Listesi ve Yönetimi
-      </button>
-
-      <button onclick="window.location.href='{{ url_for('adminler_goster') }}'">
-        Sistem yöneticilerini gör
-      </button>
-      <button onclick="toggleAlan('adminEkleAlani')">Admin Ekle</button>
-      <button onclick="toggleAlan('adminSilAlani')">Admin Sil</button>
-      <button onclick="toggleAlan('sifreAlani')">Admin Şifremi Değiştir</button>
+        <input
+          type="password"
+          name="eski_sifre"
+          placeholder="Eski Şifreniz"
+          required
+        /><br />
+        <input
+          type="password"
+          name="yeni_sifre"
+          placeholder="Yeni Şifre"
+          required
+        /><br />
+        <input
+          type="password"
+          name="yeni_sifre_tekrar"
+          placeholder="Yeni Şifre Tekrar"
+          required
+        /><br />
+        <button type="submit">Değiştir</button>
+        <button
+          type="button"
+          onclick="toggleAlan('personelSifreDegistirAlani')"
+        >
+          İptal
+        </button>
+      </form>
     </div>
 
     <div class="gizli-alan" id="kitapEkleAlani">
@@ -348,114 +343,26 @@
         </button>
       </form>
     </div>
-    <div class="gizli-alan" id="personelEkleAlani">
-      <h3>Personel Ekle</h3>
-      <form action="{{ url_for('personel_ekle') }}" method="POST">
-        <input
-          type="text"
-          name="ad_soyad"
-          placeholder="Personel Kullanıcı Adı"
-          required
-        />
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="sifre" placeholder="Şifre" required />
-        <input
-          type="password"
-          name="sifre_tekrar"
-          placeholder="Şifre Tekrar"
-          required
-        />
 
-        <button type="submit">Ekle</button>
-        <button type="button" onclick="toggleAlan('personelEkleAlani')">
+    <div class="gizli-alan" id="kullanicisifreSifirlaAlani">
+      <h3>Kullanıcı Şifresini Sıfırla</h3>
+      <form
+        action="{{ url_for('admin_kullanici_sifre_sifirla_route') }}"
+        method="POST"
+      >
+        <input
+          type="number"
+          name="kullanici_id"
+          placeholder="Kullanıcı ID"
+          required
+        /><br />
+        <button type="submit">Şifreyi Sıfırla</button>
+        <button
+          type="button"
+          onclick="toggleAlan('kullanicisifreSifirlaAlani')"
+        >
           İptal
         </button>
-      </form>
-    </div>
-
-    <div class="gizli-alan" id="adminEkleAlani">
-      <h3>Yeni Admin Ekle</h3>
-      <form action="/adminekle" method="POST">
-        <input
-          type="text"
-          name="yeni_admin_adi"
-          placeholder="Admin Adı"
-          required
-        /><br />
-        <input
-          type="text"
-          name="yeni_admin_email"
-          placeholder="Admin maili"
-          required
-        /><br />
-        <input
-          type="password"
-          name="yeni_admin_sifre"
-          placeholder="Şifre"
-          minlength="6"
-          required
-        /><br />
-        <input
-          type="password"
-          name="yeni_admin_sifre_tekrar"
-          placeholder="Şifreyi tekrar girin"
-          minlength="6"
-          required
-        /><br />
-        <button type="submit">Ekle</button>
-        <button type="button" onclick="toggleAlan('adminEkleAlani')">
-          İptal
-        </button>
-      </form>
-    </div>
-
-    <div class="gizli-alan" id="adminSilAlani">
-      <h3>Admin Sil</h3>
-      <form action="/adminsil" method="POST">
-        <input
-          type="text"
-          name="silinecek_admin_adi"
-          placeholder="Silinecek Admin Adı"
-          required
-        /><br />
-        <input
-          type="text"
-          name="silinecek_admin_adi_tekrar"
-          placeholder="Admin Adını tekrar girin"
-          required
-        /><br />
-        <button type="submit">Sil</button>
-        <button type="button" onclick="toggleAlan('adminSilAlani')">
-          İptal
-        </button>
-      </form>
-    </div>
-
-    <div class="gizli-alan" id="sifreAlani">
-      <h3>Admin Şifresini Değiştir</h3>
-      <form action="/admin_sifre_degistir" method="POST">
-        <input
-          type="password"
-          name="eski_sifre"
-          placeholder="Eski Şifre"
-          required
-        /><br />
-        <input
-          type="password"
-          name="yeni_sifre"
-          placeholder="Yeni Şifre"
-          minlength="6"
-          required
-        /><br />
-        <input
-          type="password"
-          name="yeni_sifre_tekrar"
-          placeholder="Yeni Şifreyi Tekrar"
-          minlength="6"
-          required
-        /><br />
-        <button type="submit">Değiştir</button>
-        <button type="button" onclick="toggleAlan('sifreAlani')">İptal</button>
       </form>
     </div>
 
@@ -522,8 +429,6 @@
         z-index: 9999;
       "
     ></div>
-
-    <a href="{{ url_for('cikis_yap') }}" id="cikisLink">Çıkış Yap</a>
     <div class="gizli-alan" id="cezaOnayAlani" style="display: none">
       <div class="modal-icerik">
         <h3>Ceza Ödeme Onayı</h3>
@@ -540,6 +445,8 @@
         </form>
       </div>
     </div>
+    <a href="{{ url_for('cikis_yap') }}" id="cikisLink">Çıkış Yap</a>
+
     <script>
       function toggleAlan(id) {
         const alan = document.getElementById(id);
@@ -578,7 +485,8 @@
           const miktar = data.borc_miktari;
           const username = data.username || "Kullanıcı";
 
-          document.getElementById("odenecek_ceza_id").value = ceza_id; // 🔥 Artık toggleAlan düzeltildiği için bu satır güvenli
+          document.getElementById("odenecek_ceza_id").value = ceza_id;
+
           document.getElementById(
             "onayMesaji"
           ).innerHTML = `Kullanıcı: ${username}<br> Ödenecek Miktar: <strong>${miktar} TL</strong>`;
@@ -589,7 +497,6 @@
           alert("Sorgu hatası oluştu: " + hata);
         }
       });
-
       onayCezaForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         const ceza_id = document.getElementById("odenecek_ceza_id").value;

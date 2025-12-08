@@ -90,34 +90,31 @@
     </style>
   </head>
   <body>
-    <h2>Hoşgeldin, {{ username }}!</h2>
+    <h2>Hoşgeldin, {{ g.username }}!</h2>
     <p>Burası kullanıcı anasayfasıdır.</p>
 
     <div class="butonlar">
-      <button
-        onclick="window.location.href='/kitaplari_goruntule/{{ username }}'"
-      >
+      <button onclick="window.location.href='/kitaplari_goruntule'">
         Kitapları Görüntüle
       </button>
 
       <button
-        onclick="window.location.href='/oduncalmagecmisim/{{ username }}'"
+        onclick="window.location.href='/oduncalmagecmisim/{{ g.username }}'"
       >
         Ödünç Alma Geçmişim
       </button>
 
-      <button onclick="window.location.href='/cezalarimigoster/{{ username }}'">
+      <button
+        onclick="window.location.href='/cezalarimigoster/{{ g.username }}'"
+      >
         Cezalarımı Göster
       </button>
 
       <button onclick="toggleGizliAlan()">Şifre Değiştir</button>
-      <form
-        action="/borc_ode/{{ username }}"
-        method="POST"
-        style="display: inline"
-      >
-        <button type="submit">Borcu Öde</button>
-      </form>
+
+      <button onclick="window.location.href='/kendiborc_ode/{{ g.username }}'">
+        Borcu Öde
+      </button>
     </div>
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %}
@@ -128,11 +125,12 @@
     </div>
     {% endif %} {% endwith %}
 
-    <!-- Gizli alan (sifreAlani) -->
     <div class="gizli-alan" id="sifreAlani" style="display: none">
       <h3>Şifre Değiştir</h3>
 
       <form action="/kullanici_sifre_degistir" method="POST">
+        <input type="hidden" name="username" value="{{ g.username }}" />
+
         <input
           type="password"
           name="eski_sifre"
@@ -178,6 +176,6 @@
       }
     </script>
 
-    <a href="/">Çıkış Yap</a>
+    <a href="/cikis">Çıkış Yap</a>
   </body>
 </html>

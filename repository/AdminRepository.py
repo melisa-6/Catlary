@@ -1,20 +1,22 @@
 import logging
 import database
 from werkzeug.security import generate_password_hash 
+
 class AdminRepository:
 
     def __init__(self, db_config):
         self.db_config = db_config
     
     def _get_connection(self):
-    
-     try:
-        return database.baglanti_olustur(self.db_config)
-     except Exception as e:
-        raise Exception(f"Admin DB Bağlantı Hatası: {e}")
+        """Her çağrıda yeni bir bağlantı oluşturur."""
+        try:
+            return database.baglanti_olustur(self.db_config)
+        except Exception as e:
+            # Bağlantı kurulamıyorsa hemen hata fırlat
+            raise Exception(f"Admin DB Bağlantı Hatası: {e}")
     
     def admin_sil(self, username):
-       
+        conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
@@ -24,19 +26,19 @@ class AdminRepository:
             cursor.execute(sql, (username,))
             conn.commit()
 
-            silinen_sayi = cursor.rowcount  # Kaç satır silindiğini alir
-
-            cursor.close()
-            conn.close()
+            silinen_sayi = cursor.rowcount  # Kaç satır silindiğini alır
 
             return silinen_sayi  # 1: silindi, 0: bulunamadı olur
         except Exception as e:
+            if conn: conn.rollback()
             print(f"Admin silme hatası: {e}")
             return 0
+        finally:
+            if conn: conn.close()
     
     
     def admin_mi(self, email):
-    #E-posta adresi verilen kullanıcının admin tablosunda olup olmadığını kontrol eder
+        # E-posta adresi verilen kullanıcının admin tablosunda olup olmadığını kontrol eder
         conn = None
         try:
             conn = self._get_connection()
@@ -64,47 +66,73 @@ class AdminRepository:
         finally:
             if conn: conn.close()
 
-    #username ile admini getirir
+    # username ile admini getirir
     def get_by_username(self, username):
-     conn = None
-     try:
-        conn = self._get_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT id, username, email, password FROM admin WHERE username=%s", (username,)) 
-        
-        return cursor.fetchone()
-     except Exception as e:
-        logging.error(f"Admin username çekme hatası: {e}")
-        print(f"DEBUG REPO HATASI: {e}") 
-        raise e
-     finally:
-        if conn: conn.close()
-        
-#gelen bilgiler ile admin ekler
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT id, username, email, password FROM admin WHERE username=%s", (username,)) 
+            
+            return cursor.fetchone()
+        except Exception as e:
+            logging.error(f"Admin username çekme hatası: {e}")
+            print(f"DEBUG REPO HATASI: {e}") 
+            raise e
+        finally:
+            if conn: conn.close()
+    # repository/veriRepository.py (veya ilgili Repo sınıfınız)
+
+    # repository/veriRepository.py veya ilgili dosya
+
+    def adminler(self):
+        conn = None
+        try:
+            conn = self._get_connection()
+            # Bağlantı kurulamazsa burada patlar.
+            
+            # dictionary=True olduğundan emin olun
+            cursor = conn.cursor(dictionary=True) 
+            
+            # Sorgu hatalıysa burada patlar.
+            cursor.execute("SELECT id, username,email FROM admin") 
+            
+            adminler = cursor.fetchall()
+            return adminler
+            
+        except Exception as e:
+            # KRİTİK: Hatanın TAM NE OLDUĞUNU GÖSTEREN PRINT SATIRI
+            print("-" * 50)
+            print(f"!!! KRİTİK VERİTABANI HATASI !!!: {e}") 
+            print(f"!!! KOD HATA NEDENİYLE 'None' DÖNDÜRDÜ !!!")
+            print("-" * 50)
+            
+            logging.error(f"Admin listesi çekme hatası: {e}") 
+            return None # Hata oluştuğu için None döndürüyoruz.
+            
+        finally:
+            if conn: conn.close()
+            
     def admin_ekle(self, username, email, sifre):
         conn = None
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            if self.get_by_username(username) or self.get_by_email(email): # Kontrol repoyu kendi içinde çağırıyor (riskli ama hızlı çözüm)
-                return 0 
-                
-            hashed_password = generate_password_hash(sifre)
             cursor.execute(
                 "INSERT INTO admin (username, email, password) VALUES (%s,%s,%s)",
-                (username, email, hashed_password)
+                (username, email, sifre)
             )
             conn.commit()
             return cursor.lastrowid
         except Exception as e:
             if conn: conn.rollback()
             logging.error(f"Admin ekleme hatası: {e}")
-            raise e
+            # Hata fırlatmak yerine -1 döndürelim
+            return -1 
         finally:
             if conn: conn.close()
-    
-    #gelen bilgiler ile sifreyi guncelelr
+    # gelen bilgiler ile şifreyi günceller
     def sifre_guncelle(self, username, yeni_hash):
         conn = None
         try:
@@ -117,7 +145,7 @@ class AdminRepository:
             )
             conn.commit()
             
-            # Etkilenen satır sayısını döndür (Başarılı ise 1, bulunamazsa 0)
+            # Etkilenen satır sayısını döndür
             return {"success": True, "message": f"{cursor.rowcount} admin kullanıcısının şifresi güncellendi."}
             
         except Exception as e:
@@ -125,9 +153,9 @@ class AdminRepository:
             logging.error(f"Admin şifre güncelleme hatası: {e}")
             raise e
         finally:
-            if conn: conn.close()        
+            if conn: conn.close()      
     
-    #ilk admini alir
+    # ilk admini alır
     def get_first_admin(self):
         conn = None
         try:
