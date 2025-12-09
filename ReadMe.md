@@ -106,6 +106,7 @@ Kitapları görüntüle butonuna tıkladığımızda:
 Şartları sağlayan kitaplari(Ödüçte olmama gibi) silebilme özelliğie sahiptir.
 
 ![login](static/images/Catlary21.png)
+
 ![login](static/images/Catlary22.png)
 
 Kitap ekle butonuna tıkladığında:
@@ -114,11 +115,13 @@ Kitap ekle butonuna tıkladığında:
 Gerekli bilgiler doldurulduğunda :
 
 ![login](static/images/Catlary24.png)
+
 ![login](static/images/Catlary25.png)
 
 Kitap ödünç ver butonuna tıkladıgında:
 
 ![login](static/images/Catlary27.png)
+
 ![login](static/images/Catlary28.png)
 
 kullanıcı sayfasında da gözükür:
@@ -144,6 +147,7 @@ Tüm kullanıcıların ödünç verme geçmişini görntülemek istenirse:
 
 Yeni admin eklemek/silmek istenirse:
 (Form eksiksiz/hatasız doldurulmalidir.)
+
 ![login](static/images/Catlary34.png)
 
 ![login](static/images/Catlary35.png)
@@ -163,7 +167,9 @@ Yeni kullanıcı eklenmek istenirse:
 Kullanıcıların şifresini unutması durumunda kullanıcı şifresini sıfırlamak için gerekli id girilmesi beklenir ve:
 
 ![login](static/images/Catlary39.png)
+
 ![login](static/images/Catlary40.png)
+
 ![login](static/images/Catlary41.png)
 
 Kullanıcı listesi görüntülenme istenirse veya kullanıcıların aktiflik/pasiflikleri değiştirilmek istenirse:
@@ -185,6 +191,7 @@ Var olan cezaları ödemek isterse:
 ![login](static/images/Catlary46.png)
 
 ![login](static/images/Catlary50.png)
+
 ![login](static/images/Catlary52.png)
 
 Cezalar listesinde ödenen ceza
@@ -223,3 +230,135 @@ işaretlenir.
 ![login](static/images/Catlary59.png)
 
 ' trigger ve stored procedureler eklenmiştir.
+
+### 8.12.20205 tarihinde atılan commit ile;
+
+\* Catlary Kütüphane Yönetim Sistemine Personel/Çalışan rolü ekledim,JWT tabanlı şifrelemeye geçiş yaptım ve Postman testleri ile uyumlu hale getirdim;
+
+Güncel olarak anasayfa
+
+![login](static/images/Catlaryguncelanasayfa.png)
+
+personellerin de giriş yapabileceği şekilde güncellendi.
+
+\* Personel rolü eklendikten sonra Admin anasayfasında bazı değişiklikler yapıldı;
+
+İlk olarak admin yetkileri personelleri yönetilecek şekilde değiştirildi.
+
+![login](static/images/gunceladminsayfasi.png)
+
+\* Bulunan personel ekle , personel Listesi ve Yönetimi ,Sistem Yöneticilerini Gör butonları ile
+
+Gerekli bilgiler ile (Mail ve username kontrolu yapılarak) personel ekleyebilir
+
+![login](static/images/personelekle.png)
+
+![login](static/images/varsayilanpersonelekleme.png)
+
+![login](static/images/personeleklemebasarili.png)
+
+Personel listesini görebilir
+![login](static/images/personellistesi.png)
+
+Personellerin Aktiflik /Pasiflik durumlarını değiştirebilir
+
+![login](static/images/personelaktiflik.png)
+
+Personellerin Şifrelerini unutma durumunda şifrelerini sıfırlayabilir
+
+![login](static/images/personelsifresifirlamaonayi.png)
+
+![login](static/images/sifresifirlamaonayi.png)
+
+Bu şifre sıfırlanırken aynı zamanda admine de mail gider
+
+![login](static/images/adminmail.png)
+
+![login](static/images/personelmail.png)
+
+![login](static/images/personelsifremailgonderildi.png)
+
+Bu değişiklikler yapılırken kullanıcı listesi görünümü ve kitap listesi de güncellendi
+
+![login](static/images/personelkitaplistesi.png)
+
+![login](static/images/personelkitapsilonay.png)
+Kitap ödünç durumuna göre;
+
+![login](static/images/kitapsilhata.png)
+
+![login](static/images/kitapsilindi.png)
+
+Kullanıcı Listesi Aktiflik/Pasiflik durumu ve şifre sıfırlama bir araya getirildi
+
+![login](static/images/guncelkullanicilistesi.png)
+
+![login](static/images/sifresifirlaonay.png)
+
+![login](static/images/sifirlabasarili.png)
+
+\* Sistem Yöneticilerini gör butonu ile sistemdeki yöneticileri görebilir, eskisi gibi ekleyebilir silebilir.
+
+![login](static/images/adminlistesi.png)
+
+!!! Varsayilan admin kontrolu eklendi
+Artık Default admin silinemez!
+
+![login](static/images/Defaultadmin.png)
+
+\* Diğer roller gibi gerekli kontrolleri sağladıktan sonra giriş yapabilir.
+
+![login](static/images/personelhataligiris.png)
+
+\* Personel doğru bilgiler ile giriş yaptıktan sonra personel anasayfası:
+
+![login](static/images/personelgirisbasarilipng.png)
+' bu şekilde görünmektedir.
+
+Eklenen Personel rolü anasayfasında ise Admin gibi ama daha az yetkileri bulunuyor.
+Adminlerin de görebileceği gibi güncel admin anasayfasında da olduğu gibi kitap Listesini görebilir ve yönetebilir ve kullanıcı Listesini görebilir ve yönetimini yapabilmektedir.
+
+Ekstra olarak kendi şifrelerini istedikleri gibi değiştirebilmektedir.
+
+![login](static/images/personelsifredeis.png)
+
+![login](static/images/sifredeisbasarili.png)
+
+Duruma göre hata verir;
+
+![login](static/images/sifredeishata.png)
+
+Admin ve personel sayfasinda bulunan ceza ödeme kısmı da güncellendi;
+
+![login](static/images/cezaode.png)
+
+![login](static/images/cezaodeonay.png)
+
+Duruma göre kitap iade edilmişse ceza başarıyla ödenir veya hata verir;
+
+![login](static/images/cezaodeonaylandi.png)
+
+![login](static/images/cezaodehata.png)
+
+Aynı zamanda kullanıcı anasayfası da güncellendi;
+
+![login](static/images/guncelkullanıcı.png)
+
+Duruma göre güncel borcunu görür, ödeme yapar veya hata verir
+(Ödeme sistemi entegre etmeyi denedim fakat yapamadım dolayısıyla sadece basit bir html sayfası ile bilgileri alıp hiçbir kontrol yapmadan oanyalıyor şuanlık :(( )
+
+![login](static/images/borc.png)
+
+![login](static/images/borcvar.png)
+
+![login](static/images/borcodehata2.png)
+
+Eklenen ilgili Trigger ile yeni bir üye eklendiğinde mail gitmektedir;
+
+![login](static/images/uyeoldun.png)
+
+Yapılan değişiklikler dolayısıyla ER Diyagramları da güncellendi;
+
+![login](static/images/erguncel.png)
+
+![login](static/images/tablolar.png)

@@ -99,6 +99,7 @@ def tablolar_olustur():
         aktif BOOLEAN NOT NULL DEFAULT 1
     );
     """)
+    
     cursor.execute("""
  CREATE TABLE IF NOT EXISTS MailKuyrugu (
     MailId INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
