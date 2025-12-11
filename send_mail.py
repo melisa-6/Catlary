@@ -3,7 +3,7 @@ from email.mime.text import MIMEText
 import mysql.connector
 
 SMTP_USER = "infocatlary@gmail.com"
-SMTP_PASS = "gngj tare hkrf yvbf" 
+SMTP_PASS = "" 
 
 def send_mail_to_user(to_email, subject, content):
     """Tek bir kullanıcıya mail gönderir"""

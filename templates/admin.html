@@ -197,6 +197,17 @@
         Kitapları Görüntüle ve sil
       </button>
       <button onclick="toggleAlan('kitapEkleAlani')">Kitap Ekle</button>
+
+      <button
+        onclick="window.location.href='{{ url_for('kategorileri_getir_route') }}'"
+      >
+        Kategori Yönetimi
+      </button>
+      <button
+        onclick="window.location.href='{{ url_for('yazarlar_getir_route') }}'"
+      >
+        Yazar Yönetimi
+      </button>
       <button onclick="toggleAlan('kitapOduncVerAlani')">
         Kitap Ödünç Ver
       </button>
@@ -236,50 +247,24 @@
 
     <div class="gizli-alan" id="kitapEkleAlani">
       <h3>Yeni Kitap Ekle</h3>
+
       <form action="/kitapekle" method="POST">
         <input type="text" name="kitap_adi" placeholder="Kitap Adı" required />
-        <input
-          type="text"
-          name="kitap_yazari"
-          placeholder="Kitap Yazarı"
-          required
-        />
-        <input
-          type="text"
-          name="kitap_yayini"
-          placeholder="Yayınevi"
-          required
-        />
-        <div class="checkbox-group">
-          <label
-            ><input type="checkbox" name="kitap_turu" value="Roman" />
-            Roman</label
-          >
-          <label
-            ><input type="checkbox" name="kitap_turu" value="Fantastik" />
-            Fantastik</label
-          >
-          <label
-            ><input type="checkbox" name="kitap_turu" value="Bilim" />
-            Bilim</label
-          >
-          <label
-            ><input type="checkbox" name="kitap_turu" value="Tarih" />
-            Tarih</label
-          >
-          <label
-            ><input type="checkbox" name="kitap_turu" value="Korku" />
-            Korku</label
-          >
-          <label
-            ><input type="checkbox" name="kitap_turu" value="Çocuk" />
-            Çocuk</label
-          >
-          <label
-            ><input type="checkbox" name="kitap_turu" value="Diğer" />
-            Diğer</label
-          >
-        </div>
+
+        <select name="yazar_id" class="form-control" required>
+          <option value="">Yazar Seçin</option>
+          {% for y in yazarlar %}
+          <option value="{{ y['id'] }}">{{ y['ad'] }}</option>
+          {% endfor %}
+        </select>
+
+        <select name="kategori_id" class="form-control" required>
+          <option value="">Kategori Seçin</option>
+          {% for k in kategoriler %}
+          <option value="{{ k['id'] }}">{{ k['kategori_adi'] }}</option>
+          {% endfor %}
+        </select>
+
         <input
           type="number"
           name="kitap_sayfa_sayisi"
@@ -308,13 +293,19 @@
           min="0"
           required
         />
+        <input
+          type="text"
+          name="kitap_yayini"
+          placeholder="Yayınevi"
+          required
+        />
+
         <button type="submit">Ekle</button>
         <button type="button" onclick="toggleAlan('kitapEkleAlani')">
           İptal
         </button>
       </form>
     </div>
-
     <div class="gizli-alan" id="kitapOduncVerAlani">
       <h3>Kitap Ödünç Ver</h3>
       <form action="/kitapoduncver" method="POST">

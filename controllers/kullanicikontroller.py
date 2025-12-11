@@ -222,16 +222,13 @@ class kullanicikontroller:
         # kullanıcıyı kullanıcı adına göre bul ve ID'sini alir
         user_data = kullaniciService.get_by_username(kullanici_adi) 
         if not user_data:
-            # Eğer Kullanıcı bulunamazsa 404 döndürür
             return jsonify({"success": False, "message": "Kullanıcı bulunamadı!"}), 404
 
         user_id = user_data['id']
         
-        # Service'i çağırarak durumu değiştirme işlemini yapar
         sonuc = kullaniciService.kullanici_aktiflik_durumu_degistir(user_id) 
         #  JSON yanıtı döndür
         if sonuc['success']:
             return jsonify(sonuc), 200
         else:
-            # Service'ten dönen hatayı döndür
             return jsonify(sonuc), 400

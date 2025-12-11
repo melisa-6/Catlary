@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Yazar Yönetimi</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url("{{ url_for('static', filename='images/lovers3.png') }}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        display: flex;
+        justify-content: center;
+        padding-top: 40px;
+      }
+
+      .page-container {
+        width: 90%;
+        max-width: 850px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(4px);
+      }
+
+      h2,
+      h3 {
+        color: #444;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-align: center;
+      }
+
+      /* TABLO */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      th {
+        background-color: #f6f6f6;
+        padding: 14px;
+        font-weight: 600;
+        color: #555;
+      }
+
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+      }
+
+      tr:hover {
+        background-color: #f9f9f9;
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+
+      .success {
+        background-color: #e8f8f1;
+        color: #1e7d57;
+      }
+
+      .danger {
+        background-color: #fdecec;
+        color: #b33a3a;
+      }
+
+      /* FORM */
+      .form-container {
+        background: rgba(255, 255, 255, 0.85);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      input[type="text"] {
+        padding: 12px;
+        width: 250px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        outline: none;
+      }
+
+      input[type="text"]:focus {
+        border-color: #b09ff3;
+        box-shadow: 0 0 6px rgba(176, 159, 243, 0.4);
+      }
+
+      button {
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+      }
+
+      .btn-add {
+        background-color: #b8a8ff;
+        color: white;
+      }
+
+      .btn-add:hover {
+        background-color: #a18dff;
+      }
+
+      .btn-delete {
+        background-color: #ffb6c1;
+        color: white;
+      }
+
+      .btn-delete:hover {
+        background-color: #ff9aa7;
+      }
+
+      .nav-link {
+        margin-bottom: 20px;
+        text-decoration: none;
+        color: #7b6cff;
+        font-weight: bold;
+        font-size: 15px;
+
+        display: block;
+        text-align: center;
+        margin-top: 25px;
+      }
+
+      .nav-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page-container">
+      <h2>Yazar Yönetimi</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="alert {{ category }}">{{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <div class="form-container">
+        <h3>Yeni Yazar Ekle</h3>
+        <form action="/yazarekle" method="POST">
+          <input
+            type="text"
+            name="yazar_adi"
+            placeholder="Yazar Adı Giriniz"
+            required
+          />
+          <button type="submit" class="btn-add">Ekle</button>
+        </form>
+      </div>
+
+      <h3>Mevcut Yazarlar</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Yazar Adı</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for y in yazarlar %}
+          <tr>
+            <td>{{ y.id }}</td>
+            <td>{{ y.ad }}</td>
+            <td>
+              <form
+                action="/yazarsil/{{ y.id }}"
+                method="POST"
+                style="display: inline"
+              >
+                <button
+                  type="submit"
+                  class="btn-delete"
+                  onclick="return confirm('Bu yazarı silmek istediğinize emin misiniz?');"
+                >
+                  Sil
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3">Henüz hiç yazar eklenmemiş.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <a href="/admin_anasayfasi" class="nav-link">← Admin Paneline Dön</a>
+    </div>
+  </body>
+</html>

@@ -15,5 +15,6 @@
       "database": "kutuphane_db",
       "username": "melisa"
     }
-  ]
+  ],
+  "python.analysis.extraPaths": ["./repository"]
 }

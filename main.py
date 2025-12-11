@@ -10,6 +10,9 @@ import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 import sys
 # ------------------- CONTROLLERLAR -------------------
+
+from controllers import yazarController
+from controllers import kategoriController
 from controllers.personelController import personelController
 from controllers.adminkontroller import adminkontroller 
 from controllers.kitapController import kitapController
@@ -17,8 +20,13 @@ from controllers.kullanicikontroller import  kullanicikontroller
 from controllers.odunccontroller import odunccontroller
 from controllers.cezaController import cezaController
 from controllers.odunccontroller import odunc_controller_instance
+from controllers.yazarController import YazarController
+from controllers.kategoriController import KategoriController
+
 # ------------------- SERVİSLER -------------------
+
 from repository.varsayilanekleme import setup_database
+from services.veriservice import Veriservice
 from services.adminService import adminService
 from services.kullaniciService import kullaniciService
 from services.kitapService import kitapService
@@ -32,9 +40,6 @@ from send_mail import send_pending_mails
 # ------------------- VERİTABANI -------------------
 from database import baglanti_olustur, tablolar_olustur
 
-# ------------------- REPO -------------------
-from repository.veriRepository import VeriService
-
 # ------------------- DECORATORS -------------------
 from decorators import admin_required, login_required,admin_or_personel_required
 
@@ -42,7 +47,7 @@ from decorators import admin_required, login_required,admin_or_personel_required
 db_config = {
     "host": "127.0.0.1",
     "user": "melisa",
-    "password": "Mtz0504*",
+    "password": "",
     "database": "kutuphane_db",
     "port": 3306
 #mysql e baglanmak iicn gerekli bilgiler
@@ -57,11 +62,14 @@ ceza_controller_instance = cezaController(db_config)
 kullanici_controller_instance = kullanicikontroller()
 personel_service = personelService(db_config)
 personel_controller_instance=personelController(db_config)
+yazarlar_controller=YazarController()
+kitap_controller=kitapController(db_config)
+kategoriler_controller=KategoriController(db_config)
 # db sifirlamak ve varsayilan admin eklemek icin
 #if __name__ == "__main__":
 #    conn = baglanti_olustur() 
- #   service = VeriService(conn)
- #   service.veri_sifirla_delete() 
+#    service = Veriservice(conn)
+#    service.veri_sifirla_delete() 
 #    tablolar_olustur() 
 #    setup_database()
 # ------------------- FLASK APP -------------------
@@ -159,16 +167,16 @@ def girisyap():
         return redirect(url_for('anasayfa'))
     
     return "Beklenmeyen sunucu yanıtı.", 500
-
 @app.route('/admin_anasayfasi')
 @admin_required
 def admin_anasayfa():
     username = g.username 
-    
+    yazarlar = yazarlar_controller.tum_yazarlari_getir_controller()
+    kategoriler = kategoriler_controller.tum_kategorileri_getir_controller()
     if request.accept_mimetypes.best == "application/json":
         return jsonify({"username": username, "message": "Admin sayfası erişimi başarılı"}), 200
         
-    return render_template("admin.html", username=username)
+    return render_template("admin.html", username=username,yazarlar=yazarlar,kategoriler=kategoriler)
 
 @app.route('/kullanici_sayfasi')
 @login_required
@@ -187,7 +195,8 @@ def personel_sayfasi():
     user_id = g.user_id 
     username = g.username
     role = g.role
-
+    kategoriler=kategoriler_controller.tum_kategorileri_getir_controller()
+    yazarlar=yazarlar_controller.tum_yazarlari_getir_controller()
     is_api_request = request.accept_mimetypes.best == "application/json"
     
     if is_api_request:
@@ -202,7 +211,9 @@ def personel_sayfasi():
     return render_template('personel.html', 
                             kullanici_adi=username,
                             kullanici_rolu=role,
-                            user_id=user_id)
+                            user_id=user_id,
+                            kategoriler=kategoriler,
+                            yazarlar=yazarlar)
     
 @app.route('/cikis', methods=['GET'])
 def cikis_yap():
@@ -352,15 +363,16 @@ def kitaplari_goruntule():
     username = g.username
     role = g.role 
     aranan_kitap = request.args.get('aranacak_kitap', '')
-    kitaplar, admin_mi = kitapController.kitaplari_goruntule_controller(
+
+    kitaplar, admin_mi = kitap_controller.kitaplari_goruntule_controller(
         username, role, aranan_kitap
     )
-
     if role in ["admin", "personel"]:
         admin_mi = True
     else:
         admin_mi = False
 
+    # JSON Yanıtı
     if request.accept_mimetypes.best == "application/json":
         return jsonify({
             "kitaplar": make_json_compatible(kitaplar),
@@ -369,15 +381,15 @@ def kitaplari_goruntule():
             "admin_mi": admin_mi
         }), 200
 
+    # HTML Yanıtı 
     return render_template(
-    "kitaplar.html",
-    kitaplar=kitaplar,
-    username=username,
-    aranan_kitap=aranan_kitap,
-    admin_mi=admin_mi,
-    role=role
-)
-
+        "kitaplar.html",
+        kitaplar=kitaplar,
+        username=username,
+        aranan_kitap=aranan_kitap,
+        admin_mi=admin_mi,
+        role=role
+    )
 @app.route('/kullanicilar', methods=['GET'])
 @admin_or_personel_required 
 def kullanicilar():
@@ -401,28 +413,30 @@ def kullanicilar():
         kullanicilar=kullanicilar_listesi,
         geri_url=url_for("admin_anasayfa") if role=="admin" else url_for("personel_sayfasi")
     )
-
 @app.route('/kitapsil', methods=['POST']) 
 @admin_or_personel_required
 def kitap_sil():
     username = g.username
-    # JSON isteği kontrolü ve Veri Alma
+    
     is_api_request = request.is_json or request.accept_mimetypes.best == "application/json"
+    
     if is_api_request:
         data = request.get_json(silent=True) or {}
     else:
         data = request.form
+        
     kitap_id = data.get('kitap_id')
+    
     # Eksik Veri Kontrolü
     if not kitap_id:
         mesaj = "Hata: Silinecek kitap ID'si sağlanmadı."
         basarili_mi = False
         
-        # Eğer  veri eksikse, 400 Bad Request döner
+        # Eğer veri eksikse, 400 Bad Request döner
         if is_api_request:
              return jsonify({"success": False, "mesaj": mesaj}), 400
     else:
-        mesaj, _, basarili_mi = kitapController.kitap_sil_controller(kitap_id)
+        mesaj, _, basarili_mi = kitap_controller.kitap_sil_controller(kitap_id)
         
     # JSON Yanıtı
     if is_api_request:
@@ -433,42 +447,59 @@ def kitap_sil():
     flash(mesaj, "success" if basarili_mi else "danger")
     return redirect(request.referrer or url_for('kitaplari_goruntule'))
 
-@app.route('/kitapekle', methods=['POST']) 
-@admin_or_personel_required
-def kitap_ekle():
-    username = g.username
-    form_data = request.form
-    try:
-        mesaj, kitap_id, kitap_bilgileri, basarili_mi = kitapController.kitap_ekle_controller(form_data)
-    except ValueError as e:
-        print(f"HATA /kitapekle: Controller'dan yanlış sayıda değer geldi: {e}")
-        mesaj = "Sunucu Hatası: Kitap ekleme kontrolcüsü eksik/fazla değer döndürdü."
-        kitap_id = None
-        kitap_bilgileri = {}
-        basarili_mi = False
+@app.route("/kitapekle", methods=["GET", "POST"])
+def kitap_ekle_route():
+    if request.method == "POST":
+        try:
+            if request.is_json:
+                data = request.get_json()
+                kitap_adi = data.get("kitap_adi")
+                yazar_id = data.get("yazar_id")
+                kategori_id = data.get("kategori_id")
+                sayfa_sayisi = data.get("kitap_sayfa_sayisi")
+                stok_miktari = data.get("stok_miktari")
+                raf_no = data.get("raf_no")
+                baski_yili = data.get("baski_yili")
+                yayinevi = data.get("kitap_yayini")
+            else:
+                kitap_adi = request.form.get("kitap_adi")
+                yazar_id = request.form.get("yazar_id")
+                kategori_id = request.form.get("kategori_id")
+                sayfa_sayisi = request.form.get("kitap_sayfa_sayisi")
+                stok_miktari = request.form.get("stok_miktari")
+                raf_no = request.form.get("raf_no")
+                baski_yili = request.form.get("baski_yili")
+                yayinevi = request.form.get("kitap_yayini")
 
-    status_code = 201 if basarili_mi else 400
+            kitap_controller.kitap_ekle_controller(
+                kitap_adi, yazar_id, kategori_id, sayfa_sayisi,
+                stok_miktari, raf_no, baski_yili, yayinevi
+            )
 
-    # JSON için
-    if request.accept_mimetypes.best == "application/json":
-        response_data = {
-            "islem_turu": "Kitap Ekleme",
-            "mesaj": mesaj,
-            "success": basarili_mi,
-            "kitap_id": kitap_id,
-            "username": username,
-            **kitap_bilgileri
-        }
-        return jsonify(response_data), status_code
+            if request.is_json:
+                return jsonify({"success": True, "message": "Kitap başarıyla eklendi!"}), 201
+            else:
+                flash("Kitap başarıyla eklendi!", "success")
+                return redirect(url_for("kitap_ekle_route"))
 
-    # FLASH MESAJ
-    if basarili_mi:
-        flash(mesaj, "success")
-    else:
-        flash(mesaj, "error")
+        except Exception as e:
+            # Hata Yanıtı Dön
+            if request.is_json:
+                return jsonify({"success": False, "message": str(e)}), 400
+            else:
+                flash(f"Hata: {str(e)}", "danger")
+                return redirect(url_for("kitap_ekle_route"))
 
-    return redirect(request.referrer or url_for('kitaplari_goruntule'))
+    yazarlar = yazarlar_controller.tum_yazarlari_getir_controller()
+    kategoriler = kategoriler_controller.tum_kategorileri_getir_controller()
+    if request.is_json or request.args.get('type') == 'json':
+        return jsonify({
+            "yazarlar": yazarlar,
+            "kategoriler": kategoriler
+        })
 
+    
+    return render_template("admin.html", yazarlar=yazarlar, kategoriler=kategoriler)
 
 @app.route("/kitapoduncver", methods=["POST"])
 @admin_or_personel_required
@@ -666,9 +697,6 @@ def ceza_tablosunu_goster():
     username = g.username
     cezalar = [] 
     try:
-        print("CEZALAR VERİSİ:", cezalar) 
-        print("TİPİ:", type(cezalar))
-        
         cezalar_json = make_json_compatible(cezalar)
         cezalar = ceza_controller_instance.tum_cezalari_getir()
         cezalar_json = make_json_compatible(cezalar)
@@ -1058,5 +1086,106 @@ def personel_sifre_degistir_route():
         flash("Beklenmeyen bir hata oluştu.", "danger")
         return redirect(url_for("personel_sayfasi"))
     
+    
+@app.route("/kategoriler", methods=["GET"])
+@login_required
+def kategorileri_getir_route():
+    is_api_request = request.accept_mimetypes.best == "application/json" or request.is_json
+
+    kategoriler = kategoriler_controller.tum_kategorileri_getir_controller()
+    basarili_mi = True 
+    mesaj = "Kategoriler listelendi"
+    if is_api_request:
+        return jsonify({
+            "success": basarili_mi,
+            "message": mesaj,
+            "kategoriler": kategoriler
+        }), 200
+
+    return render_template(
+        "kategoriler.html",
+        kategoriler=kategoriler,
+        username=getattr(g, "username", "")
+    )
+@app.route("/yazarlar", methods=["GET"])
+@login_required
+def yazarlar_getir_route():
+    is_api_request = request.accept_mimetypes.best == "application/json" or request.is_json
+    yazarlar = yazarlar_controller.tum_yazarlari_getir_controller()
+    
+    basarili_mi = True
+    mesaj = "Yazarlar listelendi"
+
+    if is_api_request:
+        return jsonify({
+            "success": basarili_mi,
+            "message": mesaj,
+            "yazarlar": yazarlar
+        }), 200
+
+    # HTML Dönüşü
+    return render_template(
+        "yazarlar.html",
+        yazarlar=yazarlar,
+        username=getattr(g, "username", "")
+    )
+@app.route("/kategoriekle", methods=["POST"])
+def kategoriekle():
+    kategori_adi = request.form.get("kategori_adi") or (request.json.get("kategori_adi") if request.is_json else None)
+
+    success, msg = kategoriler_controller.kategoriekle_controller(kategori_adi)
+
+    if request.accept_mimetypes.best == "application/json":
+        return jsonify({
+            "success": success,
+            "message": msg
+        }), (200 if success else 400)
+
+    flash(msg, "success" if success else "danger")
+    return redirect("/kategoriler")
+
+@app.route("/kategorisil/<int:id>", methods=["POST"])
+@login_required
+def kategori_sil_route(id):
+    is_api_request = request.accept_mimetypes.best == "application/json" or request.is_json
+
+    basarili, mesaj = kategoriler_controller.kategori_sil_controller(id)
+
+    if is_api_request:
+        return jsonify({"success": basarili, "message": mesaj}), (200 if basarili else 400)
+
+    flash(mesaj, "success" if basarili else "danger")
+    return redirect(url_for("kategorileri_getir_route"))
+
+@app.route("/yazarekle", methods=["POST"])
+def yazarekle():
+    ad = request.form.get("yazar_adi") or (request.json.get("yazar_adi") if request.is_json else None)
+
+    success, msg = yazarlar_controller.yazarekle_controller(ad)
+
+    if request.is_json:
+        return jsonify({
+            "success": success,
+            "message": msg
+        }), (200 if success else 400)
+
+    flash(msg, "success" if success else "danger")
+
+    yazarlar = yazarlar_controller.tum_yazarlari_getir_controller()
+    return render_template("yazarlar.html", yazarlar=yazarlar)
+
+@app.route("/yazarsil/<int:id>", methods=["POST"])
+@login_required
+def yazar_sil_route(id):
+    is_api_request = request.accept_mimetypes.best == "application/json" or request.is_json
+
+    basarili, mesaj = yazarlar_controller.yazar_sil_controller(id)
+
+    if is_api_request:
+        return jsonify({"success": basarili, "message": mesaj}), (200 if basarili else 400)
+
+    flash(mesaj, "success" if basarili else "danger")
+    return redirect(url_for("yazarlar_getir_route"))
+
 if __name__ == "__main__":
     app.run(debug=True)

@@ -210,9 +210,7 @@ class odunclerRepository:
             cursor.close()
 
     def kullanici_aktif_odunc_detaylari_getir_repo(self, kullanici_id):
-        """
-        Kullanıcının henüz iade etmediği kitapların tüm ödünç detaylarını (özellikle gerekli_iade_tarihi'ni) çeker.
-        """
+       
         conn = self._get_conn()
         cursor = conn.cursor(dictionary=True)
         try:
@@ -229,9 +227,6 @@ class odunclerRepository:
             cursor.close()
             conn.close()
     def cezalar_odendi_yap_repo(self, kullanici_id):
-        """
-        Kullanıcının tüm ödenmemiş cezalarını (odeme_durumu = 0) 'ödendi' yapar.
-        """
         conn = self._get_conn()
         cursor = conn.cursor()
         try:

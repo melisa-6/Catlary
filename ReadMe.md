@@ -362,3 +362,39 @@ Yapılan değişiklikler dolayısıyla ER Diyagramları da güncellendi;
 ![login](static/images/erguncel.png)
 
 ![login](static/images/tablolar.png)
+
+### 11.12.2025 tarihinde atılan commit ile ;
+
+\* Catlary Kütüphane Yönetim Sistemine Kategori ve Yazarlar kısmını ekledim.Sadece Admin rolündeki kullamıcılar bunları yönetebilir;
+
+\*Admin rolundeki kullanıcıların anasayfasında bulunan Kategori Yönetimi yazılı butona tıklandığında tüm kategorilerin bulunduğu bir sayfa gelir ve belirli şartlar dahilinde kategori ekleyip silebiliriz;
+
+![login](static/images/kategoriyonetimiveekleme.png)
+
+![login](static/images/kategorisil.png)
+
+\* Admin rolundeki kullanıcıların anasayfasında bulunan Yazar Yönetimi yazılı butona tıklandığında tüm yazarların bulunduğu bir sayfa gelir ve belirli şartlar dahilinde yazar ekleyip silebiliriz;
+
+![login](static/images/yazaryonetimi.png)
+
+![login](static/images/yazarekleme.png)
+
+![login](static/images/yazareklehata.png)
+
+![login](static/images/yazarsilme.png)
+
+![login](static/images/yazarsilmebasarilipng.png)
+
+![login](static/images/yazarsilmehata.png)
+
+\* Yapılan bu değişiklikler sonucunda hem admin hem de personel rolündeki kullanıcılar kitap eklemesi ekranında ufak değişiklik yapıldı;
+
+![login](static/images/guncelkitapekle.png)
+
+![login](static/images/guncelkitapekle2.png)
+
+\* Kategori ve Yazarların da eklenmesi ile birlikt ER diyagramı da güncellendi;
+
+![login](static/images/GUNCELER.png)
+
+![login](static/images/GUNCELER2.png)

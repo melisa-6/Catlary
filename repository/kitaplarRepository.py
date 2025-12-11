@@ -1,5 +1,4 @@
 
-from errno import errorcode
 
 import mysql
 import database
@@ -8,6 +7,7 @@ class kitaplarRepository:
     def __init__(self, db_config=None):
         try:
             self.conn = database.baglanti_olustur(db_config)
+            self.cursor = self.conn.cursor()
         except Exception as e:
             print("DB bağlantısı oluşturulamadı:", e)
             self.conn = None
@@ -21,16 +21,27 @@ class kitaplarRepository:
         cursor.execute("SELECT * FROM kitaplar WHERE isim=%s", (isim,))
         return cursor.fetchone()
     
-    #tum kitaplari getirir
+    # Tüm kitapları getirir
     def tum_kitaplari_getir(self):
         cursor = self.conn.cursor(dictionary=True)
         try:
-            cursor.execute("SELECT * FROM kitaplar")
-            return cursor.fetchall()
-        finally:
-            cursor.close()
+            cursor.execute("""
+                SELECT 
+                    k.id,
+                    k.isim,
+                    y.ad AS yazar_isim,
+                    kat.kategori_adi AS kategori_isim,
+                    k.stok
+                FROM kitaplar k
+                LEFT JOIN yazarlar y ON k.yazar_id = y.id
+                LEFT JOIN kategoriler kat ON k.kategori_id = kat.id
+            """)
 
-    #parametre gelen kitabi arar
+            rows = cursor.fetchall()   
+            return rows               
+
+        finally:
+            cursor.close()          
     def kitap_ara(self, aranan_kitap):
         cursor = self.conn.cursor(dictionary=True)
         try:
@@ -42,32 +53,26 @@ class kitaplarRepository:
             return cursor.fetchall()
         finally:
             cursor.close()
+    def kitap_ekle(self, kitap_adi, yazar_id, kategori_id, sayfa_sayisi, stok, raf_no, baski_yili, yayinevi):
 
-    #parametre gelen bilgileri alarak kitabi ekler
-    def kitap_ekle(self, isim, yazar, kategori, yayinevi, sayfa_sayisi, stok, raf_no, baski_yili):
-        cursor = self.conn.cursor(buffered=True)
+
         try:
-            cursor.execute(
-                "SELECT * FROM kitaplar WHERE isim=%s AND yayinevi=%s",
-                (isim, yayinevi)
-            )
-            mevcut = cursor.fetchone()
-            if mevcut:
-                return f"Bu kitap zaten ekli! (ID: {mevcut[0]})", mevcut[0]
-
-            cursor.execute(
-                "INSERT INTO kitaplar (isim, yazar, kategori, sayfa_sayisi, stok, raf_no, baski_yili, yayinevi) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-                (isim, yazar, kategori, sayfa_sayisi, stok, raf_no, baski_yili, yayinevi)
-            )
+            query = """
+                INSERT INTO kitaplar 
+                (isim, yazar_id, kategori_id, sayfa_sayisi, stok, raf_no, baski_yili, yayinevi)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            val = (kitap_adi, yazar_id, kategori_id, sayfa_sayisi, stok, raf_no, baski_yili, yayinevi)
+            self.cursor.execute(query, val)
             self.conn.commit()
-            return f"Kitap başarıyla eklendi! (ID: {cursor.lastrowid})", cursor.lastrowid
-        except Exception as e:
-            self.conn.rollback()
-            return f"Hata oluştu: {str(e)}", None
-        finally:
-            cursor.close()
 
+        except Exception as e:
+            print("!!! HATA OLUŞTU !!!")
+            print(f"HATA DETAYI: {e}")
+            return False
+
+        finally:
+            print("--------------------------------------------------")
 
     def kitap_sil_db_islemi(self, kitap_id):
         cursor = self.conn.cursor()

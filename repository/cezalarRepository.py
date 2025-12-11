@@ -83,8 +83,6 @@ class cezalarRepository:
             conn.close()
  
     def cezanin_iade_edilmis_olup_olmadigini_kontrol_et(self, ceza_id):
-        #Belirtilen ceza ID'sine konu olan ödünç kaydının iade edilip edilmediğini kontrol eder 
-        #(cezalar tablosundaki iade_tarihi NULL değilse iade edilmiştir).
         
         conn = database.baglanti_olustur(self.db_config)
         cursor = conn.cursor(dictionary=True)

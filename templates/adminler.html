@@ -11,15 +11,7 @@
         min-height: 100vh;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
-        background: linear-gradient(
-            rgba(168, 218, 220, 0.4),
-            rgba(69, 123, 157, 0.4)
-          ),
-          url("{{ url_for('static', filename='img/bg.jpg') }}") no-repeat center
-            center fixed;
-        background-size: cover;
-        background-blend-mode: overlay;
-        background-attachment: fixed;
+        background-image: url("{{ url_for('static', filename='images/cat.png') }}");
         color: #1d3557;
       }
 

@@ -11,17 +11,14 @@ class kitapService:
         return self.repo.tum_kitaplari_getir()
 
         
-    def kitap_ekle(self, isim, yazar, kategori, yayinevi, sayfa_sayisi, stok, raf_no, baski_yili):
-        try:
-      #gelen sayisal degerleri int e cevirir ve bosluklari siler 
-            sayfa_sayisi = int(str(sayfa_sayisi).strip())
-            stok = int(str(stok).strip())
-            raf_no = int(str(raf_no).strip())
-            baski_yili = int(str(baski_yili).strip())
-        except ValueError:
-            return "Hata: Sayısal alanlarda geçersiz değer var", None
-#uygun repoya yonlendirir
-        return self.repo.kitap_ekle(isim, yazar, kategori, yayinevi, sayfa_sayisi, stok, raf_no, baski_yili)
+    def kitap_ekle(self, isim, yazar_id, kategori_list, yayinevi,
+               sayfa_sayisi, stok, raf_no, baski_yili):
+
+        return self.repo.kitap_ekle(
+            isim, yazar_id, kategori_list, yayinevi,
+            sayfa_sayisi, stok, raf_no, baski_yili
+        )
+
 
     def kitap_sil_by_id(self, kitap_id):
         if not kitap_id:

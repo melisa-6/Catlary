@@ -12,9 +12,6 @@ class cezaService:
         return self.repo.odeme_durumu_var_mi(kullanici_id)
   
     def ceza_bilgilerini_getir(self, ceza_id):
-        """Ceza miktarı, kullanıcı adı ve ödeme durumunu getirir."""
-        
-    
         detaylar = self.repo.ceza_detaylari_getir(ceza_id)
 
         if not detaylar:
@@ -22,7 +19,7 @@ class cezaService:
             
         return {
             "odendi_mi": detaylar.get('odeme_durumu', 0),
-            "miktar": float(detaylar.get('miktar', 0)), # Miktarı float yapalım
+            "miktar": float(detaylar.get('miktar', 0)), 
             "username": detaylar.get('username')
         }
     def ceza_ode(self, ceza_id):

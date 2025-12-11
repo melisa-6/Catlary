@@ -1,92 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <title>Personel Yönetim Paneli</title>
+    <title>Personel Listesi</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
 
     <style>
-      /* Pastel Renk Paleti */
-      :root {
-        --color-pastel-bg: #f5f5f5; /* Açık Gri/Beyaz */
-        --color-pastel-primary: #a8dadc; /* Açık Mavi */
-        --color-pastel-secondary: #457b9d; /* Koyu Mavi */
-        --color-pastel-success: #70e000; /* Açık Yeşil */
-        --color-pastel-danger: #ffb703; /* Pastel Sarı/Turuncu */
-        --color-pastel-warning: #ffb4a2; /* Pastel Somon */
-        --color-text: #333;
-        --color-border: #e0e0e0;
-      }
-
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
         padding: 40px 20px;
-        text-align: center;
-        background-color: var(--color-pastel-bg);
-        color: var(--color-text);
+        min-height: 100vh;
+        color: #333;
         display: flex;
         flex-direction: column;
-        align-items: center; /* Sayfa içeriğini dikey ortala */
-        min-height: 100vh;
-        margin: 0;
+        align-items: center;
+        background-image: url("{{ url_for('static', filename='images/lovers2.png') }}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
       }
 
-      /* Başlık ve Geri Dön Linki */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(6px);
+        z-index: -1;
+      }
+
       h2 {
         margin-bottom: 25px;
-        color: var(--color-pastel-secondary);
-      }
-      .back-link {
-        color: var(--color-pastel-secondary);
-        text-decoration: none;
-        font-weight: 600;
-        margin-top: 30px; /* Tablonun altına boşluk bırak */
-        display: block;
-      }
-      .back-link:hover {
-        text-decoration: underline;
-        color: var(--color-pastel-primary);
+        color: #457b9d;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
       }
 
-      /* Tablo Stili - Ortalanmış ve Yumuşak */
       .table-container {
         width: 95%;
         max-width: 1100px;
-        margin: 0 auto; /* Dikeyde ortalamayı sağlar */
-        background: white;
-        border-radius: 12px; /* Yumuşak köşeler */
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        margin-bottom: 30px;
       }
+
       table {
         width: 100%;
         border-collapse: collapse;
       }
+      body.personel-listesi::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("{{ url_for('static', filename='images/lovers2.png') }}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: blur(4px); /* Soft estetik için */
+        z-index: -1;
+      }
+
       th,
       td {
         padding: 15px;
         text-align: left;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid #e0e0e0;
       }
+
       th {
-        background-color: var(--color-pastel-primary); /* Pastel ana renk */
-        color: white;
+        background-color: #a8dadc;
+        color: #fff;
         font-weight: 600;
         text-transform: uppercase;
         font-size: 0.9em;
       }
+
       tr:hover td {
-        background-color: #f0f8ff; /* Çok açık mavi hover efekti */
+        background-color: #f0f8ff;
       }
 
-      /* Buton Stilleri */
+      /* Butonlar */
       .action-group {
         display: flex;
         gap: 8px;
       }
+
       .action-group button,
       .gizli-alan button {
         padding: 8px 12px;
@@ -98,55 +108,70 @@
       }
 
       .aktif-btn {
-        background-color: var(--color-pastel-success);
+        background-color: #70e000;
         color: white;
       }
       .pasif-btn {
-        background-color: var(--color-pastel-danger);
+        background-color: #ffb703;
         color: white;
       }
       .sifirla-btn {
-        background-color: var(--color-pastel-warning);
-        color: var(--color-text);
+        background-color: #ffb4a2;
+        color: #333;
       }
 
-      /* Durum Etiketleri */
+      /* Durum etiketleri */
       .status-aktif {
-        color: var(--color-pastel-success);
+        color: #70e000;
         font-weight: bold;
       }
       .status-pasif {
-        color: var(--color-pastel-danger);
+        color: #ffb703;
         font-weight: bold;
       }
 
-      /* Gizli Alan Stili (Modal) */
+      /* Geri dön linki */
+      .back-link {
+        color: #457b9d;
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 20px;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+        color: #a8dadc;
+      }
+
+      /* Modal (Şifre Sıfırla) */
       .gizli-alan {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.4); /* Daha hafif gölge */
-        display: flex;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
         justify-content: center;
         align-items: center;
         z-index: 1000;
       }
+
       .gizli-alan > div {
         background: white;
         padding: 30px;
-        border-radius: 10px;
+        border-radius: 12px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         text-align: center;
+        max-width: 400px;
       }
     </style>
   </head>
-  <body>
+
+  <body class="personel-listesi">
     <h2>Personel Yönetim Paneli 👥</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %} {% endwith
-    %} {% if personeller %}
+    {% if personeller %}
     <div class="table-container">
       <table>
         <thead>
@@ -178,7 +203,6 @@
                 <form
                   action="{{ url_for('personel_aktiflik_degistir_route') }}"
                   method="POST"
-                  style="display: inline"
                 >
                   <input
                     type="hidden"
@@ -219,11 +243,11 @@
       >← Yönetici Ana Sayfasına Dön</a
     >
 
-    <div id="sifirla_alani" class="gizli-alan" style="display: none">
+    <div id="sifirla_alani" class="gizli-alan">
       <div>
         <h3>Personel Şifresini Sıfırlama Onayı</h3>
         <p id="sifirla_mesaj"></p>
-        <p style="color: var(--color-pastel-danger); font-size: 0.9em">
+        <p style="color: #ff4d6d; font-size: 0.9em">
           Bu işlem geri alınamaz ve personele yeni şifresi e-posta ile
           gönderilecektir.
         </p>
@@ -232,7 +256,6 @@
           method="POST"
         >
           <input type="hidden" name="personel_email" id="sifirla_email_input" />
-
           <button type="submit" class="pasif-btn" style="margin-right: 10px">
             Onayla ve Sıfırla
           </button>
@@ -248,7 +271,6 @@
     </div>
 
     <script>
-      // Modal açma mantığı güncellendi
       function toggleSifirlaAlani(email) {
         const alan = document.getElementById("sifirla_alani");
         document.getElementById("sifirla_email_input").value = email;
@@ -256,7 +278,7 @@
           "<strong>" +
           email +
           "</strong> adresli personelin şifresi rastgele sıfırlanacaktır.";
-        alan.style.display = "flex"; // Modal'ı göster
+        alan.style.display = "flex";
       }
     </script>
   </body>

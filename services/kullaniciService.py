@@ -12,7 +12,7 @@ import string
 db_config = {
     "host": "127.0.0.1",
     "user": "melisa",
-    "password": "Mtz0504*",
+    "password": "",
     "database": "kutuphane_db",
     "port": 3306
 }
@@ -102,8 +102,6 @@ class kullaniciService:
         konu = "Şifre Sıfırlama"
         icerik = f"Merhaba {user['username']},\nYeni şifreniz: {yeni_sifre}"
         send_mail_to_user(user['email'], konu, icerik)
-
-        # Admin kullanıcıyı bilgilendir
         admin_repo = AdminRepository(self.db_config)
         admin_user = admin_repo.get_first_admin()
         if admin_user:

@@ -96,17 +96,25 @@ h4 {
 #adminGirisFormu,
 #personelGirisFormu,
 #hesapFormu {
-    position: fixed;               /* Ekranda sabit kalsın */
-    bottom: 20px;                  /* Ekranın altına yakın olsun*/
-    left: 50%;                     /* Ortalamak için */
+    position: fixed;              
+    bottom: 20px;                  
+    left: 50%;                     
     transform: translateX(-50%);  
-    background-color: rgba(181, 82, 82, 0.7); /* Yarı şeffaf arkaplan için */
+    background-color: rgba(181, 82, 82, 0.7); 
     padding: 20px;
     border: 2px solid black;
     border-radius: 12px;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
-    display: none; /* Başlangıçta gizli olmasi için*/
-    color: white; /* Yazı rengi */
+    display: none; 
+    color: white; 
 }
+body.bg-disabled::before {
+    display: none !important;
+}
+body.bg-disabled {
+    display: block !important;
+    background: none !important;
+}
+
 
 

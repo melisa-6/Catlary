@@ -1,6 +1,6 @@
 import mysql.connector
 from werkzeug.security import generate_password_hash
-from datetime import date 
+from datetime import date
 
 def baglanti_olustur(db_config=None):
     cfg = db_config or {
@@ -32,18 +32,37 @@ def tablolar_olustur():
     );
     """)
 
-    # Kitaplar tablosu
+    # Yazarlar tablosu
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS yazarlar (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        ad VARCHAR(255) NOT NULL
+    );
+    """)
+
+    # Kategoriler tablosu
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS kategoriler (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        kategori_adi VARCHAR(255) NOT NULL
+    );
+    """)
+
+    # Kitaplar tablosu (yazar_id, kategori_id ile)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS kitaplar (
         id INT AUTO_INCREMENT PRIMARY KEY,
         isim VARCHAR(255) NOT NULL,
-        yazar VARCHAR(255) NOT NULL,
-        kategori SET('Roman','Bilim','Tarih','Felsefe','Macera','Korku','Fantastik') DEFAULT 'Roman',
+        yazar_id INT NOT NULL,
+        kategori_id INT NOT NULL,
         sayfa_sayisi INT NOT NULL,
         stok INT DEFAULT 0,
         yayinevi VARCHAR(50) NOT NULL,
         raf_no INT DEFAULT 0,
-        baski_yili INT DEFAULT 0
+        baski_yili INT DEFAULT 0,
+        
+        FOREIGN KEY (yazar_id) REFERENCES yazarlar(id) ON DELETE CASCADE,
+        FOREIGN KEY (kategori_id) REFERENCES kategoriler(id) ON DELETE CASCADE
     );
     """)
 
@@ -99,19 +118,21 @@ def tablolar_olustur():
         aktif BOOLEAN NOT NULL DEFAULT 1
     );
     """)
-    
+
+    # Mail Kuyruğu tablosu
     cursor.execute("""
- CREATE TABLE IF NOT EXISTS MailKuyrugu (
-    MailId INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    AliciMail VARCHAR(255) NOT NULL,
-    AliciAdi VARCHAR(255) NOT NULL,
-    Konu VARCHAR(255) NOT NULL,
-    Mesajicerigi TEXT NOT NULL,
-    GonderimDurumu ENUM('Beklemede', 'Gonderiliyor', 'Gonderildi', 'Hata olustu') NOT NULL,
-    BeklemedeOlusmaZamaniti TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    HataDetaylari TEXT NULL
-);
+    CREATE TABLE IF NOT EXISTS MailKuyrugu (
+        MailId INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+        AliciMail VARCHAR(255) NOT NULL,
+        AliciAdi VARCHAR(255) NOT NULL,
+        Konu VARCHAR(255) NOT NULL,
+        Mesajicerigi TEXT NOT NULL,
+        GonderimDurumu ENUM('Beklemede', 'Gonderiliyor', 'Gonderildi', 'Hata olustu') NOT NULL,
+        BeklemedeOlusmaZamaniti TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        HataDetaylari TEXT NULL
+    );
     """)
+
     conn.commit()
     conn.close()
-    print("Tablolar oluşturuldu.")
+    print("Tablolar başarıyla oluşturuldu.")
