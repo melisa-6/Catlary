@@ -1,5 +1,10 @@
 # ------------------- FLASK VE TEMEL KÜTÜPHANELER -------------------
 
+import base64
+import hashlib
+import hmac
+import random
+import time
 from mysql.connector.errors import DatabaseError, ProgrammingError, IntegrityError
 from ssl import SSLError
 from flask import Flask, abort, flash, request, session, render_template, redirect, url_for, jsonify,g
@@ -7,12 +12,13 @@ from functools import wraps
 import secrets, string
 import os
 import jwt
+import requests
 from werkzeug.security import generate_password_hash, check_password_hash
 import sys
 # ------------------- CONTROLLERLAR -------------------
 
-from controllers import yazarController
-from controllers import kategoriController
+from controllers.yazarController import YazarController
+from controllers.kategoriController import KategoriController
 from controllers.personelController import personelController
 from controllers.adminkontroller import adminkontroller 
 from controllers.kitapController import kitapController
@@ -47,7 +53,7 @@ from decorators import admin_required, login_required,admin_or_personel_required
 db_config = {
     "host": "127.0.0.1",
     "user": "melisa",
-    "password": "",
+    "password": "Mtz0504*",
     "database": "kutuphane_db",
     "port": 3306
 #mysql e baglanmak iicn gerekli bilgiler
@@ -173,10 +179,11 @@ def admin_anasayfa():
     username = g.username 
     yazarlar = yazarlar_controller.tum_yazarlari_getir_controller()
     kategoriler = kategoriler_controller.tum_kategorileri_getir_controller()
+    kitaplar=kitap_islemleri.tum_kitaplari_getir()
     if request.accept_mimetypes.best == "application/json":
         return jsonify({"username": username, "message": "Admin sayfası erişimi başarılı"}), 200
         
-    return render_template("admin.html", username=username,yazarlar=yazarlar,kategoriler=kategoriler)
+    return render_template("admin.html", kitaplar=kitaplar,username=username,yazarlar=yazarlar,kategoriler=kategoriler)
 
 @app.route('/kullanici_sayfasi')
 @login_required
@@ -257,64 +264,121 @@ def kullanici_ekle_route():
 
     return render_template("admin.html", username=getattr(g, "username", ""))
 
+# --- PAYTR TEST AYARLARI ---
+PAYTR_MERCHANT_ID = "111111"
+PAYTR_MERCHANT_KEY = "11111111111111111111111111111111"
+PAYTR_MERCHANT_SALT = "11111111111111111111111111111111"
+
 @app.route('/kendiborc_ode/<username>', methods=['GET', 'POST'])
 @login_required
 def kendiborc_ode(username):
-
-    is_api_request = request.accept_mimetypes.best == "application/json"
+    
+    is_api_request = request.is_json or request.headers.get('Accept') == 'application/json'
 
     if username != g.username:
-        mesaj = "Bu işlem için yetkiniz yok."
+        msg = "Yetkisiz işlem: Sadece kendi borcunuzu ödeyebilirsiniz."
         if is_api_request:
-            return jsonify({"success": False, "message": mesaj}), 403
-        flash(mesaj, "danger")
-        return redirect(url_for("kullanici_sayfasi", username=g.username))
+            return jsonify({"success": False, "message": msg}), 403
+        flash(msg, "danger")
+        return redirect(url_for('index'))
 
     toplam_borc = ceza_controller_instance.borc_getir_controller(username)
-
-    if toplam_borc is None:
-        mesaj = "Borç bilgisi alınamadı."
-        if is_api_request:
-            return jsonify({"success": False, "message": mesaj}), 500
-        flash(mesaj, "danger")
-        return redirect(url_for("kullanici_sayfasi", username=username))
+    
+    mesaj = None
+    odeme_basarili = False
 
     if request.method == "POST":
-        if toplam_borc <= 0:
-            mesaj = "Ödenecek aktif borcunuz bulunmamaktadır."
+    
+        data = request.json if request.is_json else request.form
+
+        kart_sahibi = data.get("kart_sahibi")
+        kart_numarasi = data.get("kart_numarasi")
+        kart_son_kullanma = data.get("kart_son_kullanma")
+        cvv = data.get("cvv")
+
+        error_msg = ""
+        if not all([kart_sahibi, kart_numarasi, kart_son_kullanma, cvv]):
+            error_msg = "Eksik kart bilgisi! Lütfen tüm alanları doldurun."
+        elif toplam_borc <= 0:
+            error_msg = "Şu an ödenecek bir borcunuz bulunmamaktadır."
+
+        if error_msg:
             if is_api_request:
-                return jsonify({"success": False, "message": mesaj}), 400
-            flash(mesaj, "info")
-            return redirect(url_for("kullanici_sayfasi", username=username))
+                return jsonify({"success": False, "message": error_msg}), 400
+            else:
+                mesaj = error_msg
+                odeme_basarili = False
+        else:
+            try:
+                merchant_oid = f"SIP_{random.randint(10000,99999)}_{g.user_id}"
+                payment_amount = int(toplam_borc * 100) # PayTR kuruş ister 
+                user_ip = request.remote_addr or "127.0.0.1"
+                email = getattr(g, 'user_email', "test@test.com")
+                
+                hash_str = f"{PAYTR_MERCHANT_ID}{user_ip}{merchant_oid}{email}{payment_amount}"
+                paytr_token = base64.b64encode(
+                    hmac.new(
+                        PAYTR_MERCHANT_KEY.encode(), 
+                        (hash_str + PAYTR_MERCHANT_SALT).encode(), 
+                        hashlib.sha256
+                    ).digest()
+                ).decode()
 
-        sonuc = ceza_controller_instance.ceza_odendi_yap(
-            kullanici_id=g.user_id,
-            odeme_yapilsin_mi=True,
-            admin=False
-        )
+                print(f"DEBUG: PayTR Token Üretildi: {paytr_token}")
 
-        if not sonuc.get("success"):
-            mesaj = sonuc.get("message", "Ödeme gerçekleştirilemedi.")
+                paytr_response_success = True 
+
+                if paytr_response_success:
+                    gelen_cevap = ceza_controller_instance.ceza_odendi_yap(
+                        kullanici_id=g.user_id,
+                        odeme_yapilsin_mi=True
+                    )
+                    
+                    if isinstance(gelen_cevap, (tuple, list)):
+                        sonuc = gelen_cevap[0]       
+                        islem_durumu = gelen_cevap[1] if len(gelen_cevap) > 1 else False
+                    elif isinstance(gelen_cevap, dict):
+                        islem_durumu = gelen_cevap.get('success', False)
+                        sonuc = gelen_cevap.get('message', str(gelen_cevap))
+                    else:
+                        sonuc = str(gelen_cevap)
+                        islem_durumu = False
+                    
+                    if islem_durumu:
+                        mesaj = "Ödeme işleminiz başarıyla tamamlandı. Teşekkürler!"
+                        odeme_basarili = True
+                        toplam_borc = 0 
+                    else:
+                        mesaj = f" işlem tamamlanamadı: {sonuc}"
+                        odeme_basarili = False
+                else:
+                    mesaj = "Banka ödeme işlemini reddetti."
+                    odeme_basarili = False
+
+            except Exception as e:
+                print(f"Sistem Hatası: {e}")
+                mesaj = "Sistemde bir hata oluştu, lütfen yöneticinize başvurun."
+                odeme_basarili = False
+
             if is_api_request:
-                return jsonify({"success": False, "message": mesaj}), 400
-            flash(mesaj, "danger")
-            return redirect(url_for("kendiborc_ode", username=username))
+                status = 200 if odeme_basarili else 400
+                return jsonify({
+                    "success": odeme_basarili,
+                    "message": mesaj,
+                    "kalan_borc": toplam_borc
+                }), status
 
-        if is_api_request:
-            return jsonify({"success": True, "message": "Ödeme başarıyla tamamlandı."}), 200
-
-        flash("Borç ödeme işlemi başarıyla tamamlandı.", "success")
-        return redirect(url_for("kullanici_sayfasi", username=username))
-
-    if is_api_request:
+    if request.method == "GET" and is_api_request:
         return jsonify({
-            "success": True,
-            "toplam_borc": toplam_borc,
-            "message": "Borç bilgisi getirildi"
+            "username": username,
+            "borc_durumu": toplam_borc,
+            "message": "Ödeme yapmak için kart bilgilerini POST edin."
         }), 200
 
-    return render_template("borcode.html", toplam_borc=toplam_borc, username=username)
-
+    return render_template("borcode.html", 
+                           toplam_borc=toplam_borc, 
+                           mesaj=mesaj, 
+                           odeme_basarili=odeme_basarili)
 @app.route('/kullanici_durum_degistir', methods=['POST'])
 @admin_or_personel_required
 def kullanici_durum_degistir():
@@ -500,30 +564,41 @@ def kitap_ekle_route():
 
     
     return render_template("admin.html", yazarlar=yazarlar, kategoriler=kategoriler)
-
-@app.route("/kitapoduncver", methods=["POST"])
+@app.route("/kitapoduncver", methods=["GET", "POST"])
 @admin_or_personel_required
 def kitap_odunc_ver():
-    username = g.username
-    data = request.get_json(silent=True) or request.form
+    kitaplar=kitap_islemleri.tum_kitaplari_getir()
 
-    mesaj_dict = odunc_controller_instance.odunc_ver_controller(data)
-    send_pending_mails()
+    if request.method == "POST":
+        data = request.get_json(silent=True) or request.form
+        sonuc = odunc_controller_instance.odunc_ver_controller(data)
 
-    basarili_mi = mesaj_dict.get("success", False)
+        if request.accept_mimetypes.best == "application/json":
+            return jsonify(sonuc), (200 if sonuc.get("success") else 400)
 
-    # Kullanıcı JSON istiyorsa
-    if request.accept_mimetypes.best == "application/json":
-        status_code = 200 if basarili_mi else 400
-        return jsonify(mesaj_dict), status_code
+        flash(sonuc.get("message"), "success" if sonuc.get("success") else "error")
+        return redirect(url_for("kitap_odunc_ver"))
 
-    if basarili_mi:
-        flash(mesaj_dict.get("message", "Ödünç verme işlemi başarılı!"), "success")
+
+    kullanicilar = kullanici_islemleri.tum_kullanicilari_getir()
+    kitaplar = kitap_islemleri.tum_kitaplari_getir()
+
+    role = getattr(g, "role", None)
+
+    if role == "admin":
+        geri_donus_url = url_for("admin_anasayfa")
+        geri_donus_text = "← Admin Paneline Dön"
     else:
-        flash(mesaj_dict.get("message", "Ödünç verme işlemi başarısız!"), "error")
+        geri_donus_url = url_for("personel_sayfasi")
+        geri_donus_text = "← Personel Paneline Dön"
 
-    return redirect(request.referrer or url_for("admin_anasayfa"))
-
+    return render_template(
+        "oduncver.html",
+        kullanicilar=kullanicilar,
+        kitaplar=kitaplar,
+        geri_donus_url=geri_donus_url,
+        geri_donus_text=geri_donus_text
+    )
 
 @app.route('/kitapiadeal', methods=['POST'])
 @admin_or_personel_required
@@ -540,7 +615,7 @@ def kitap_iade_al():
     kategori = "success" if basarili_mi else "danger"
     flash(mesaj, kategori)
 
-    # JSON İSTEĞİ GELDİYSE 
+
     if request.accept_mimetypes.best == "application/json":
         return jsonify({"mesaj": mesaj, "success": basarili_mi}), 200 if basarili_mi else 400
 
@@ -623,7 +698,6 @@ def admin_ekle_route():
             status_code = 201 if basarili_mi else 400
             return jsonify(sonuc), status_code
 
-        # Ekrana mesaj göstermek için template render
         return render_template("admin.html", username=current_admin_username)
 
     except Exception as e:
@@ -639,39 +713,26 @@ def admin_ekle_route():
 @admin_required
 def admin_sil_route():
     current_admin_username = g.username
-    
     try:
-        data = request.get_json(silent=True) or request.form
+        data = request.form
         username = data.get("silinecek_admin_adi")
         username_tekrar = data.get("silinecek_admin_adi_tekrar")
 
         if not all([username, username_tekrar]):
             mesaj = "Silinecek admin kullanıcı adı ve tekrarı gereklidir."
             flash(mesaj, "danger")
-            if request.accept_mimetypes.best == "application/json" or request.is_json:
-                return jsonify({"success": False, "message": mesaj}), 400
-            return render_template("admin.html", username=current_admin_username)
+            return render_template("admin.html", username=current_admin_username, adminler=adminkontroller.tum_adminleri_getir())
 
         sonuc = adminkontroller.admin_sil_controller(username, username_tekrar)
         basarili_mi = sonuc.get("success", False)
-
         flash(sonuc.get("message", "İşlem tamamlandı."), "success" if basarili_mi else "danger")
 
-        if request.accept_mimetypes.best == "application/json" or request.is_json:
-            status_code = 200 if basarili_mi else 400
-            return jsonify(sonuc), status_code
-
-        return render_template("admin.html", username=current_admin_username)
+        return render_template("admin.html", username=current_admin_username, adminler=adminkontroller.tum_adminleri_getir())
 
     except Exception as e:
         mesaj = f"Hata oluştu: {str(e)}"
-        print(f"HATA /adminsil: {e}") 
         flash(mesaj, "danger")
-
-        if request.accept_mimetypes.best == "application/json" or request.is_json:
-            return jsonify({"success": False, "message": mesaj}), 500
-
-        return render_template("admin.html", username=current_admin_username)
+        return render_template("admin.html", username=current_admin_username, adminler=adminkontroller.tum_adminleri_getir())
 
 
 @app.route('/adminler') 

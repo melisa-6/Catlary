@@ -3,9 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Borç Ödeme</title>
+    <title>Borç Ödeme - PayTR Test</title>
     <style>
-      /* --- Stil Kodları (Kullanıcının sağladığı CSS) --- */
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
@@ -17,7 +16,6 @@
         align-items: center;
         color: #333;
       }
-
       header {
         width: 100%;
         text-align: center;
@@ -28,7 +26,6 @@
         font-weight: bold;
         background-color: #e0f7fa;
       }
-
       main {
         flex: 1;
         width: 90%;
@@ -41,7 +38,6 @@
         animation: fadeIn 0.8s ease-in-out;
         text-align: center;
       }
-
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -52,40 +48,32 @@
           transform: translateY(0);
         }
       }
-
       p {
         font-size: 18px;
         margin: 20px 0;
       }
-
       .borc {
         font-size: 26px;
         font-weight: bold;
         color: #ff6b6b;
       }
-
+      /* Dinamik Alert Stilleri */
       .alert {
         padding: 15px;
         border-radius: 12px;
         margin-bottom: 20px;
         font-weight: 600;
         list-style: none;
-        padding-left: 0;
       }
-
       .alert-danger {
         background-color: #ffe5e5;
         color: #d32f2f;
+        border: 1px solid #ffcccc;
       }
-
       .alert-success {
         background-color: #e5fff2;
         color: #388e3c;
-      }
-
-      .alert-info {
-        background-color: #e1f5fe;
-        color: #0277bd;
+        border: 1px solid #ccffe0;
       }
 
       form {
@@ -94,24 +82,23 @@
         gap: 15px;
         align-items: center;
       }
-
       input[type="text"],
       input[type="number"],
-      input[type="month"] {
+      input[type="month"],
+      select {
         width: 100%;
         padding: 12px 15px;
         border-radius: 10px;
         border: 1px solid #ccc;
         font-size: 16px;
         transition: 0.3s;
+        box-sizing: border-box; /* Input taşmasını engeller */
       }
-
       input:focus {
         outline: none;
         border-color: #4b4b8f;
         box-shadow: 0 0 8px rgba(75, 75, 143, 0.2);
       }
-
       .button {
         background: linear-gradient(90deg, #4b4b8f, #6a6aff);
         border: none;
@@ -122,13 +109,12 @@
         border-radius: 12px;
         cursor: pointer;
         transition: 0.3s;
+        width: 100%;
       }
-
       .button:hover {
         background: linear-gradient(90deg, #6a6aff, #4b4b8f);
-        transform: scale(1.05);
+        transform: scale(1.02);
       }
-
       a {
         display: inline-block;
         margin-top: 25px;
@@ -137,100 +123,84 @@
         font-weight: 600;
         transition: 0.3s;
       }
-
       a:hover {
         color: #1a237e;
       }
-
-      @media (max-width: 480px) {
-        main {
-          padding: 20px;
-        }
-        .borc {
-          font-size: 22px;
-        }
-        .button,
-        input[type="text"],
-        input[type="number"],
-        input[type="month"] {
-          width: 100%;
-        }
-      }
-      /* --- Stil Kodları Bitişi --- */
     </style>
   </head>
-
   <body>
-    <!-- g.username'i kullanıcının oturum açmış adı olarak varsayıyoruz -->
     <header>Merhaba, {{ g.username }}!</header>
 
     <main>
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %} {% for category, message in messages %}
+      {% if mesaj %}
       <div
-        class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }}"
+        class="alert {% if odeme_basarili %}alert-success{% else %}alert-danger{% endif %}"
       >
-        {{ message }}
+        {{ mesaj }}
       </div>
-      {% endfor %} {% endif %} {% endwith %}
+      {% endif %}
 
       <p>Toplam Borç Miktarı:</p>
-      <!-- Rota tarafından sağlanan 'toplam_borc' değişkeni kullanılır -->
-      <p class="borc">{{ toplam_borc }} TL</p>
 
-      <!-- Borç miktarı 0'dan büyükse formu göster -->
+      <p
+        class="borc"
+        style="color: {{ 'green' if toplam_borc == 0 else '#ff6b6b' }}"
+      >
+        {{ toplam_borc }} TL
+      </p>
+
       {% if toplam_borc|float > 0 %}
-
       <p>Borç ödemeden yeni kitap ödünç alamazsınız!</p>
-      <!-- Formun action URL'i rotadaki gibi ayarlandı -->
+
       <form
         method="POST"
         action="{{ url_for('kendiborc_ode', username=g.username) }}"
       >
-        <!-- g.user_id'nin rotadan gelmesi yerine g.username ile çalışılmalı
-               ancak eğer g.user_id mevcutsa kullanılabilir. Flask bağlamında g globaldir. -->
-        <input type="hidden" name="username" value="{{ g.username }}" />
+        <label style="align-self: flex-start; font-size: 14px; color: #666"
+          >Kart Sahibi</label
+        >
+        <input type="text" name="kart_sahibi" value="PAYTR TEST" readonly />
 
-        <input
-          type="text"
-          name="kart_sahibi"
-          placeholder="Kart Sahibinin Adı"
-          required
-        />
+        <label style="align-self: flex-start; font-size: 14px; color: #666"
+          >Kart Numarası</label
+        >
         <input
           type="text"
           name="kart_numarasi"
-          placeholder="Kart Numarası"
-          maxlength="16"
-          required
+          value="4355084355084358"
+          readonly
         />
-        <input
-          type="month"
-          name="kart_son_kullanma"
-          placeholder="Son Kullanma Tarihi"
-          required
-        />
-        <input
-          type="number"
-          name="cvv"
-          placeholder="CVV"
-          maxlength="4"
-          required
-        />
+
+        <div style="display: flex; gap: 10px; width: 100%">
+          <div style="flex: 1">
+            <label style="font-size: 14px; color: #666">Son Kul.</label>
+            <input
+              type="month"
+              name="kart_son_kullanma"
+              value="2030-12"
+              readonly
+            />
+          </div>
+          <div style="flex: 1">
+            <label style="font-size: 14px; color: #666">CVV</label>
+            <input type="text" name="cvv" value="000" readonly />
+          </div>
+        </div>
 
         <button type="submit" class="button">
           Ödemeyi Tamamla ({{ toplam_borc }} TL)
         </button>
       </form>
+
       {% else %}
-      <!-- Borç 0 ise uyarıyı göster -->
-      <div class="alert alert-success">Ödenecek borç bulunmamaktadır!</div>
+      <div class="alert alert-success" style="margin-top: 20px">
+        Şu an ödenmesi gereken bir borcunuz bulunmamaktadır. Keyifli okumalar!
+      </div>
       {% endif %}
 
-      <!-- Anasayfa dönüş linki -->
-      <a href="{{ url_for('kullanici_sayfasi', username=g.username) }}">
-        ← Anasayfaya Dön
-      </a>
+      <a href="{{ url_for('kullanici_sayfasi', username=g.username) }}"
+        >← Anasayfaya Dön</a
+      >
     </main>
   </body>
 </html>

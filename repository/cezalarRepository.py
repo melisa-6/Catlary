@@ -6,7 +6,7 @@ class cezalarRepository:
         self.db_config = db_config
 
     def ceza_detaylari_getir(self, ceza_id):
-        #Belirtilen Ceza ID'sine ait ceza miktarı, ödeme durumu ve kullanıcı adını getirir
+        
         conn = database.baglanti_olustur(self.db_config)
         cursor = conn.cursor(dictionary=True)
         try:
@@ -67,16 +67,11 @@ class cezalarRepository:
             )
         """
         try:
-            print(f"DEBUG(CezaRepository): YENİ BAĞLANTI İle İade Kontrol ID: {kullanici_id}") 
-            
             cursor.execute(query, (kullanici_id,))
             sonuc = cursor.fetchone()
             
             raw_result = sonuc[0] if sonuc and len(sonuc) > 0 else 0
             final_bool = bool(raw_result)
-            
-            print(f"DEBUG(CezaRepository): SQL Ham Sonuç: {sonuc} | Dönüş: {final_bool}")
-            
             return final_bool
         finally:
             cursor.close()
@@ -96,7 +91,7 @@ class cezalarRepository:
             cursor.execute(query, (ceza_id,))
             result = cursor.fetchone()
             
-            # iade_tarihi NULL değilse (yani bir tarih varsa), True döner.
+            
             return result is not None and result.get('iade_tarihi') is not None
         finally:
             cursor.close()
@@ -171,20 +166,34 @@ class cezalarRepository:
             cursor.close()
             conn.close()
     def ceza_odendi_yap(self, kullanici_id, odeme_yapilsin_mi):
+        conn = None
+        cursor = None
         try:
-            cur = self.conn.cursor()
+            conn = database.baglanti_olustur(self.db_config)
+            cursor = conn.cursor()
 
-            cur.callproc("ceza_odendi_yap", [kullanici_id, odeme_yapilsin_mi])
+            if odeme_yapilsin_mi:
+                cursor.execute("""
+                    UPDATE cezalar
+                    SET odeme_durumu = 1
+                    WHERE kullanici_id = %s
+                    AND odeme_durumu = 0
+                    AND ceza_miktari > 0
+                """, (kullanici_id,))
 
-            self.conn.commit()
+                etkilenen_satir = cursor.rowcount  # 🔥 ASIL KONTROL
+                conn.commit()
 
-            toplam_tutar = 0
-            for result in cur.stored_results():
-                toplam_tutar = result.fetchone()[0]
+                return etkilenen_satir, True
 
-            return toplam_tutar, True
+            return 0, False
 
         except Exception as e:
             print(f"Repo hata (ceza_odendi_yap_repo): {e}")
-            return str(e), False  
+            return str(e), False
 
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()

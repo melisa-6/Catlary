@@ -105,7 +105,8 @@
     </style>
   </head>
   <body>
-    <h2>Hoşgeldin, {{ username }}!</h2>
+    <h2>Hoşgeldin, {{ kullanici_adi }}!</h2>
+
     <p>Burası personel anasayfasıdır.</p>
 
     <div
@@ -165,14 +166,14 @@
         Kitapları Görüntüle ve sil
       </button>
       <button onclick="toggleAlan('kitapEkleAlani')">Kitap Ekle</button>
-      <button onclick="toggleAlan('kitapOduncVerAlani')">
+      <button onclick="window.location.href='{{ url_for('kitap_odunc_ver') }}'">
         Kitap Ödünç Ver
       </button>
-      <button onclick="toggleAlan('kitapIadeAlani')">Kitap İade Al</button>
+     
       <button
         onclick="window.location.href='{{ url_for('tum_odunc_gecmisi') }}'"
       >
-        Tüm Kullanıcıların Ödünç Geçmişini Göster
+    Tüm Kullanıcıların Ödünç Geçmişi Listesi ve Yönetimi
       </button>
 
       <button onclick="toggleAlan('kullaniciEkleAlani')">Kullanıcı Ekle</button>
@@ -183,10 +184,9 @@
       <button
         onclick="window.location.href='{{ url_for('ceza_tablosunu_goster') }}'"
       >
-        Tüm cezaları Göster
+      Ceza Listesi ve Yönetimi
       </button>
 
-      <button onclick="toggleAlan('cezaAlani')">Ceza Öde</button>
       <button onclick="toggleAlan('personelSifreDegistirAlani')">
         Şifremi Değiştir
       </button>
@@ -291,40 +291,6 @@
       </form>
     </div>
 
-    <div class="gizli-alan" id="kitapOduncVerAlani">
-      <h3>Kitap Ödünç Ver</h3>
-      <form action="/kitapoduncver" method="POST">
-        <input
-          type="text"
-          name="verilcek_kullanici_adi"
-          placeholder="Kullanıcı adi"
-          required
-        />
-        <input
-          type="text"
-          name="verilcek_kitap_adi"
-          placeholder="Kitap adi"
-          required
-        />
-        <input type="date" name="verildigi_tarih" required />
-        <button type="submit">Ödünç Ver</button>
-        <button type="button" onclick="toggleAlan('kitapOduncVerAlani')">
-          İptal
-        </button>
-      </form>
-    </div>
-
-    <div class="gizli-alan" id="kitapIadeAlani">
-      <h3>Kitap İade Al</h3>
-      <form action="/kitapiadeal" method="POST">
-        <input type="text" name="odunc_id" placeholder="Ödünç ID" required />
-        <button type="submit">İade Al</button>
-        <button type="button" onclick="toggleAlan('kitapIadeAlani')">
-          İptal
-        </button>
-      </form>
-    </div>
-
     <div class="gizli-alan" id="kullanicisifreSifirlaAlani">
       <h3>Kullanıcı Şifresini Sıfırla</h3>
       <form
@@ -347,22 +313,6 @@
       </form>
     </div>
 
-    <div class="gizli-alan" id="cezaAlani" style="display: none">
-      <div class="modal-icerik">
-        <h3>Ceza Öde</h3>
-        <form id="cezaForm">
-          <input
-            type="number"
-            name="ceza_id"
-            id="ceza_id"
-            placeholder="Ceza ID"
-            required
-          /><br /><br />
-          <button type="submit">Borç Sorgula</button>
-          <button type="button" onclick="toggleAlan('cezaAlani')">İptal</button>
-        </form>
-      </div>
-    </div>
 
     <div class="gizli-alan" id="kullaniciEkleAlani">
       <h3>Yeni Kullanıcı Ekle</h3>
@@ -410,19 +360,7 @@
         z-index: 9999;
       "
     ></div>
-    <div class="gizli-alan" id="cezaOnayAlani" style="display: none">
-      <div class="modal-icerik">
-        <h3>Ceza Ödeme Onayı</h3>
-
-        <p id="onayMesaji"></p>
-
-        <form id="onayCezaForm">
-          <input type="hidden" id="odenecek_ceza_id" />
-
-          <button type="submit">Ödemeyi Onayla</button>
-          <button type="button" onclick="toggleAlan('cezaOnayAlani')">
-            İptal
-          </button>
+    
         </form>
       </div>
     </div>
@@ -434,75 +372,7 @@
         alan.style.display = alan.style.display === "block" ? "none" : "block";
       }
 
-      const cezaForm = document.getElementById("cezaForm");
-      const cezaOnayAlani = document.getElementById("cezaOnayAlani");
-      const onayCezaForm = document.getElementById("onayCezaForm");
-
-      cezaForm.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const ceza_id = document.getElementById("ceza_id").value;
-
-        if (!ceza_id) {
-          alert("Lütfen Ceza ID giriniz!");
-          return;
-        }
-
-        try {
-          const response = await fetch("/ceza_sorgula", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ceza_id: ceza_id }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok || !data.success) {
-            alert(
-              data.message || "Ceza sorgulanamadı. Lütfen ID'yi kontrol edin."
-            );
-            return;
-          }
-
-          const miktar = data.borc_miktari;
-          const username = data.username || "Kullanıcı";
-
-          document.getElementById("odenecek_ceza_id").value = ceza_id;
-
-          document.getElementById(
-            "onayMesaji"
-          ).innerHTML = `Kullanıcı: ${username}<br> Ödenecek Miktar: <strong>${miktar} TL</strong>`;
-
-          toggleAlan("cezaAlani");
-          toggleAlan("cezaOnayAlani");
-        } catch (hata) {
-          alert("Sorgu hatası oluştu: " + hata);
-        }
-      });
-      onayCezaForm.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const ceza_id = document.getElementById("odenecek_ceza_id").value;
-
-        try {
-          const response = await fetch("/cezaode", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ceza_id: ceza_id }),
-          });
-
-          const data = await response.json();
-
-          toggleAlan("cezaOnayAlani");
-          if (!response.ok || !data.success) {
-            alert(data.message || "Ödeme başarısız oldu!");
-            return;
-          }
-
-          alert(data.message || "Ceza başarıyla ödendi!");
-          cezaForm.reset();
-        } catch (hata) {
-          alert("Ödeme isteği hatası oluştu: " + hata);
-        }
-      });
+      
     </script>
   </body>
 </html>

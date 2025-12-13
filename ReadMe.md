@@ -398,3 +398,35 @@ Yapılan değişiklikler dolayısıyla ER Diyagramları da güncellendi;
 ![login](static/images/GUNCELER.png)
 
 ![login](static/images/GUNCELER2.png)
+
+### 13.12.2025 traihinde yapılan güncellemeler ile;
+
+Admin ve personel ana sayfasında sadeleştirilmelere gidildi ve bazı işlemler taşındı;
+
+![login](static/images/engunceladmin.png)
+
+![login](static/images/guncelpersonelanasayfa.png)
+
+Sistem yöneticileri sayfası;
+
+![login](static/images/gunceladminler.png)
+
+Güncel ceza tablosu;
+
+![login](static/images/guncelcezalar.png)
+
+![login](static/images/guncelcezalarfiltrele.png)
+
+Güncel tüm kullanıcıların ödünç geçmişi tablosu;
+
+![login](static/images/gunceloduncgecmisitum.png)
+
+Güncel kitap ödünç verme sayfası;
+
+![login](static/images/guncelodunc.png)
+
+![login](static/images/guncelodunckitap.png)
+
+![login](static/images/guncelouncmail.png)
+
+Ve PayTR odeme sistemi entegre edilmeye çalışıldı.

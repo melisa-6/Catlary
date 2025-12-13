@@ -28,33 +28,50 @@ class oduncService:
     def kitap_oduncte_mi(self, kitap_id: int) -> bool:
         return self.repo.kitap_oduncte_mi(kitap_id)
 
-    def odunc_ver(self, kullanici_adi, kitap_adi, verildigi_tarih_str=None):
-        # odunc verildigi tarih bossa o gunu alir
-        if verildigi_tarih_str is None:
+    def odunc_ver(self, kullanici_mail, kitap_id, verildigi_tarih_str=None):
+
+        #  Tarih boşsa bugünü al
+        if not verildigi_tarih_str:
             verildigi_tarih_str = datetime.now().strftime("%Y-%m-%d")
 
-        # Kullanıcı ve kitap bilgisini uygun serviceden uygun fonksiyon ile alir
-        kullanici = self.kullanici_service.get_by_username(kullanici_adi)
+        #  Kullanıcıyı MAIL ile bul
+        kullanici = self.kullanici_service.get_kullanici_by_email(kullanici_mail)
         if not kullanici:
-            return {"success": False, "message": f"Kullanıcı bulunamadı: {kullanici_adi}"}
-       #kullanici veya kitabi bulunamadiysa uygun hatayi verir
-        kitap = self.kitap_service.get_by_name(kitap_adi)
+            return {
+                "success": False,
+                "message": f"Kullanıcı bulunamadı: {kullanici_mail}"
+            }
+
+        # Kitabı ID ile bul
+        kitap = self.kitap_service.get_by_id(kitap_id)
         if not kitap:
-            return {"success": False, "message": f"Kitap bulunamadı: {kitap_adi}"}
+            return {
+                "success": False,
+                "message": f"Kitap bulunamadı (ID): {kitap_id}"
+            }
 
-        # kullanicinin cezasi varsa buna uygun hata verir
+        #  Kullanıcının ödenmemiş cezası var mı?
         if self.ceza_service.odeme_durumu_var_mi(kullanici["id"]):
-            print("DEBUG: odeme_durumu_var_mi:", self.ceza_service.odeme_durumu_var_mi(kullanici["id"]))
-            return {"success": False, "message": "Kullanıcının ödenmemiş cezası var!"}
+            return {
+                "success": False,
+                "message": "Kullanıcının ödenmemiş cezası var!"
+            }
 
-        # Gerekli iade tarihini uygun sekilde hesaplar
+        # İade tarihi = 15 gün sonrası
         verildigi_tarih = datetime.strptime(verildigi_tarih_str, "%Y-%m-%d")
-        gerekli_iade_tarihi = (verildigi_tarih + timedelta(days=15)).strftime("%Y-%m-%d")
+        gerekli_iade_tarihi = (
+            verildigi_tarih + timedelta(days=15)
+        ).strftime("%Y-%m-%d")
 
-        #bilgiler ile repodaki uygun fonksiyonu cagirir
-        sonuc = self.repo.odunc_ver(kullanici["id"], kitap["id"], verildigi_tarih_str, gerekli_iade_tarihi)
+        # Repo çağrısı
+        sonuc = self.repo.odunc_ver(
+            kullanici["id"],
+            kitap["id"],
+            verildigi_tarih_str,
+            gerekli_iade_tarihi
+        )
+
         return sonuc
-  
     def _get_kullanici_id(self,username):
         kullanici_id = self.repo.get_kullanici_id_by_username_repo(username)
         

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kitap Ödünç Ver</title>
+
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+
+        background: url("{{ url_for('static', filename='images/cats2.png') }}");
+
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .card {
+        background: #ffffff;
+        padding: 35px 40px;
+        border-radius: 18px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #4a5568;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-bottom: 12px;
+        text-decoration: none;
+        font-size: 14px;
+        color: #6b7cff;
+        font-weight: 500;
+        transition: 0.3s;
+      }
+
+      .back-link:hover {
+        color: #4f5fe3;
+        transform: translateX(-3px);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: #555;
+        font-weight: 500;
+      }
+
+      select,
+      input[type="date"] {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #d1d9e6;
+        font-size: 15px;
+        background: #f9fafc;
+        transition: 0.3s;
+      }
+
+      select:focus,
+      input[type="date"]:focus {
+        outline: none;
+        border-color: #8b9cff;
+        box-shadow: 0 0 0 3px rgba(139, 156, 255, 0.2);
+      }
+
+      button {
+        width: 100%;
+        margin-top: 20px;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        background: linear-gradient(135deg, #8b9cff, #6b7cff);
+        color: white;
+        transition: 0.3s;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(107, 124, 255, 0.35);
+      }
+
+      .flash {
+        margin-bottom: 15px;
+        padding: 12px 15px;
+        border-radius: 10px;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .flash.success {
+        background: #e6f6ee;
+        color: #1e7f4f;
+      }
+
+      .flash.error {
+        background: #fdecea;
+        color: #a12722;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <h2>Kitap Ödünç Ver</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% for
+      category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %} {% endwith %}
+
+      <form method="POST">
+        <!-- KULLANICI -->
+        <label>Kullanıcı Mail</label>
+        <select name="kullanici_mail" required>
+          <option value="">Seçiniz</option>
+          {% for k in kullanicilar %}
+          <option value="{{ k.email }}">{{ k.email }}</option>
+          {% endfor %}
+        </select>
+
+        <br /><br />
+
+        <!-- KİTAP -->
+        <label>Kitap</label>
+        <select name="kitap_id" required>
+          <option value="">Seçiniz</option>
+          {% for kitap in kitaplar %}
+          <option value="{{ kitap.id }}">
+            {{ kitap.isim }} {% if kitap.yazar_isim %} ({{ kitap.yazar_isim }})
+            {% else %} (Yazar bilgisi yok) {% endif %}
+          </option>
+          {% endfor %}
+        </select>
+
+        <br /><br />
+
+        <!-- TARİH -->
+        <label>Verildiği Tarih</label>
+        <input type="date" name="verildigi_tarih" required />
+
+        <button type="submit">Ödünç Ver</button>
+      </form>
+      <a href="{{ geri_donus_url }}" class="back-link">
+        {{ geri_donus_text }}
+      </a>
+    </div>
+  </body>
+</html>

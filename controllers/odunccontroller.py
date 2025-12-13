@@ -23,37 +23,36 @@ class odunccontroller:
 
     def kullanici_odunc_gecmisi_controller(self, username):
         return self.service.kullanici_odunc_gecmisi(username)
-    
     def odunc_ver_controller(self, form_data):
-        kullanici_adi = form_data.get("verilcek_kullanici_adi")
-        kitap_adi = form_data.get("verilcek_kitap_adi")
+        # 🔧 DOĞRU KEYLER
+        kullanici_mail = form_data.get("kullanici_mail")
+        kitap_id = form_data.get("kitap_id")
         odunc_tarihi = form_data.get("verildigi_tarih")
-        
-        result = self.service.odunc_ver(kullanici_adi, kitap_adi, odunc_tarihi)
-        
+
+        # 🔍 Güvenlik kontrolü
+        if not kullanici_mail or not kitap_id or not odunc_tarihi:
+            return {
+                "success": False,
+                "message": "Eksik bilgi gönderildi.",
+                "odunc_id": None
+            }
+
+        # Service katmanına doğru parametreleri gönder
+        result = self.service.odunc_ver(
+            kullanici_mail,
+            kitap_id,
+            odunc_tarihi
+        )
+
         if not isinstance(result, dict):
-            return {"success": False, "message": str(result), "odunc_id": None}
+            return {
+                "success": False,
+                "message": str(result),
+                "odunc_id": None
+            }
 
         return result
-    
-    def ceza_ode(odunc_id):
-        try:
-            sonuc = cezaService.ceza_ode_by_odunc_id(odunc_id)
 
-            basarili_mi = sonuc.get("success", False)
-            mesaj = sonuc.get("message", "İşlem tamamlandı.")
-
-            # JSON isteği gelmişse
-            if hasattr(sonuc, 'get') and request.accept_mimetypes.best == "application/json":
-                return jsonify(sonuc), 200 if basarili_mi else 400
-
-            flash(mesaj, "success" if basarili_mi else "danger")
-
-            return render_template("admin.html")
-        except Exception as e:
-            mesaj = f"Beklenmedik hata: {str(e)}"
-            flash(mesaj, "danger")
-            return render_template("admin.html")
     
     def odunc_iade_controller(self, form_data):
         odunc_id_raw = form_data.get("odunc_id")

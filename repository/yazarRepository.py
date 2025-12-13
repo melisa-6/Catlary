@@ -5,7 +5,7 @@ class YazarRepository:
         self.connection = mysql.connector.connect(
             host="127.0.0.1",
             user="melisa",
-            password="",
+            password="Mtz0504*",
             database="kutuphane_db",
             port=3306
         )

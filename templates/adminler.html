@@ -12,6 +12,9 @@
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
         background-image: url("{{ url_for('static', filename='images/cat.png') }}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
         color: #1d3557;
       }
 
@@ -88,6 +91,21 @@
         color: #8d6d45;
       }
 
+      button {
+        background-color: #e63946;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+      }
+
+      button:hover {
+        background-color: #d62828;
+      }
+
       footer {
         text-align: center;
         padding: 20px 0;
@@ -107,28 +125,6 @@
       footer a:hover {
         background-color: #1d3557;
       }
-
-      @media (max-width: 768px) {
-        th,
-        td {
-          padding: 10px 8px;
-          font-size: 0.9em;
-        }
-
-        h2 {
-          font-size: 1.7em;
-        }
-
-        table {
-          width: 90%;
-        }
-      }
-
-      @media (max-width: 480px) {
-        table {
-          width: 95%;
-        }
-      }
     </style>
   </head>
 
@@ -142,6 +138,7 @@
           <th>ID</th>
           <th>Kullanıcı Adı</th>
           <th>Email</th>
+          <th>İşlem</th>
         </tr>
 
         {% for admin in adminler %}
@@ -149,6 +146,25 @@
           <td>{{ admin.id }}</td>
           <td>{{ admin.username }}</td>
           <td>{{ admin.email }}</td>
+          <td>
+            {% if admin.username != 'admin' %}
+            <form method="POST" action="{{ url_for('admin_sil_route') }}">
+              <input
+                type="hidden"
+                name="silinecek_admin_adi"
+                value="{{ admin.username }}"
+              />
+              <input
+                type="hidden"
+                name="silinecek_admin_adi_tekrar"
+                value="{{ admin.username }}"
+              />
+              <button type="submit">Sil</button>
+            </form>
+            {% else %}
+            <span style="color: gray; font-style: italic">Silinemez</span>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </table>
