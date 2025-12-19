@@ -95,6 +95,7 @@ class personelRepository:
                 conn.close()
   
     def sifre_guncelle(self, personel_id, yeni_hash):
+        #gelen bilgiler ile sifreti guncelelr
         conn = None
         try:
             conn = self._get_connection()

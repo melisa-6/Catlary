@@ -1,4 +1,5 @@
 
+import hashlib
 from repository.personelRepository import personelRepository
 from send_mail import send_mail_to_user
 from services.adminService import adminService
@@ -12,7 +13,7 @@ class personelService:
         self.kullanici_service = kullaniciService(db_config)
 
     def personel_ekle(self, ad_soyad, email, sifre, sifre_tekrar):
-
+#gerekli kontroller yapılır
         if not all([ad_soyad, email, sifre, sifre_tekrar]):
             return {"success": False, "message": "Tüm alanlar doldurulmalıdır."}
 
@@ -29,7 +30,7 @@ class personelService:
         if self.kullanici_service.kullanici_var_mi(ad_soyad) or \
         self.kullanici_service.kullanici_email_var_mi(email):
             return {"success": False, "message": "Bu isim veya email KULLANICI tablosunda zaten kayıtlı!"}
-        
+        #tum kontrollerden gecerse sifre hashlenerek repoya yonlendirilir
         sifre_hash = generate_password_hash(sifre)
         sonuc = self.repo.personel_ekle(ad_soyad, email, sifre_hash)
         if sonuc:
@@ -39,9 +40,11 @@ class personelService:
 
 
     def tum_personelleri_getir(self):
+        #ilgili repoya gonderilir
         return self.repo.tum_personelleri_getir()
 
     def personel_aktiflik_degistir(self, personel_id, yeni_durum):
+        #ilgili repoya  yonlendirir
         return self.repo.personel_aktiflik_degistir(personel_id, yeni_durum)
 
 
@@ -51,26 +54,42 @@ class personelService:
         return personel
 
     def sifre_sifirla_by_email(self, personel_email):
+        
+        # Girilen email ile veritabanında personel arar
         personel = self.repo.get_personel_by_email(personel_email)
         
+        # Böyle bir e-posta yoksa işlem iptal edilir
         if not personel:
             return {"success": False, "message": "Bu e-posta adresine sahip personel bulunamadı."}
-        yeni_sifre = ''.join(secrets.choice("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(10))
-        yeni_hash = generate_password_hash(yeni_sifre)
 
-        personel_id = personel['id']
-        guncellendi = self.repo.sifre_guncelle(personel_id, yeni_hash) 
+        # Rastgele 10 karakter uzunluğunda yeni şifre üretir
+        yeni_sifre = ''.join(secrets.choice("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(10))
         
+        # Yeni şifreyi SHA256 ile hash'ler
+        simule_edilmis_hash = hashlib.sha256(yeni_sifre.encode('utf-8')).hexdigest()
+        
+        # Hash'lenmiş şifreyi yeniden hashleyerek DB formatına dönüştürür
+        yeni_db_hash = generate_password_hash(simule_edilmis_hash)
+
+        # Personel id alınır ve DB güncelleme işlemi yapılır
+        personel_id = personel['id']
+        guncellendi = self.repo.sifre_guncelle(personel_id, yeni_db_hash) 
+        
+        # Veritabanına yazılamadıysa hata döner
         if not guncellendi:
             return {"success": False, "message": "Şifre veritabanına güncellenirken hata oluştu."}
 
+        # Mail gönderim durumu başlangıçta başarılı kabul edilir
         mail_gonderim_durumu = "başarılı"
         yeni_sifre_mesajda = f"Yeni şifre: {yeni_sifre}" 
 
         try:
+            # Personel bilgilendirme maili gönderilir
             personel_konu = "Personel Şifre Sıfırlama"
             personel_icerik = f"Merhaba {personel['isim']},\nŞifreniz sıfırlandı. Yeni geçici şifreniz: {yeni_sifre}"
             send_mail_to_user(personel_email, personel_konu, personel_icerik) 
+            
+            # İlk admin bulunur ve bilgilendirme maili gönderilir.
             admin_user = self.admin_service.repo.get_first_admin()
             if admin_user:
                 admin_konu = "Personel Şifre Sıfırlama Bildirimi"
@@ -78,13 +97,19 @@ class personelService:
                 send_mail_to_user(admin_user['email'], admin_konu, admin_icerik)
 
         except Exception as mail_err:
-            mail_gonderim_durumu = f"başarısız"
+            # Mail gönderilemezse durum güncellenir ve mesaj düzenlenir
+            mail_gonderim_durumu = "başarısız"
             print(f"KRİTİK MAİL HATASI: {mail_err}")
             yeni_sifre_mesajda = f"Yeni şifre: {yeni_sifre}. Mail Hata Mesajı: {mail_err}"
         
+        # Başarı mesajı oluşturulur
         mesaj = f"Şifre başarıyla sıfırlandı. Mail gönderimi: {mail_gonderim_durumu}."
+        
+        # Eğer mail başarısızsa bilgi mesajı revize edilir
         if mail_gonderim_durumu == "başarısız":
             mesaj = f"Şifre DB'ye yazıldı, ancak mail gönderilemedi. Yönetici olarak şifreyi not alın. {yeni_sifre_mesajda}"
+
+        # Başarılı işlem sonucu JSON formatında döndürülür
         return {
             "success": True, 
             "message": mesaj, 
@@ -92,25 +117,28 @@ class personelService:
             "personel_id": personel["id"], 
             "username": personel["email"]  
         }
+
+        
     def personel_sifre_degistir(self, personel_id, data):
+        #formdaan gerekli verileri alr
         eski_sifre = data.get("eski_sifre")
         yeni_sifre = data.get("yeni_sifre")
         yeni_sifre_tekrar = data.get("yeni_sifre_tekrar")
-
+#eksik varsa veya sifreler uyusmuyorsa hata verir
         if not all([eski_sifre, yeni_sifre, yeni_sifre_tekrar]):
             return {"success": False, "message": "Tüm şifre alanları doldurulmalıdır."}
 
         if yeni_sifre != yeni_sifre_tekrar:
             return {"success": False, "message": "Yeni şifreler birbiriyle eşleşmiyor."}
-            
+            #ilgili repodan ilgili fonksiyonu cagirir
         personel = self.repo.personel_getir_id(personel_id)
-        
+        #personel bulunamadysa vea sifre hatali ise huygun hata verir
         if not personel:
             return {"success": False, "message": "Personel bulunamadı."}
 
         if not check_password_hash(personel['password'], eski_sifre):
             return {"success": False, "message": "Eski şifreniz hatalı. Lütfen kontrol edin."}
-
+#sifreyi hashleyerek gunceller
         yeni_hash = generate_password_hash(yeni_sifre)
         guncellendi = self.repo.sifre_guncelle(personel_id, yeni_hash) 
         if guncellendi:

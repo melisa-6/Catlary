@@ -201,7 +201,7 @@
             <td>
               <div class="action-group">
                 <form
-                  action="{{ url_for('personel_aktiflik_degistir_route') }}"
+                  action="{{ url_for('personel.personel_aktiflik_degistir_route') }}"
                   method="POST"
                 >
                   <input
@@ -239,7 +239,7 @@
     <p>Sistemde kayıtlı personel bulunmamaktadır.</p>
     {% endif %}
 
-    <a href="{{ url_for('admin_anasayfa') }}" class="back-link"
+    <a href="{{ url_for('admin.admin_anasayfa') }}" class="back-link"
       >← Yönetici Ana Sayfasına Dön</a
     >
 
@@ -252,7 +252,7 @@
           gönderilecektir.
         </p>
         <form
-          action="{{ url_for('admin_personel_sifre_sifirla_route') }}"
+          action="{{ url_for('personel.admin_personel_sifre_sifirla_route') }}"
           method="POST"
         >
           <input type="hidden" name="personel_email" id="sifirla_email_input" />

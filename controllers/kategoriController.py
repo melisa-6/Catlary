@@ -2,8 +2,10 @@ from services.kategoriService import KategoriService
 
 class KategoriController:
     def __init__(self, db_config): 
-       self.service = KategoriService()  
+       self.service = KategoriService()
+         
     def tum_kategorileri_getir_controller(self):
+       #ilgili service e yonlendirir
         try:
              return self.service.tum_kategoriler()
         except Exception as e:
@@ -21,6 +23,7 @@ class KategoriController:
         self.service.kategori_ekle(kategori_adi)
         return True, "Kategori başarıyla eklendi."
 
+#service yonlendirir
     def kategori_sil_controller(self, id):
         if self.service.kitap_var_mi(id):
             return False, "HATA: Bu kategoride kayıtlı kitaplar var! Önce o kitapları silmelisiniz."

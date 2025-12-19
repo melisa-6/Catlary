@@ -154,7 +154,7 @@
 
       <form
         method="POST"
-        action="{{ url_for('kendiborc_ode', username=g.username) }}"
+        action="{{ url_for('kullanici.kendiborc_ode', username=g.username) }}"
       >
         <label style="align-self: flex-start; font-size: 14px; color: #666"
           >Kart Sahibi</label
@@ -198,7 +198,8 @@
       </div>
       {% endif %}
 
-      <a href="{{ url_for('kullanici_sayfasi', username=g.username) }}"
+      <a
+        href="{{ url_for('kullanici.kullanici_sayfasi', username=g.username) }}"
         >← Anasayfaya Dön</a
       >
     </main>

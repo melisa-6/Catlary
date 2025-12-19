@@ -52,17 +52,22 @@ class AdminRepository:
     # email ile admini bulur ve getirir
     def get_by_email(self, email):
         conn = None
+        cursor = None
         try:
-            conn = self._get_connection()
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT id, username, email, password FROM admin WHERE email=%s", (email,))
-            return cursor.fetchone()
-        except Exception as e:
-            logging.error(f"Admin çekme hatası: {e}")
-            raise e
-        finally:
-            if conn: conn.close()
+            conn = database.baglanti_olustur(self.db_config)
+            cursor = conn.cursor(dictionary=True) 
+            
+            cursor.execute("SELECT * FROM admin WHERE email = %s", (email,))
+            admin = cursor.fetchone()
+            
+            return admin 
 
+        except Exception as e:
+            print(f"Admin get_by_email hatası: {e}")
+            return None
+        finally:
+            if cursor: cursor.close()
+            if conn: conn.close()
     # username ile admini getirir
     def get_by_username(self, username):
         conn = None
@@ -119,6 +124,7 @@ class AdminRepository:
             return -1 
         finally:
             if conn: conn.close()
+            
     # gelen bilgiler ile şifreyi günceller
     def sifre_guncelle(self, username, yeni_hash):
         conn = None
@@ -152,4 +158,27 @@ class AdminRepository:
             logging.error(f"İlk admin çekme hatası: {e}")
             raise e
         finally:
+            if conn: conn.close()
+    
+    def sifre_guncelle(self, admin_id, yeni_hash):
+        conn = None
+        cursor = None
+        try:
+            conn = database.baglanti_olustur(self.db_config)
+            cursor = conn.cursor()
+
+            # Tablo adı 'admins' olduğu için buraya dikkat!
+            cursor.execute(
+                "UPDATE admins SET password=%s WHERE id=%s",
+                (yeni_hash, admin_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+        except Exception as e:
+            if conn: conn.rollback()
+            print(f"Admin şifre update hatası: {e}")
+            return False
+        finally:
+            if cursor: cursor.close()
             if conn: conn.close()

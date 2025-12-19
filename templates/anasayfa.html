@@ -7,6 +7,21 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
+    <style>
+      select {
+        padding: 8px; /* Diğer inputların varsayılan padding'i */
+        margin: 5px 0;
+        width: 100%; /* Kapsayıcıya uysun, CSS'deki input ayarına göre */
+        border: 1px solid #ccc; /* Diğerleriyle aynı kenarlık (tarayıcı varsayılanı genelde budur) */
+        border-radius: 4px; /* Hafif yuvarlak köşe */
+        box-sizing: border-box;
+        height: 40px; /* Inputlarla aynı yükseklik */
+      }
+
+      #sifremiUnuttumBtn {
+        margin-top: 5px;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
@@ -34,14 +49,16 @@
         <button id="kullaniciGirisBtn">Kullanıcı Girişi</button>
         <button id="adminGirisBtn">Admin Girişi</button>
         <button id="personelGirisBtn">Personel Girişi</button>
+
+        <button id="sifremiUnuttumBtn">Şifremi Unuttum</button>
+
         <span class="hesap">Hesabın yok mu?</span>
         <button id="hesapAcBtn">Hemen Aç</button>
       </div>
 
-      <!-- Kullanıcı Girişi Formu -->
       <div id="kullaniciGirisFormu" style="display: none">
         <h4>Kullanıcı Girişi</h4>
-        <form action="/girisyap" method="POST">
+        <form action="/girisyap" method="POST" class="hash-form">
           <input type="hidden" name="islem" value="kullanici" />
           <input
             type="email"
@@ -59,10 +76,9 @@
         </form>
       </div>
 
-      <!-- Admin Girişi Formu -->
       <div id="adminGirisFormu" style="display: none">
         <h4>Admin Girişi</h4>
-        <form action="/girisyap" method="POST">
+        <form action="/girisyap" method="POST" class="hash-form">
           <input type="hidden" name="islem" value="admin" />
           <input
             type="email"
@@ -79,34 +95,30 @@
           <button type="submit">Giriş Yap</button>
         </form>
       </div>
-      <!-- Personel Girişi Formu -->
+
       <div id="personelGirisFormu" style="display: none">
         <h4>Personel Girişi</h4>
-        <form action="/girisyap" method="POST">
+        <form action="/girisyap" method="POST" class="hash-form">
           <input type="hidden" name="islem" value="personel" />
-
           <input
             type="email"
             name="email"
             placeholder="Email Adresi"
             required
           /><br /><br />
-
           <input
             type="password"
             name="password"
             placeholder="Şifre"
             required
           /><br /><br />
-
           <button type="submit">Giriş Yap</button>
         </form>
       </div>
 
-      <!-- Hesap Oluşturma Formu -->
       <div id="hesapFormu" style="display: none">
         <h4>Hesap Oluştur</h4>
-        <form action="/kayitol" method="POST">
+        <form action="/kayitol" method="POST" class="hash-form">
           <input type="hidden" name="islem" value="yeni" />
           <input
             type="text"
@@ -135,6 +147,28 @@
           <button type="submit">Hesap Oluştur</button>
         </form>
       </div>
+
+      <div id="sifremiUnuttumFormu" style="display: none">
+        <h4>Şifre Yenileme</h4>
+
+        <form action="/sifremi_unuttum" method="POST">
+          <select name="rol" required>
+            <option value="" disabled selected>Hesap Türü Seçin</option>
+            <option value="kullanici">Kullanıcı</option>
+            <option value="personel">Personel</option>
+          </select>
+          <br /><br />
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Kayıtlı Email Adresi"
+            required
+          /><br /><br />
+
+          <button type="submit">Şifremi Gönder</button>
+        </form>
+      </div>
     </div>
 
     <script>
@@ -142,34 +176,65 @@
       const adminBtn = document.getElementById("adminGirisBtn");
       const personelBtn = document.getElementById("personelGirisBtn");
       const hesapBtn = document.getElementById("hesapAcBtn");
+      const sifreBtn = document.getElementById("sifremiUnuttumBtn");
 
-      kullaniciBtn.onclick = () => {
-        document.getElementById("kullaniciGirisFormu").style.display = "block";
+      function hideAll() {
+        document.getElementById("kullaniciGirisFormu").style.display = "none";
         document.getElementById("adminGirisFormu").style.display = "none";
         document.getElementById("personelGirisFormu").style.display = "none";
         document.getElementById("hesapFormu").style.display = "none";
+        document.getElementById("sifremiUnuttumFormu").style.display = "none";
+      }
+
+      kullaniciBtn.onclick = () => {
+        hideAll();
+        document.getElementById("kullaniciGirisFormu").style.display = "block";
       };
 
       adminBtn.onclick = () => {
-        document.getElementById("kullaniciGirisFormu").style.display = "none";
+        hideAll();
         document.getElementById("adminGirisFormu").style.display = "block";
-        document.getElementById("personelGirisFormu").style.display = "none";
-        document.getElementById("hesapFormu").style.display = "none";
       };
 
       personelBtn.onclick = () => {
-        document.getElementById("kullaniciGirisFormu").style.display = "none";
-        document.getElementById("adminGirisFormu").style.display = "none";
+        hideAll();
         document.getElementById("personelGirisFormu").style.display = "block";
-        document.getElementById("hesapFormu").style.display = "none";
       };
 
       hesapBtn.onclick = () => {
-        document.getElementById("kullaniciGirisFormu").style.display = "none";
-        document.getElementById("adminGirisFormu").style.display = "none";
-        document.getElementById("personelGirisFormu").style.display = "none";
+        hideAll();
         document.getElementById("hesapFormu").style.display = "block";
       };
+
+      sifreBtn.onclick = () => {
+        hideAll();
+        document.getElementById("sifremiUnuttumFormu").style.display = "block";
+      };
+      async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        return hashHex;
+      }
+
+      document.querySelectorAll(".hash-form").forEach((form) => {
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const passwordInputs = form.querySelectorAll(
+            'input[type="password"]'
+          );
+
+          for (let input of passwordInputs) {
+            if (input.value) {
+              input.value = await sha256(input.value);
+            }
+          }
+          this.submit();
+        });
+      });
     </script>
   </body>
 </html>

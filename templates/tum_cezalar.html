@@ -146,9 +146,9 @@
 
     <footer>
       {% if role == "admin" %}
-      <a href="{{ url_for('admin_anasayfa') }}">← Admin Paneli</a>
+      <a href="{{ url_for('admin.admin_anasayfa') }}">← Admin Paneli</a>
       {% elif role == "personel" %}
-      <a href="{{ url_for('personel_sayfasi') }}">← Personel Paneli</a>
+      <a href="{{ url_for('personel.personel_sayfasi') }}">← Personel Paneli</a>
       {% endif %}
     </footer>
 

@@ -128,7 +128,7 @@
     <div class="gizli-alan" id="sifreAlani" style="display: none">
       <h3>Şifre Değiştir</h3>
 
-      <form action="/kullanici_sifre_degistir" method="POST">
+      <form action="/kullanici_sifre_degistir" method="POST" class="hash-form">
         <input type="hidden" name="username" value="{{ g.username }}" />
 
         <input
@@ -174,6 +174,40 @@
         var form = gizliAlan.querySelector("form");
         form.reset();
       }
+
+      // Şifreleme Fonksiyonu (SHA-256)
+      async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        return hashHex;
+      }
+
+      //  Formları Yakala ve Göndermeden Önce Şifrele
+      document.querySelectorAll(".hash-form").forEach((form) => {
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault(); // Formun hemen gitmesini engelle
+
+          // Form içindeki tüm şifre alanlarını bul
+          const passwordInputs = form.querySelectorAll(
+            'input[type="password"]'
+          );
+
+          // Her bir şifre alanını tek tek hashle
+          for (let input of passwordInputs) {
+            if (input.value) {
+              // Boş değilse
+              input.value = await sha256(input.value);
+            }
+          }
+
+          // Hashlenmiş verilerle formu sunucuya gönder
+          this.submit();
+        });
+      });
     </script>
 
     <a href="/cikis">Çıkış Yap</a>

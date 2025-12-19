@@ -6,7 +6,8 @@ from services.personelService import personelService
 class personelController:
    
     def __init__(self, db_config):
-        self.service = personelService(db_config) 
+        self.service = personelService(db_config)
+        #gelen parametreler ile ilgili service katmaına yonlendirilir 
     def personel_ekle(self, ad_soyad, email, sifre, sifre_tekrar):
         try:
             return self.service.personel_ekle(ad_soyad, email, sifre, sifre_tekrar)
@@ -14,13 +15,14 @@ class personelController:
             print("Controller PERSONEL EKLE HATA:", e)
             return {"success": False, "message": "Beklenmeyen bir hata oluştu!"}
 
+#tum personelleri gostermek icin ilgili service katmanına gonderir
     def tum_personelleri_getir(self):
         try:
             return self.service.tum_personelleri_getir()
         except Exception as e:
             print("Controller PERSONEL LİSTE HATA:", e)
             return []
-
+#gelen bilgiler ile ilgili service katmanına yonlendirir
     def personel_aktiflik_degistir(self, personel_id, yeni_durum):
         try:
             sonuc_bool = self.service.personel_aktiflik_degistir(personel_id, yeni_durum)
@@ -47,7 +49,7 @@ class personelController:
         except Exception: 
            
             return {"success": False, "message": "Form verisi işlenirken hata oluştu."}
-
+#ilgili service e yonlendirir
         sonuc = self.service.sifre_sifirla_by_email(personel_email)
         
         if sonuc["success"]:
@@ -60,6 +62,7 @@ class personelController:
             }
         else:
             return {"success": False, "message": sonuc["message"]}
+        #gelen parametreler ile ilgili service e yonlendiri
     def personel_sifre_degistir_controller(self, personel_id, data):
         try:
             return self.service.personel_sifre_degistir(personel_id, data)

@@ -8,14 +8,21 @@ class kitapController:
 
     
     def kitaplari_goruntule_controller(self, username, role, aranan_kitap=""):
+        # Kullanıcı kitap aradı mı kontrol et
+        # Eğer aranan_kitap parametresi boş değilse sadece filtrelenmiş sonuçlar getir
         if aranan_kitap:
-           kitaplar = self.kitap_service.kitap_ara(aranan_kitap)
+         kitaplar = self.kitap_service.kitap_ara(aranan_kitap)
         else:
+            # Hiç arama yapılmadıysa tüm kitapları getirir
             kitaplar = self.kitap_service.tum_kitaplari_getir()
 
+        # Kullanıcının rolüne göre admin yetkisi var mı kontrol eder
+        # Eğer rol 'admin' ise admin_mi True olacak, değilse False
         admin_mi = role == 'admin'
         
+        # Kitap listesini ve admin bilgisiyle birlikte geri döndür
         return kitaplar, admin_mi
+
         
     def kitap_ekle_controller(self, kitap_adi, yazar_id, kategori_id, sayfa_sayisi, stok_miktari, raf_no, baski_yili, yayinevi):
         try:
@@ -29,19 +36,26 @@ class kitapController:
             return False
 
     def kitap_sil_controller(self, kitap_id):
+    
+    # Kitap ID sayıya çevrilebilir mi kontrol eder
         try:
             kitap_id = int(kitap_id)
         except (ValueError, TypeError):
             return "Hata: Kitap ID geçerli değil.", "Kitap Silme Hatası", False
 
         try:
+            # Servis katmanında kitap silme fonksiyonu çağırır
             sonuc = self.kitap_service.kitap_sil_by_id(kitap_id)
 
+            # Servisten gelen 'success' bilgisine göre sonuç oluştur
             if sonuc.get('success'):
+                # Silme başarılı ise
                 return sonuc.get('message', "Kitap başarıyla silindi."), "Kitap Silme", True
             else:
+                # Silme başarısız ise
                 return sonuc.get('message', "Kitap silinemedi."), "Kitap Silme Hatası", False
 
+        # Beklenmeyen bir hata oluşursa
         except Exception as e:
             print(f"Kitap Silme Hatası: {e}")
             return f"Beklenmedik hata: {str(e)}", "Kitap Silme Hatası", False

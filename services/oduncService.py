@@ -13,6 +13,7 @@ class oduncService:
         self.kullanici_service = kullaniciService(db_config)
         self.kitap_service = kitapService(db_config)
         
+#reponun ilgili fonksiyonuna yönlendirir
     def tum_kullanicilarin_odunc_gecmisi(self):
       return self.repo.tum_kullanici_odunc_gecmisi_getir()
 
@@ -30,11 +31,11 @@ class oduncService:
 
     def odunc_ver(self, kullanici_mail, kitap_id, verildigi_tarih_str=None):
 
-        #  Tarih boşsa bugünü al
+        #  Kullanıcı tarih girmemişse otomatik olarak bugünün tarihini alir
         if not verildigi_tarih_str:
             verildigi_tarih_str = datetime.now().strftime("%Y-%m-%d")
 
-        #  Kullanıcıyı MAIL ile bul
+        #  Kullanıcıyı e-posta ile veritabanından bulur
         kullanici = self.kullanici_service.get_kullanici_by_email(kullanici_mail)
         if not kullanici:
             return {
@@ -42,7 +43,7 @@ class oduncService:
                 "message": f"Kullanıcı bulunamadı: {kullanici_mail}"
             }
 
-        # Kitabı ID ile bul
+        # Seçilen kitap ID'sine göre kitap bilgisi alır
         kitap = self.kitap_service.get_by_id(kitap_id)
         if not kitap:
             return {
@@ -50,28 +51,30 @@ class oduncService:
                 "message": f"Kitap bulunamadı (ID): {kitap_id}"
             }
 
-        #  Kullanıcının ödenmemiş cezası var mı?
+        # Kullanıcının üzerinde ödenmemiş ceza var mı kontrol edilir
         if self.ceza_service.odeme_durumu_var_mi(kullanici["id"]):
             return {
                 "success": False,
                 "message": "Kullanıcının ödenmemiş cezası var!"
             }
 
-        # İade tarihi = 15 gün sonrası
+        # Kitabın teslim edilmesi gereken tarih ödünç verildiği tarihten 15 gün sonrası olarak otomatik ayarlanır
         verildigi_tarih = datetime.strptime(verildigi_tarih_str, "%Y-%m-%d")
         gerekli_iade_tarihi = (
             verildigi_tarih + timedelta(days=15)
         ).strftime("%Y-%m-%d")
 
-        # Repo çağrısı
+        # Repo katmanı çağrılır
         sonuc = self.repo.odunc_ver(
-            kullanici["id"],
-            kitap["id"],
-            verildigi_tarih_str,
-            gerekli_iade_tarihi
+            kullanici["id"],       # kullanıcı ID
+            kitap["id"],           # kitap ID
+            verildigi_tarih_str,   # ödünç verilen tarih
+            gerekli_iade_tarihi    # otomatik hesaplanan iade tarihi
         )
 
+        # Repo'dan dönen sonuç aynen servisten geri döndürülür
         return sonuc
+
     def _get_kullanici_id(self,username):
         kullanici_id = self.repo.get_kullanici_id_by_username_repo(username)
         
@@ -80,19 +83,32 @@ class oduncService:
             print(f"HATA: '{username}' adında kullanıcı ID'si bulunamadı.") 
             
         return kullanici_id
+    
     def odunc_iade(self, odunc_id):
-        #su ani iade_tarihi yapar ve parametre olarak repoya gonderir
+
+        # Şu anki tarihi iade tarihi olarak alıyoruz 
         iade_tarihi = datetime.now().strftime("%Y-%m-%d")
+
+        # Repo katmanına iade işlemini yaptırıyoruz
         odunc = self.repo.odunc_iade(odunc_id, iade_tarihi)
 
+        #  Repo bir hata mesajı string dönerse direkt kullanıcıya iletilir
         if isinstance(odunc, str):
             return odunc
-        #ilgili service in ilgili fonksiyonlari ile kullanici ve kitap bilgileri alinir
-        kullanici = self.kullanici_service.get_kullanici_by_id(odunc['kullanici_id'])
-        kitap = self.kitap_service.get_by_id(odunc['kitap_id'])
-        #stok guncelleme kısmı trigger ile yapılıyor!
 
+        # Service katmanı ile kullanıcı bilgisi çekilir
+        #    odunc sözlüğünden kullanıcı ID alınır → veritabanından kullanıcı bulunur
+        kullanici = self.kullanici_service.get_kullanici_by_id(odunc['kullanici_id'])
+
+        # Service katmanı ile kitap bilgisi çekilir
+        #    odunc sözlüğünden kitap ID alınır ve veritabanından kitap bulunur
+        kitap = self.kitap_service.get_by_id(odunc['kitap_id'])
+
+        #Stok güncelleme işlemi veritabanında TRIGGER ile otomatik yapılıyor
+
+        # Başarılı mesaj dönülür
         return f"{kitap['isim']} kitabı iade alındı. Kullanıcı: {kullanici['username']}"
+
     
     def iade_edilmemis_gecikmis_kayitlari_getir_service(self, username):
         kullanici_id = self._get_kullanici_id(username)

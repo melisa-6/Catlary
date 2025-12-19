@@ -148,7 +148,7 @@
           <td>{{ admin.email }}</td>
           <td>
             {% if admin.username != 'admin' %}
-            <form method="POST" action="{{ url_for('admin_sil_route') }}">
+            <form method="POST" action="{{ url_for('admin.admin_sil_route') }}">
               <input
                 type="hidden"
                 name="silinecek_admin_adi"
@@ -174,7 +174,7 @@
     </div>
 
     <footer>
-      <a href="{{ url_for('admin_anasayfa') }}">← Geri Dön</a>
+      <a href="{{ url_for('admin.admin_anasayfa') }}">← Geri Dön</a>
     </footer>
   </body>
 </html>

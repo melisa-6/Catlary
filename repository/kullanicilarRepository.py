@@ -7,22 +7,23 @@ class kullanicilarRepository:
 
     def __init__(self, db_config=None):
         self.db_config = db_config
+        #
     def kullanici_ekle(self, username, email, hashed_password):
         conn = None
         cursor = None
         try:
             conn = database.baglanti_olustur(self.db_config)
             cursor = conn.cursor()
-
-            # Çakışma kontrolü
+            # Çakışma kontrolü yapar
             cursor.execute(
                 "SELECT id FROM kullanicilar WHERE username=%s OR email=%s",
                 (username, email)
             )
             if cursor.fetchone():
                 return False
+            #eger kullanici kayitlarda varsa buna gore geri dondurur
 
-            # Kullanıcı ekle
+            # Kullanıcı yoksa eklenir
             cursor.execute(
                 "INSERT INTO kullanicilar (username, email, password) VALUES (%s,%s,%s)",
                 (username, email, hashed_password)
@@ -39,6 +40,8 @@ class kullanicilarRepository:
         finally:
             if cursor: cursor.close()
             if conn: conn.close()
+            
+            
     def kullanici_by_email(self, email):
         conn = None
         cursor = None

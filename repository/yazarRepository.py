@@ -11,8 +11,10 @@ class YazarRepository:
         )
 
     def tum_yazarlar(self):
+        #yazarlar tablosundan tum yazarları ceker
         try:
             cursor = self.connection.cursor(dictionary=True)
+            #sonucları dict formatında dondurmesi icin 
             cursor.execute("SELECT * FROM yazarlar")
             sonuc = cursor.fetchall()
             cursor.close()

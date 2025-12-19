@@ -13,18 +13,24 @@ class cezaController:
             print(f"Controller hatası - ödeme yap: {e}")
             return {"toplam_tutar": 0, "success": False, "message": "Ödeme işlemi başarısız."}
 
+   #ilgili service e yonlendirir
     def tum_cezalari_getir(self):
         try:
             return self.ceza_service.tum_cezalari_getir()
         except Exception as e:
             print(f"Controller hatası - tüm cezalar: {e}")
             return []
+        
+        #ilgili service e yonlendirir
     def ceza_odendi_yap(self, kullanici_id, odeme_yapilsin_mi, kart_numarasi=None, admin=False):
         return self.ceza_service.ceza_odendi_yap(kullanici_id, odeme_yapilsin_mi, admin=admin)
+    
+    #ilgili service e yonlenfirir
     def ceza_ode(self, ceza_id):
         success, message = self.ceza_service.ceza_ode(ceza_id)
         return success, message
 
+#ilgili service e yonlendirir
     def kullanici_cezalarini_goster(self, username):
         kullanici = self.kullanici_service.get_by_username(username)
         if not kullanici:
@@ -58,6 +64,8 @@ class cezaController:
         if not kullanici:
             return True
         return self.ceza_service.iade_edilmemis_kitap_var_mi(kullanici['id'])
+    
+    #ilgili service fonksiyonuna iletir
     def ceza_bilgilerini_getir(self, ceza_id):
         try:
             return self.ceza_service.ceza_bilgilerini_getir(ceza_id)

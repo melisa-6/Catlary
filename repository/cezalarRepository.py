@@ -5,6 +5,7 @@ class cezalarRepository:
        
         self.db_config = db_config
 
+#ceza detylarını verir
     def ceza_detaylari_getir(self, ceza_id):
         
         conn = database.baglanti_olustur(self.db_config)
@@ -77,25 +78,36 @@ class cezalarRepository:
             cursor.close()
             conn.close()
  
-    def cezanin_iade_edilmis_olup_olmadigini_kontrol_et(self, ceza_id):
-        
+    def cezanin_iade_edilmis_olup_olmadigini_kontrol_et(self, kullanici_id):
         conn = database.baglanti_olustur(self.db_config)
         cursor = conn.cursor(dictionary=True)
+
         try:
-            # iade_tarihi NULL değilse, True döner (ödeme yapılabilir).
             query = """
                 SELECT iade_tarihi
                 FROM cezalar
-                WHERE id=%s
+                WHERE kullanici_id = %s
             """
-            cursor.execute(query, (ceza_id,))
-            result = cursor.fetchone()
-            
-            
-            return result is not None and result.get('iade_tarihi') is not None
+            cursor.execute(query, (kullanici_id,))
+            result = cursor.fetchall()
+
+            if not result:
+                # Bu kullanıcıya ait ceza yok
+                return None  
+
+            # Tüm kayıtları tarar iade_tarihi NULL olan var mı?
+            for ceza in result:
+                if ceza.get("iade_tarihi") is None:
+                    # Halen iade edilmeyen kitap var → ödeme yapılamaz
+                    return False
+
+            # Tüm cezalar iade edilmiş → ödeme yapılabilir
+            return True
+
         finally:
             cursor.close()
             conn.close()
+
     def toplam_borc_getir(self, kullanici_id):
         conn = database.baglanti_olustur(self.db_config)
         cursor = conn.cursor(dictionary=True)
@@ -165,13 +177,14 @@ class cezalarRepository:
         finally:
             cursor.close()
             conn.close()
+            
     def ceza_odendi_yap(self, kullanici_id, odeme_yapilsin_mi):
         conn = None
         cursor = None
         try:
             conn = database.baglanti_olustur(self.db_config)
             cursor = conn.cursor()
-
+#odeme yapılmasını isterse odeme durumunu gınceller
             if odeme_yapilsin_mi:
                 cursor.execute("""
                     UPDATE cezalar
@@ -181,7 +194,7 @@ class cezalarRepository:
                     AND ceza_miktari > 0
                 """, (kullanici_id,))
 
-                etkilenen_satir = cursor.rowcount  # 🔥 ASIL KONTROL
+                etkilenen_satir = cursor.rowcount 
                 conn.commit()
 
                 return etkilenen_satir, True

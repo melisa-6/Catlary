@@ -19,26 +19,31 @@ class odunclerRepository:
 
     
     def odunc_ver(self, kullanici_id, kitap_id, odunc_tarihi, gerekli_iade_tarihi):
+        # Yeni bir veritabanı bağlantısı oluşturur
         conn = self._get_conn()
         cursor = conn.cursor(dictionary=True)
         try:
-            # Kitap var mı ve stokta mı kontrolu
+            # Kitap veritabanında var mı ve stok yeterli mi kontrolu
             cursor.execute("SELECT stok FROM kitaplar WHERE id=%s", (kitap_id,))
             kitap = cursor.fetchone()
             if not kitap:
                 return {"success": False, "message": "Kitap veritabanında bulunamadı."}
+
+            # Eğer stok 0 veya altındaysa ödünç verilemez
             if kitap["stok"] <= 0:
                 return {"success": False, "message": "Bu kitabın stokta yeterli miktarı yok."}
 
-            # Kullanıcı var mı ve aktif mi kontrolu
+            # Kullanıcı veritabanında var mı ve aktif mi kontrolu
             cursor.execute("SELECT aktiflik FROM kullanicilar WHERE id=%s", (kullanici_id,))
             kullanici = cursor.fetchone()
             if not kullanici:
                 return {"success": False, "message": "Kullanıcı veritabanında bulunamadı."}
+
+            # aktiflik = 0 ise kullanıcı pasif demektir işlem iptal olur
             if kullanici["aktiflik"] == 0:
                 return {"success": False, "message": "Kullanıcı pasif durumda."}
 
-            # Aktif ödünç sayısı kontrolu
+            # Eğer aktif ödünç sayısı 5’ten fazlaysa yeni kitap verilemez
             cursor.execute("""
                 SELECT COUNT(*) AS kitap_sayisi 
                 FROM oduncler 
@@ -47,7 +52,7 @@ class odunclerRepository:
             if cursor.fetchone()["kitap_sayisi"] >= 5:
                 return {"success": False, "message": "Kullanıcının elinde zaten 5 kitap var."}
 
-            # Aynı kitaptan var mı kontrolu
+            # Kullanıcı aynı kitabı teslim etmeden tekrar alamaz
             cursor.execute("""
                 SELECT COUNT(*) AS ayni_kitap 
                 FROM oduncler 
@@ -56,15 +61,19 @@ class odunclerRepository:
             if cursor.fetchone()["ayni_kitap"] > 0:
                 return {"success": False, "message": "Kullanıcı bu kitaptan zaten ödünç aldı."}
 
-            # odunc verir
+            # Bütün kontroller geçtiyse ödünç kaydı oluşturulur
             cursor.execute("""
                 INSERT INTO oduncler (kullanici_id, kitap_id, odunc_tarihi, gerekli_iade_tarihi)
                 VALUES (%s, %s, %s, %s)
             """, (kullanici_id, kitap_id, odunc_tarihi, gerekli_iade_tarihi))
+
+            # Eklenen kaydın ID'sini al
             odunc_id = cursor.lastrowid
 
+            # Veritabanına işlemleri kaydet
             conn.commit()
 
+            # Başarılı yanıt döndür
             return {
                 "success": True,
                 "message": "Kitap başarıyla ödünç verildi.",
@@ -72,12 +81,15 @@ class odunclerRepository:
             }
 
         except Exception as e:
+            # Herhangi bir hata olursa işlemi geri alır
             conn.rollback()
             return {"success": False, "message": f"Hata oluştu: {e}"}
 
         finally:
+            # Kaynakları kapatır
             cursor.close()
             conn.close()
+
             
     def odunc_iade(self, odunc_id, gercek_iade_tarihi):
       cursor = self.conn.cursor(dictionary=True)
@@ -190,24 +202,31 @@ class odunclerRepository:
             cursor.close()
             
     def tum_kullanici_odunc_gecmisi_getir(self):
+        # Veritabanı bağlantısından dictionary formatında veri döndüren cursor oluştur.
         cursor = self.conn.cursor(dictionary=True)
+
         try:
+            # Tüm kullanıcıların ödünç alma geçmişini listeleyen SQL sorgusu
             cursor.execute("""
     SELECT 
-        o.id, 
-        COALESCE(u.username, 'Bilinmeyen Kullanıcı') AS username, 
-        k.isim AS kitap_adi, 
-        o.odunc_tarihi, 
-        o.gerekli_iade_tarihi, 
-        o.gercek_iade_tarihi
+        o.id,                                           -- Ödünç kaydının ID'si
+        COALESCE(u.username, 'Bilinmeyen Kullanıcı') AS username,   -- Kullanıcı adı; boşsa default isim
+        k.isim AS kitap_adi,                            -- Kitabın adı
+        o.odunc_tarihi,                                 -- Ödünç alındığı tarih
+        o.gerekli_iade_tarihi,                          -- Geri getirilmesi gereken tarih
+        o.gercek_iade_tarihi                            -- Gerçekte teslim edildiği tarih (boş olabilir)
     FROM oduncler o
-    LEFT JOIN kullanicilar u ON o.kullanici_id = u.id
-    JOIN kitaplar k ON o.kitap_id = k.id
-    ORDER BY o.odunc_tarihi DESC
+    LEFT JOIN kullanicilar u ON o.kullanici_id = u.id   -- Kullanıcı bilgisi; kullanıcı silinmiş olabilir
+    JOIN kitaplar k ON o.kitap_id = k.id                 -- Kitap bilgisi
+    ORDER BY o.odunc_tarihi DESC                         -- Tarihe göre tersten sıralama (yeniden eskiye)
 """)
+            # Tüm sonucu liste halinde döndür
             return cursor.fetchall()
+
         finally:
+            # Her durumda cursor kapanır
             cursor.close()
+
 
     def kullanici_aktif_odunc_detaylari_getir_repo(self, kullanici_id):
        

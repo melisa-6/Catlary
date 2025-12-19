@@ -157,7 +157,6 @@
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         text-align: center;
 
-        /* PENCERE BOYUTUNU BELİRLİYORUZ */
         max-width: 400px; /* Maksimum genişlik */
         width: 90%; /* %90 genişlik, küçük ekranlarda daralır */
         min-height: 150px; /* Minimum yükseklik */
@@ -236,7 +235,7 @@
         </p>
 
         <form
-          action="{{ url_for('admin_kullanici_sifre_sifirla_route') }}"
+          action="{{ url_for('kullanici.admin_kullanici_sifre_sifirla_route') }}"
           method="POST"
           style="margin-top: 15px"
         >
@@ -265,7 +264,6 @@
       async function degistirDurum(username, aktif) {
         const yeniDurum = !aktif;
         try {
-          // ... (Mevcut AJAX isteği) ...
           const response = await fetch("/kullanici_durum_degistir", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -280,12 +278,11 @@
 
           alert(data.message || "Durum başarıyla değiştirildi.");
 
-          // HTML güncelle (Ayrı sütunlara rağmen DOM güncellemesi doğru çalışacaktır)
           const row = document
             .querySelector(`.durum-${username}`)
             .closest("tr");
           const durumCell = row.querySelector(`.durum-${username} span`);
-          const btnCell = row.cells[5].querySelector("button"); // 6. sütundaki (index 5) butonu seç
+          const btnCell = row.cells[5].querySelector("button");
 
           if (durumCell && btnCell) {
             durumCell.textContent = yeniDurum ? "Aktif" : "Pasif";

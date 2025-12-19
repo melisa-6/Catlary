@@ -277,13 +277,15 @@
 
     <footer>
       {% if role == 'admin' %}
-      <a href="{{ url_for('admin_anasayfa') }}">← Admin Anasayfasına Dön</a>
+      <a href="{{ url_for('admin.admin_anasayfa') }}"
+        >← Admin Anasayfasına Dön</a
+      >
       {% elif role == 'personel' %}
-      <a href="{{ url_for('personel_sayfasi') }}"
+      <a href="{{ url_for('personel.personel_sayfasi') }}"
         >← Personel Anasayfasına Dön</a
       >
       {% else %}
-      <a href="{{ url_for('kullanici_sayfasi') }}"
+      <a href="{{ url_for('kullanici.kullanici_sayfasi') }}"
         >← Kullanıcı Anasayfasına Dön</a
       >
       {% endif %}

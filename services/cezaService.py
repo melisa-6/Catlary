@@ -10,7 +10,7 @@ class cezaService:
 
     def odeme_durumu_var_mi(self, kullanici_id):
         return self.repo.odeme_durumu_var_mi(kullanici_id)
-  
+  #ilgili repoya yonlendirir
     def ceza_bilgilerini_getir(self, ceza_id):
         detaylar = self.repo.ceza_detaylari_getir(ceza_id)
 
@@ -22,6 +22,8 @@ class cezaService:
             "miktar": float(detaylar.get('miktar', 0)), 
             "username": detaylar.get('username')
         }
+        
+        #repoya yonlendirip cezadurumunu aır ve ve euygun donusu controllera iletir
     def ceza_ode(self, ceza_id):
         ceza = self.repo.ceza_durumu_getir(ceza_id)
         if not ceza:
@@ -32,7 +34,7 @@ class cezaService:
 
         if not ceza['iade_tarihi']:
             return False, "Kitap iade edilmemiş, ödeme yapılamaz."
-
+#ceza daha once odenmediyse oder
         ok = self.repo.ceza_ode(ceza_id)
         if ok:
             return True, "Ceza başarıyla ödendi."
@@ -40,13 +42,16 @@ class cezaService:
             return False, "Ödeme sırasında hata oluştu."
 
     def tum_cezalari_getir(self):
+           #ilgili repoya  yonlendirir
         return self.repo.tum_cezalari_getir()
 
+ #ilgili repoya  yonlendirir
     def kullanici_cezalari_getir(self, kullanici_id):
         return self.repo.kullanici_cezalari_getir(kullanici_id)
-
+    
+#kitabın iade edilip edilmedigini kontrol eder
     def iade_edilmemis_kitap_var_mi(self, kullanici_id):
-        return self.repo.iade_edilmemis_kitap_var_mi(kullanici_id)
+        return self.repo.cezanin_iade_edilmis_olup_olmadigini_kontrol_et(kullanici_id)
 
     def borc_getir(self, username):
         user_id = self.repo.kullanici_id_getir(username) 
@@ -57,6 +62,7 @@ class cezaService:
     def kullanici_borc_getir_by_id(self, kullanici_id):
         return self.repo.toplam_borc_getir(kullanici_id)
 
+#kitabi iade edip etmedigine bakar ve ilgili repoya ynlendirir
     def ceza_odendi_yap(self, kullanici_id, odeme_yapilsin_mi=False, admin=False):
         if self.iade_edilmemis_kitap_var_mi(kullanici_id):
             return {"toplam_tutar": 0, "success": False, "message": "Kitap iade edilmeden ceza ödenemez!"}

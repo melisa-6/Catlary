@@ -3,11 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <title>Personel Anasayfa</title>
+
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+
     <style>
+      /* Select2 Düzenlemeleri */
+      .select2-container {
+        width: 100% !important;
+        text-align: left;
+      }
+      /* Select2 kutusunun modalın (gizli alanın) üzerinde görünmesi için z-index ayarı */
+      .select2-dropdown {
+        z-index: 10001;
+      }
+
       body {
         display: flex;
         flex-direction: column;
@@ -65,7 +82,14 @@
         width: 200px;
         border: 1px solid #ccc;
         border-radius: 4px;
+        box-sizing: border-box;
       }
+
+      .gizli-alan input,
+      .gizli-alan select {
+        width: 100%;
+      }
+
       .gizli-alan {
         display: none;
         position: fixed;
@@ -84,6 +108,8 @@
         width: 400px;
         max-width: 90%;
         color: #333;
+        max-height: 90vh;
+        overflow-y: auto;
       }
       .checkbox-group {
         display: flex;
@@ -101,6 +127,9 @@
         margin-top: 40px;
         color: blue;
         text-decoration: none;
+      }
+      .form-group {
+        margin-bottom: 10px;
       }
     </style>
   </head>
@@ -135,6 +164,7 @@
             font-size: 16px;
             line-height: 1.5;
             text-align: center;
+            position: relative;
         "
       >
         <strong>
@@ -166,14 +196,16 @@
         Kitapları Görüntüle ve sil
       </button>
       <button onclick="toggleAlan('kitapEkleAlani')">Kitap Ekle</button>
-      <button onclick="window.location.href='{{ url_for('kitap_odunc_ver') }}'">
+      <button
+        onclick="window.location.href='{{ url_for('odunc.kitap_odunc_ver') }}'"
+      >
         Kitap Ödünç Ver
       </button>
-     
+
       <button
-        onclick="window.location.href='{{ url_for('tum_odunc_gecmisi') }}'"
+        onclick="window.location.href='{{ url_for('odunc.tum_odunc_gecmisi') }}'"
       >
-    Tüm Kullanıcıların Ödünç Geçmişi Listesi ve Yönetimi
+        Tüm Kullanıcıların Ödünç Geçmişi Listesi ve Yönetimi
       </button>
 
       <button onclick="toggleAlan('kullaniciEkleAlani')">Kullanıcı Ekle</button>
@@ -182,15 +214,16 @@
       </button>
 
       <button
-        onclick="window.location.href='{{ url_for('ceza_tablosunu_goster') }}'"
+        onclick="window.location.href='{{ url_for('ceza.ceza_tablosunu_goster') }}'"
       >
-      Ceza Listesi ve Yönetimi
+        Ceza Listesi ve Yönetimi
       </button>
 
       <button onclick="toggleAlan('personelSifreDegistirAlani')">
         Şifremi Değiştir
       </button>
     </div>
+
     <div
       class="gizli-alan"
       id="personelSifreDegistirAlani"
@@ -198,8 +231,9 @@
     >
       <h3>Şifremi Değiştir</h3>
       <form
-        action="{{url_for('personel_sifre_degistir_route') }}"
+        action="{{url_for('personel.personel_sifre_degistir_route') }}"
         method="POST"
+        class="hash-form"
       >
         <input
           type="password"
@@ -233,21 +267,35 @@
       <h3>Yeni Kitap Ekle</h3>
 
       <form action="/kitapekle" method="POST">
-        <input type="text" name="kitap_adi" placeholder="Kitap Adı" required />
+        <input
+          type="text"
+          name="kitap_adi"
+          placeholder="Kitap Adı"
+          required
+          class="form-control mb-2"
+        />
 
-        <select name="yazar_id" class="form-control" required>
-          <option value="">Yazar Seçin</option>
-          {% for y in yazarlar %}
-          <option value="{{ y['id'] }}">{{ y['ad'] }}</option>
-          {% endfor %}
-        </select>
+        <div class="form-group mb-2">
+          <select name="yazar_id" class="form-control select-search" required>
+            <option value="">Yazar Seçin</option>
+            {% for y in yazarlar %}
+            <option value="{{ y['id'] }}">{{ y['ad'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-        <select name="kategori_id" class="form-control" required>
-          <option value="">Kategori Seçin</option>
-          {% for k in kategoriler %}
-          <option value="{{ k['id'] }}">{{ k['kategori_adi'] }}</option>
-          {% endfor %}
-        </select>
+        <div class="form-group mb-2">
+          <select
+            name="kategori_id"
+            class="form-control select-search"
+            required
+          >
+            <option value="">Kategori Seçin</option>
+            {% for k in kategoriler %}
+            <option value="{{ k['id'] }}">{{ k['kategori_adi'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
         <input
           type="number"
@@ -284,17 +332,23 @@
           required
         />
 
-        <button type="submit">Ekle</button>
-        <button type="button" onclick="toggleAlan('kitapEkleAlani')">
-          İptal
-        </button>
+        <div style="margin-top: 15px">
+          <button type="submit">Ekle</button>
+          <button
+            type="button"
+            onclick="toggleAlan('kitapEkleAlani')"
+            style="background-color: #f44336"
+          >
+            İptal
+          </button>
+        </div>
       </form>
     </div>
 
     <div class="gizli-alan" id="kullanicisifreSifirlaAlani">
       <h3>Kullanıcı Şifresini Sıfırla</h3>
       <form
-        action="{{ url_for('admin_kullanici_sifre_sifirla_route') }}"
+        action="{{ url_for('kullanici.admin_kullanici_sifre_sifirla_route') }}"
         method="POST"
       >
         <input
@@ -313,10 +367,9 @@
       </form>
     </div>
 
-
     <div class="gizli-alan" id="kullaniciEkleAlani">
       <h3>Yeni Kullanıcı Ekle</h3>
-      <form action="/kullaniciekle" method="post">
+      <form action="/kullaniciekle" method="post" class="hash-form">
         <input
           type="text"
           name="yeni_kullanici_adi"
@@ -360,11 +413,11 @@
         z-index: 9999;
       "
     ></div>
-    
-        </form>
-      </div>
-    </div>
-    <a href="{{ url_for('cikis_yap') }}" id="cikisLink">Çıkış Yap</a>
+
+    <a href="{{ url_for('genel.cikis_yap') }}" id="cikisLink">Çıkış Yap</a>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
       function toggleAlan(id) {
@@ -372,7 +425,41 @@
         alan.style.display = alan.style.display === "block" ? "none" : "block";
       }
 
-      
+      $(document).ready(function () {
+        $(".select-search").select2({
+          placeholder: "Seçim yapınız",
+          allowClear: true,
+          dropdownParent: $("#kitapEkleAlani"),
+        });
+      });
+
+      async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        return hashHex;
+      }
+
+      document.querySelectorAll(".hash-form").forEach((form) => {
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const passwordInputs = form.querySelectorAll(
+            'input[type="password"]'
+          );
+
+          for (let input of passwordInputs) {
+            if (input.value) {
+              input.value = await sha256(input.value);
+            }
+          }
+
+          this.submit();
+        });
+      });
     </script>
   </body>
 </html>

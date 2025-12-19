@@ -12,6 +12,7 @@ class KategoriRepository:
         self.cursor = self.connection.cursor(dictionary=True)
 
     def tum_kategoriler(self):
+        #db den tum kategorileri ceker ve dondurur
         try:
             self.cursor.execute("SELECT * FROM kategoriler")
             return self.cursor.fetchall()

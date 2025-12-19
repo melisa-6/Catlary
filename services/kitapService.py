@@ -6,11 +6,12 @@ class kitapService:
         self.repo = kitaplarRepository(db_config)  
         self.odunc_service = odunc_service  
 
-    # Tüm kitapları getirir
+    # Tüm kitapları getirmesi icin ilgili repoya yonlendirir
     def tum_kitaplari_getir(self):
         return self.repo.tum_kitaplari_getir()
 
         
+    #repositorydeki ilgili fonksiyona iletiyoruz
     def kitap_ekle(self, isim, yazar_id, kategori_list, yayinevi,
                sayfa_sayisi, stok, raf_no, baski_yili):
 
@@ -22,17 +23,25 @@ class kitapService:
 
     def kitap_sil_by_id(self, kitap_id):
         if not kitap_id:
+            # ID yoksa uyarı döndürür
             return {"success": False, "message": "Lütfen bir kitap seçin!"}
 
         try:
+            # Repo katmanına iletilir 
             mesaj, silinen_kitap = self.repo.kitap_sil_db_islemi(kitap_id)
+
+            # Eğer kitap gerçekten silindiyse True döndür
             if silinen_kitap:
                 return {"success": True, "message": mesaj}
             else:
                 return {"success": False, "message": mesaj}
+
         except Exception as e:
+            # DB işlemi hata verirse servis mesaj üretir
             return {"success": False, "message": f"Servis Katmanı Hatası: {str(e)}"}
 
+
+#ilgili repoya yonlendirir
     def kitap_ara(self, aranan):
         return self.repo.kitap_ara(aranan)
 

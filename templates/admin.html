@@ -3,11 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <title>Admin Anasayfa</title>
+
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+
     <style>
+      /* Select2 Düzenlemeleri */
+      .select2-container {
+        width: 100% !important;
+        text-align: left;
+      }
+      /* Select2 kutusunun modalın (gizli alanın) üzerinde görünmesi için z-index ayarı */
+      .select2-dropdown {
+        z-index: 10001;
+      }
+
       body {
         display: flex;
         flex-direction: column;
@@ -65,7 +82,14 @@
         width: 200px;
         border: 1px solid #ccc;
         border-radius: 4px;
+        box-sizing: border-box;
       }
+
+      .gizli-alan input,
+      .gizli-alan select {
+        width: 100%;
+      }
+
       .gizli-alan {
         display: none;
         position: fixed;
@@ -84,6 +108,8 @@
         width: 400px;
         max-width: 90%;
         color: #333;
+        max-height: 90vh;
+        overflow-y: auto;
       }
       .checkbox-group {
         display: flex;
@@ -99,14 +125,12 @@
         position: relative;
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
         padding: 10px 15px;
         width: fit-content;
         max-width: 300px;
         margin-left: auto;
         margin-right: auto;
       }
-
       .checkbox-group label {
         display: flex;
         align-items: center;
@@ -119,7 +143,6 @@
         color: blue;
         text-decoration: none;
       }
-
       .flash-message-container {
         position: relative;
         width: 100%;
@@ -137,6 +160,9 @@
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         padding: 20px;
       }
+      .form-group {
+        margin-bottom: 10px;
+      }
     </style>
   </head>
   <body>
@@ -148,23 +174,17 @@
       messages %} {% for category, message in messages %} {% set lower_message =
       message | lower %} {% set is_success_category = category == 'success' %}
       {% set is_error_category = category == 'error' or category == 'danger' %}
-      {# Mesaj içeriğinde "başarıyla" kelimesi geçiyorsa kategoriye
-      bakılmaksızın başarı sayarız (frontend geçici düzeltme) #} {% set
-      has_success_text = 'başarıyla' in lower_message %} {% if
+      {% set has_success_text = 'başarıyla' in lower_message %} {% if
       is_success_category or has_success_text %} {% set bg_color = '#e8f5e9' %}
       {% set text_color = '#2e7d32' %} {% set title_text = 'Başarılı' %} {% elif
       is_error_category %} {% set bg_color = '#ffebee' %} {% set text_color =
-      '#c62828' %} {% set title_text = 'Hata' %} {% else %} {# Varsayılan (info,
-      warning, veya yanlış kategorilenmiş başarı mesajları için) nötr mavi #} {%
-      set bg_color = '#e3f2fd' %} {% set text_color = '#01579b' %} {% set
-      title_text = 'Bilgi' %} {% endif %}
+      '#c62828' %} {% set title_text = 'Hata' %} {% else %} {% set bg_color =
+      '#e3f2fd' %} {% set text_color = '#01579b' %} {% set title_text = 'Bilgi'
+      %} {% endif %}
 
       <div
         class="flash-message"
-        style="
-                  background-color: {{ bg_color }};
-                  color: {{ text_color }};
-              "
+        style="background-color: {{ bg_color }}; color: {{ text_color }};"
       >
         <strong> {{ title_text }} </strong>
         <p style="margin: 10px 0 0 0">{{ message | safe }}</p>
@@ -180,7 +200,6 @@
             position: absolute;
             top: 5px;
             right: 10px;
-            /* Butonun hover rengi */
             opacity: 0.7;
           "
           onmouseover="this.style.opacity='1'"
@@ -199,23 +218,23 @@
       <button onclick="toggleAlan('kitapEkleAlani')">Kitap Ekle</button>
 
       <button
-        onclick="window.location.href='{{ url_for('kategorileri_getir_route') }}'"
+        onclick="window.location.href='{{ url_for('kategori.kategorileri_getir_route') }}'"
       >
         Kategori Yönetimi
       </button>
       <button
-        onclick="window.location.href='{{ url_for('yazarlar_getir_route') }}'"
+        onclick="window.location.href='{{ url_for('yazar.yazarlar_getir_route') }}'"
       >
         Yazar Yönetimi
       </button>
 
       <button
-        onclick="window.location.href='{{ url_for('tum_odunc_gecmisi') }}'"
+        onclick="window.location.href='{{ url_for('odunc.tum_odunc_gecmisi') }}'"
       >
         Tüm Kullanıcıların Ödünç Geçmişi Listesi ve Yönetimi
       </button>
       <button
-        onclick="window.location.href='{{ url_for('ceza_tablosunu_goster') }}'"
+        onclick="window.location.href='{{ url_for('ceza.ceza_tablosunu_goster') }}'"
       >
         Tüm ceza Tablosu ve Yönetimi
       </button>
@@ -223,19 +242,23 @@
       <button onclick="window.location.href='/kullanicilar'">
         Kullanıcı Listesi ve Yönetimi
       </button>
-      <button onclick="window.location.href='{{ url_for('kitap_odunc_ver') }}'">
+      <button
+        onclick="window.location.href='{{ url_for('odunc.kitap_odunc_ver') }}'"
+      >
         Kitap Ödünç Ver
       </button>
       <button onclick="toggleAlan('kullaniciEkleAlani')">Kullanıcı Ekle</button>
 
       <button onclick="toggleAlan('personelEkleAlani')">Personel Ekle</button>
       <button
-        onclick="window.location.href='{{ url_for('personel_listesi_goster') }}'"
+        onclick="window.location.href='{{ url_for('personel.personel_listesi_goster') }}'"
       >
         Personel Listesi ve Yönetimi
       </button>
 
-      <button onclick="window.location.href='{{ url_for('adminler_goster') }}'">
+      <button
+        onclick="window.location.href='{{ url_for('admin.adminler_goster') }}'"
+      >
         Sistem yöneticileri ve Yönetimi
       </button>
       <button onclick="toggleAlan('adminEkleAlani')">Admin Ekle</button>
@@ -246,21 +269,35 @@
       <h3>Yeni Kitap Ekle</h3>
 
       <form action="/kitapekle" method="POST">
-        <input type="text" name="kitap_adi" placeholder="Kitap Adı" required />
+        <input
+          type="text"
+          name="kitap_adi"
+          placeholder="Kitap Adı"
+          required
+          class="form-control mb-2"
+        />
 
-        <select name="yazar_id" class="form-control" required>
-          <option value="">Yazar Seçin</option>
-          {% for y in yazarlar %}
-          <option value="{{ y['id'] }}">{{ y['ad'] }}</option>
-          {% endfor %}
-        </select>
+        <div class="form-group mb-2">
+          <select name="yazar_id" class="form-control select-search" required>
+            <option value="">Yazar Seçin</option>
+            {% for y in yazarlar %}
+            <option value="{{ y['id'] }}">{{ y['ad'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-        <select name="kategori_id" class="form-control" required>
-          <option value="">Kategori Seçin</option>
-          {% for k in kategoriler %}
-          <option value="{{ k['id'] }}">{{ k['kategori_adi'] }}</option>
-          {% endfor %}
-        </select>
+        <div class="form-group mb-2">
+          <select
+            name="kategori_id"
+            class="form-control select-search"
+            required
+          >
+            <option value="">Kategori Seçin</option>
+            {% for k in kategoriler %}
+            <option value="{{ k['id'] }}">{{ k['kategori_adi'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
         <input
           type="number"
@@ -297,38 +334,26 @@
           required
         />
 
-        <button type="submit">Ekle</button>
-        <button type="button" onclick="toggleAlan('kitapEkleAlani')">
-          İptal
-        </button>
-      </form>
-    </div>
-    <div class="gizli-alan" id="kitapOduncVerAlani">
-      <h3>Kitap Ödünç Ver</h3>
-      <form action="/kitapoduncver" method="POST">
-        <input
-          type="text"
-          name="verilcek_kullanici_adi"
-          placeholder="Kullanıcı adi"
-          required
-        />
-        <input
-          type="text"
-          name="verilcek_kitap_adi"
-          placeholder="Kitap adi"
-          required
-        />
-        <input type="date" name="verildigi_tarih" required />
-        <button type="submit">Ödünç Ver</button>
-        <button type="button" onclick="toggleAlan('kitapOduncVerAlani')">
-          İptal
-        </button>
+        <div style="margin-top: 15px">
+          <button type="submit" class="btn btn-primary">Kaydet</button>
+          <button
+            type="button"
+            onclick="toggleAlan('kitapEkleAlani')"
+            style="background-color: #f44336"
+          >
+            İptal
+          </button>
+        </div>
       </form>
     </div>
 
     <div class="gizli-alan" id="personelEkleAlani">
       <h3>Personel Ekle</h3>
-      <form action="{{ url_for('personel_ekle') }}" method="POST">
+      <form
+        action="{{ url_for('personel.personel_ekle') }}"
+        method="POST"
+        class="hash-form"
+      >
         <input
           type="text"
           name="ad_soyad"
@@ -343,7 +368,6 @@
           placeholder="Şifre Tekrar"
           required
         />
-
         <button type="submit">Ekle</button>
         <button type="button" onclick="toggleAlan('personelEkleAlani')">
           İptal
@@ -353,7 +377,7 @@
 
     <div class="gizli-alan" id="adminEkleAlani">
       <h3>Yeni Admin Ekle</h3>
-      <form action="/adminekle" method="POST">
+      <form action="/adminekle" method="POST" class="hash-form">
         <input
           type="text"
           name="yeni_admin_adi"
@@ -389,7 +413,7 @@
 
     <div class="gizli-alan" id="sifreAlani">
       <h3>Admin Şifresini Değiştir</h3>
-      <form action="/admin_sifre_degistir" method="POST">
+      <form action="/admin_sifre_degistir" method="POST" class="hash-form">
         <input
           type="password"
           name="eski_sifre"
@@ -417,7 +441,7 @@
 
     <div class="gizli-alan" id="kullaniciEkleAlani">
       <h3>Yeni Kullanıcı Ekle</h3>
-      <form action="/kullaniciekle" method="post">
+      <form action="/kullaniciekle" method="post" class="hash-form">
         <input
           type="text"
           name="yeni_kullanici_adi"
@@ -462,28 +486,59 @@
       "
     ></div>
 
-    <a href="{{ url_for('cikis_yap') }}" id="cikisLink">Çıkış Yap</a>
-    <div class="gizli-alan" id="cezaOnayAlani" style="display: none">
-      <div class="modal-icerik">
-        <h3>Ceza Ödeme Onayı</h3>
+    <a href="{{ url_for('genel.cikis_yap') }}" id="cikisLink">Çıkış Yap</a>
 
-        <p id="onayMesaji"></p>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-        <form id="onayCezaForm">
-          <input type="hidden" id="odenecek_ceza_id" />
-
-          <button type="submit">Ödemeyi Onayla</button>
-          <button type="button" onclick="toggleAlan('cezaOnayAlani')">
-            İptal
-          </button>
-        </form>
-      </div>
-    </div>
     <script>
       function toggleAlan(id) {
         const alan = document.getElementById(id);
         alan.style.display = alan.style.display === "block" ? "none" : "block";
       }
+
+      // SELECT2 Başlatma
+      $(document).ready(function () {
+        $(".select-search").select2({
+          placeholder: "Seçim yapınız",
+          allowClear: true,
+          dropdownParent: $("#kitapEkleAlani"),
+        });
+      });
+
+      //    Şifreleme Fonksiyonu (SHA-256)
+      async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        return hashHex;
+      }
+
+      // 'hash-form' sınıfına sahip tüm formları bulur
+      document.querySelectorAll(".hash-form").forEach((form) => {
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault(); // Formun hemen gitmesini engelle
+
+          // Form içindeki tüm şifre alanlarını bul
+          const passwordInputs = form.querySelectorAll(
+            'input[type="password"]'
+          );
+
+          // Her bir şifre alanını tek tek hashle
+          for (let input of passwordInputs) {
+            if (input.value) {
+              // Boş değilse
+              input.value = await sha256(input.value);
+            }
+          }
+
+          // Hashlenmiş verilerle formu sunucuya gönder
+          this.submit();
+        });
+      });
     </script>
   </body>
 </html>
