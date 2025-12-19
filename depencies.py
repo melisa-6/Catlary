@@ -21,7 +21,7 @@ from database import baglanti_olustur,tablolar_olustur
 db_config = {
     "host": "127.0.0.1",
     "user": "melisa",
-    "password": "Mtz0504*",
+    "password": "",
     "database": "kutuphane_db",
     "port": 3306
 }
