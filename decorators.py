@@ -3,7 +3,7 @@ from flask import request, jsonify, g, session, redirect, url_for, flash
 import jwt
 
 # JWT  imzalama ve çözme işlemleri için kullanılan gizli anahtar
-JWT_SECRET = "56925541090436581"
+JWT_SECRET = ""
 
 def login_required(f):
     

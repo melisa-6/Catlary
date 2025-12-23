@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Kitap Düzenle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f2f5; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-top: 10px; color: #555; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn-guncelle { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; margin-top: 20px; cursor: pointer; font-size: 16px; }
+        .btn-guncelle:hover { background-color: #218838; }
+        .btn-iptal { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Kitap Bilgilerini Düzenle</h2>
+
+    <form method="POST">
+        <label>Kitap Adı</label>
+        <input type="text" name="kitap_adi" value="{{ kitap['isim'] }}" required>
+
+        <label>Yazar</label>
+        <select name="yazar_id" class="select-search" required>
+            {% for y in yazarlar %}
+            <option value="{{ y['id'] }}" {% if y['id'] == kitap['yazar_id'] %} selected {% endif %}>
+                {{ y['ad'] }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Kategori</label>
+        <select name="kategori_id" class="select-search" required>
+            {% for k in kategoriler %}
+            <option value="{{ k['id'] }}" {% if k['id'] == kitap['kategori_id'] %} selected {% endif %}>
+                {{ k['kategori_adi'] }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Yayınevi</label>
+        <select name="yayinevi_id" class="select-search" required>
+            {% for yayin in yayinevleri %}
+            <option value="{{ yayin['id'] }}" {% if yayin['id'] == kitap['yayinevi_id'] %} selected {% endif %}>
+                {{ yayin['yayinevi_adi'] }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <div style="display: flex; gap: 10px;">
+            <div style="flex:1">
+                <label>Sayfa</label>
+                <input type="number" name="kitap_sayfa_sayisi" value="{{ kitap['sayfa_sayisi'] }}" required>
+            </div>
+            <div style="flex:1">
+                <label>Stok</label>
+                <input type="number" name="stok_miktari" value="{{ kitap['stok'] }}" required>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div style="flex:1">
+                <label>Raf No</label>
+                <input type="number" name="raf_no" value="{{ kitap['raf_no'] }}" required>
+            </div>
+            <div style="flex:1">
+                <label>Baskı Yılı</label>
+                <input type="number" name="baski_yili" value="{{ kitap['baski_yili'] }}" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-guncelle">Güncellemeyi Kaydet</button>
+        <a href="/kitaplari_goruntule" class="btn-iptal">İptal</a>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select-search').select2({
+            width: '100%'
+        });
+    });
+</script>
+
+</body>
+</html>

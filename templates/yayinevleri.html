@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Yayınevi Yönetimi</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        margin: 40px;
+        background-image: url("{{ url_for('static', filename='images/lovers3.png') }}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        backdrop-filter: blur(3px);
+      }
+
+      /* ana kutu */
+      .page-container {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 30px;
+        border-radius: 20px;
+        max-width: 900px;
+        margin: auto;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      h2,
+      h3 {
+        color: #444;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-align: center;
+      }
+
+      /* tablo */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      th {
+        background-color: #f6f6f6;
+        padding: 14px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #555;
+      }
+
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+      }
+
+      tr:hover {
+        background-color: #fafafa;
+        transition: 0.3s;
+      }
+
+      /* mesaj kutuları */
+      .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      }
+      .success {
+        background-color: #e8f8f1;
+        color: #1e7d57;
+      }
+      .danger {
+        background-color: #fdecec;
+        color: #b33a3a;
+      }
+      .error {
+        /* Error class'ı bazen danger yerine kullanılır */
+        background-color: #fdecec;
+        color: #b33a3a;
+      }
+
+      /* form */
+      .form-container {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      }
+
+      input[type="text"] {
+        padding: 12px;
+        width: 280px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        outline: none;
+        transition: 0.3s;
+      }
+      input[type="text"]:focus {
+        border-color: #b09ff3;
+        box-shadow: 0 0 8px rgba(176, 159, 243, 0.4);
+      }
+
+      /* butonlar */
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+      }
+      .btn-add {
+        background-color: #b8a8ff;
+        color: white;
+      }
+      .btn-add:hover {
+        background-color: #a18dff;
+      }
+
+      .btn-delete {
+        background-color: #ffb6c1;
+        color: white;
+      }
+      .btn-delete:hover {
+        background-color: #ff9aa7;
+      }
+
+      /* geri dönüş linki */
+      .nav-link {
+        margin-bottom: 20px;
+        text-decoration: none;
+        color: #7b6cff;
+        font-weight: bold;
+        font-size: 15px;
+
+        display: block;
+        text-align: center;
+        margin-top: 25px;
+      }
+      .nav-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page-container">
+      <h2>Yayınevleri Yönetimi</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="alert {{ category }}">{{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <div class="form-container">
+        <h3>Yeni Yayınevi Ekle</h3>
+
+        <form action="{{ url_for('yayinevi.yayinevi_ekle') }}" method="POST">
+          <input
+            type="text"
+            name="yayinevi_adi"
+            placeholder="Yayınevi Adı Giriniz"
+            required
+          />
+          <button type="submit" class="btn-add">Ekle</button>
+        </form>
+      </div>
+
+      <h3>Mevcut Yayınevleri</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Yayınevi Adı</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for y in yayinevleri %}
+          <tr>
+            <td>{{ y['id'] }}</td>
+            <td>{{ y['yayinevi_adi'] }}</td>
+            <td>
+              <form
+                action="{{ url_for('yayinevi.yayinevi_sil') }}"
+                method="POST"
+                style="display: inline"
+              >
+                <input type="hidden" name="id" value="{{ y['id'] }}" />
+
+                <button
+                  type="submit"
+                  class="btn-delete"
+                  onclick="return confirm('Bu yayınevini silmek istediğinize emin misiniz?');"
+                >
+                  Sil
+                </button>
+              </form>
+            </td>
+          </tr>
+
+          {% else %}
+          <tr>
+            <td colspan="3" style="text-align: center; padding: 20px">
+              Henüz hiç yayınevi eklenmemiş.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <a href="{{ url_for('admin.admin_anasayfa') }}" class="nav-link"
+        >← Admin Paneline Dön</a
+      >
+    </div>
+  </body>
+</html>

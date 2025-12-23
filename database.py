@@ -6,7 +6,7 @@ def baglanti_olustur(db_config=None):
     cfg = db_config or {
         "host": "localhost",
         "user": "melisa",
-        "password": "Mtz0504*",
+        "password": "",
         "database": "kutuphane_db"
     }    
     

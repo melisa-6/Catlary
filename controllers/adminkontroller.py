@@ -5,7 +5,7 @@ from services.adminService import adminService
 db_config = {
     "host": "localhost",
     "user": "melisa",
-    "password": "Mtz0504*",
+    "password": "",
     "database": "kutuphane_db"
 }
 admin_service = adminService(db_config)

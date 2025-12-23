@@ -7,6 +7,7 @@ from controllers.kitapController import kitapController
 from controllers.kullanicikontroller import kullanicikontroller
 from controllers.odunccontroller import odunccontroller
 from controllers.cezaController import cezaController
+from controllers.yayineviController import YayineviController
 
 # ------------------- SERVICE IMPORTLARI -------------------
 from services.veriservice import Veriservice
@@ -39,7 +40,7 @@ personel_controller_instance = personelController(db_config)
 yazarlar_controller = YazarController()
 kitap_controller = kitapController(db_config)
 kategoriler_controller = KategoriController(db_config)
-
+yayinevi_controller=YayineviController(db_config)
 odunc_controller_instance = odunccontroller(db_config)
 def setup_database():
     print("Veritabanı kurulumu başlatılıyor...")

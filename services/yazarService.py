@@ -9,6 +9,9 @@ class YazarService:
         return self.repo.tum_yazarlar()
 
  #uygun repoya yonlendirir
+    def yazar_bul(self, ad):
+        return self.repo.yazar_bul(ad)
+ #uygun repoya yonlendirir
     def yazar_ekle(self, ad):
         return self.repo.yazar_ekle(ad)
 
@@ -20,6 +23,3 @@ class YazarService:
     def kitap_var_mi(self, id):
         return self.repo.kitap_var_mi(id)
 
- #uygun repoya yonlendirir
-    def yazar_bul(self, ad):
-        return self.repo.yazar_bul(ad)

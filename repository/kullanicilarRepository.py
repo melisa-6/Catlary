@@ -7,7 +7,7 @@ class kullanicilarRepository:
 
     def __init__(self, db_config=None):
         self.db_config = db_config
-        #
+        
     def kullanici_ekle(self, username, email, hashed_password):
         conn = None
         cursor = None
