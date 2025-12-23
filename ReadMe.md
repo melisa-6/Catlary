@@ -1,6 +1,5 @@
 # Catlary Kütüphane Yönetim Sistemi Youtube kanalı: www.youtube.com/@Catlaryy
 
-
 # CATLARY KÜTÜPHANE YÖNETİM SİSTEMİ
 
 Catlary kütüphane yönetim sistemi tamamlanmamış,geliştirilmesi devam eden bir kütüphane otomasyonudur. Mevcut hatalari ve eksiklikleri bulunmaktadır.Güncellemeler eklendikçe dosyalar da güncellenecektir.
@@ -433,3 +432,7 @@ Güncel kitap ödünç verme sayfası;
 ![login](static/images/guncelouncmail.png)
 
 Ve PayTR odeme sistemi entegre edilmeye çalışıldı.
+
+### 23.12.2025 tarihinde yapılan güncellemeler ile ;
+
+şifremi unuttum kısmı ve yayınevi yönetim kısmı eklendi.
