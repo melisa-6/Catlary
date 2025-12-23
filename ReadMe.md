@@ -1,3 +1,6 @@
+#Catlary Kütüphane Yönetim Sistemi Youtube kanalı: www.youtube.com/@Catlaryy
+
+
 # CATLARY KÜTÜPHANE YÖNETİM SİSTEMİ
 
 Catlary kütüphane yönetim sistemi tamamlanmamış,geliştirilmesi devam eden bir kütüphane otomasyonudur. Mevcut hatalari ve eksiklikleri bulunmaktadır.Güncellemeler eklendikçe dosyalar da güncellenecektir.
