@@ -1,4 +1,4 @@
-#Catlary Kütüphane Yönetim Sistemi Youtube kanalı: www.youtube.com/@Catlaryy
+# Catlary Kütüphane Yönetim Sistemi Youtube kanalı: www.youtube.com/@Catlaryy
 
 
 # CATLARY KÜTÜPHANE YÖNETİM SİSTEMİ
