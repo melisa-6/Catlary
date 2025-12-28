@@ -19,7 +19,7 @@ from repository.varsayilanekleme import setup_database
 # ------------------- FLASK APP -------------------
 app = Flask(__name__)
 SECRET = "56925541090436581"
-app.secret_key = "56925541090436582"  
+app.secret_key = "56925541090436581"  
 
 # Route dosyalarını uygulamaya tanıtıyoruz
 app.register_blueprint(genel_bp)
