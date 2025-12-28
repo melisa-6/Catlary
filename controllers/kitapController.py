@@ -6,6 +6,42 @@ class kitapController:
         self.kitap_service = kitapService(db_config)
         self.odunc_service = oduncService(db_config)
 
+    def kitap_getir(self,kitap_id):
+        return self.kitap_service.get_by_id(kitap_id)
+    def kitap_guncelle(
+        self, kitap_id, kitap_adi, yazar_id, kategori_id,
+        sayfa_sayisi, stok_miktari, raf_no, baski_yili, yayinevi_id, resim
+    ):
+        # Kitap ID'nin geçerli bir sayı olup olmadığını kontrol et
+        try:
+            kitap_id = int(kitap_id)
+        except (ValueError, TypeError):
+            return "Hata: Kitap ID geçerli değil.", "Kitap Güncelleme Hatası", False
+
+        try:
+            # Servis katmanına güncelleme işlemini gönder
+            sonuc = self.kitap_service.kitap_guncelle(
+                kitap_id=kitap_id,
+                isim=kitap_adi,
+                sayfa_sayisi=sayfa_sayisi,
+                stok=stok_miktari,
+                raf_no=raf_no,
+                baski_yili=baski_yili,
+                yazar_id=yazar_id,
+                kategori_id=kategori_id,
+                yayinevi_id=yayinevi_id,
+                resim=resim
+            )
+
+            # Servisten dönen sonucu kontrol et
+            if sonuc.get('success'):
+                return sonuc.get('message', "Kitap başarıyla güncellendi."), "Kitap Güncelleme", True
+            else:
+                return sonuc.get('message', "Kitap güncellenemedi."), "Kitap Güncelleme Hatası", False
+
+        except Exception as e:
+            print(f"Kitap Güncelleme Hatası: {e}")
+            return f"Beklenmedik hata: {str(e)}", "Kitap Güncelleme Hatası", False
     
     def kitaplari_goruntule_controller(self, username, role, aranan_kitap=""):
         # Kullanıcı kitap aradı mı kontrol et
@@ -24,12 +60,12 @@ class kitapController:
         return kitaplar, admin_mi
 
         
-    def kitap_ekle_controller(self, kitap_adi, yazar_id, kategori_id, sayfa_sayisi, stok_miktari, raf_no, baski_yili, yayinevi):
+    def kitap_ekle_controller(self, kitap_adi, yazar_id, kategori_id, sayfa_sayisi, stok_miktari, raf_no, baski_yili, yayinevi,resim):
         try:
             # Gelen verileri servise iletiyoruz
             return self.kitap_service.kitap_ekle(
                 kitap_adi, yazar_id, kategori_id, sayfa_sayisi, 
-                stok_miktari, raf_no, baski_yili, yayinevi
+                stok_miktari, raf_no, baski_yili, yayinevi,resim
             )
         except Exception as e:
             print(f"Controller HATA: Kitap eklenemedi: {e}")

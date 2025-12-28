@@ -7,39 +7,54 @@ class cezaService:
         self.repo = cezalarRepository(db_config)
         self.odunc_repo = odunclerRepository(db_config) 
         self.repo = cezalarRepository(db_config)
+    
+    def ceza_odendi_yap(self, kullanici_id, odeme_yapilsin_mi=False, admin=False):
+        
+        toplam_tutar, success = self.repo.ceza_odendi_yap(kullanici_id, odeme_yapilsin_mi)
 
+        if not success:
+            return {"toplam_tutar": 0, "success": False, "message": "Ödenecek borç bulunamadı veya bir hata oluştu."}  
+
+        return {
+            "toplam_tutar": toplam_tutar,
+            "success": True,
+            "message": "Ödeme başarıyla tamamlandı."  
+        }
     def odeme_durumu_var_mi(self, kullanici_id):
         return self.repo.odeme_durumu_var_mi(kullanici_id)
-  #ilgili repoya yonlendirir
+
     def ceza_bilgilerini_getir(self, ceza_id):
         detaylar = self.repo.ceza_detaylari_getir(ceza_id)
-
         if not detaylar:
             return None
             
         return {
             "odendi_mi": detaylar.get('odeme_durumu', 0),
             "miktar": float(detaylar.get('miktar', 0)), 
-            "username": detaylar.get('username')
+            "username": detaylar.get('username'),
+            "gercek_iade": detaylar.get('gercek_iade_tarihi') 
         }
         
-        #repoya yonlendirip cezadurumunu aır ve ve euygun donusu controllera iletir
     def ceza_ode(self, ceza_id):
-        ceza = self.repo.ceza_durumu_getir(ceza_id)
-        if not ceza:
-            return False, "Ceza bulunamadı."
+        # nce cezanın ve kitabın iade durumunu çeker
+        durum = self.repo.ceza_ve_iade_durumu_getir(ceza_id)
+        
+        if not durum:
+            return False, "Ceza kaydı bulunamadı."
 
-        if ceza['odeme_durumu']:
-            return False, "Ceza zaten ödenmiş."
+        if durum['gercek_iade_tarihi'] is None:
+            return False, "Bu kitap henüz iade edilmemiş! Kitap iade edilmeden ceza kesilemez ve ödenemez."
 
-        if not ceza['iade_tarihi']:
-            return False, "Kitap iade edilmemiş, ödeme yapılamaz."
-#ceza daha once odenmediyse oder
+        # Zaten ödenmiş mi kontrolü
+        if durum['odeme_durumu'] == 1:
+            return False, "Bu ceza zaten ödenmiş."
+
+        #  Her şey tamamsa ödemeyi yapar
         ok = self.repo.ceza_ode(ceza_id)
         if ok:
-            return True, "Ceza başarıyla ödendi."
+            return True, "Ceza başarıyla tahsil edildi."
         else:
-            return False, "Ödeme sırasında hata oluştu."
+            return False, "Veritabanı güncelleme hatası."
 
     def tum_cezalari_getir(self):
            #ilgili repoya  yonlendirir
@@ -62,20 +77,6 @@ class cezaService:
     def kullanici_borc_getir_by_id(self, kullanici_id):
         return self.repo.toplam_borc_getir(kullanici_id)
 
-#kitabi iade edip etmedigine bakar ve ilgili repoya ynlendirir
-    def ceza_odendi_yap(self, kullanici_id, odeme_yapilsin_mi=False, admin=False):
-        if self.iade_edilmemis_kitap_var_mi(kullanici_id):
-            return {"toplam_tutar": 0, "success": False, "message": "Kitap iade edilmeden ceza ödenemez!"}
-
-        toplam_tutar, success = self.repo.ceza_odendi_yap(kullanici_id, odeme_yapilsin_mi)
-
-        if not success:
-            return {"toplam_tutar": 0, "success": False, "message": toplam_tutar}  
-
-        return {
-            "toplam_tutar": toplam_tutar,
-            "success": True,
-            "message": "Ödeme tamamlandı."  
-        }
+#
 
 

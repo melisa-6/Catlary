@@ -19,7 +19,6 @@ class odunclerRepository:
 
     
     def odunc_ver(self, kullanici_id, kitap_id, odunc_tarihi, gerekli_iade_tarihi):
-        # Yeni bir veritabanı bağlantısı oluşturur
         conn = self._get_conn()
         cursor = conn.cursor(dictionary=True)
         try:
@@ -63,9 +62,9 @@ class odunclerRepository:
 
             # Bütün kontroller geçtiyse ödünç kaydı oluşturulur
             cursor.execute("""
-                INSERT INTO oduncler (kullanici_id, kitap_id, odunc_tarihi, gerekli_iade_tarihi)
-                VALUES (%s, %s, %s, %s)
-            """, (kullanici_id, kitap_id, odunc_tarihi, gerekli_iade_tarihi))
+    INSERT INTO oduncler (kullanici_id, kitap_id, odunc_tarihi, gerekli_iade_tarihi, gercek_iade_tarihi)
+    VALUES (%s, %s, %s, %s, %s)
+""", (kullanici_id, kitap_id, odunc_tarihi, gerekli_iade_tarihi, None))
 
             # Eklenen kaydın ID'sini al
             odunc_id = cursor.lastrowid
@@ -86,7 +85,6 @@ class odunclerRepository:
             return {"success": False, "message": f"Hata oluştu: {e}"}
 
         finally:
-            # Kaynakları kapatır
             cursor.close()
             conn.close()
 
@@ -136,7 +134,6 @@ class odunclerRepository:
             cursor.execute(query, (ceza_id,))
             result = cursor.fetchone()
             
-            # iade_tarihi NULL değilse (yani bir tarih varsa), True döner.
             return result is not None and result.get('iade_tarihi') is not None
         finally:
             cursor.close()
@@ -188,7 +185,16 @@ class odunclerRepository:
 
 #kullanicinin odunc gecmisini getirir   
     def kullanici_odunc_gecmisi_getir(self, kullanici_id):
-        cursor = self.conn.cursor(dictionary=True)
+        
+        try:
+            if self.conn.unread_result:
+                self.conn.get_rows()
+        except:
+            pass
+        if self.conn.is_connected():
+            self.conn.commit()
+            
+        cursor = self.conn.cursor(dictionary=True, buffered=True)
         try:
             cursor.execute("""
                 SELECT o.id, k.isim AS kitap_adi, o.odunc_tarihi, o.gerekli_iade_tarihi, o.gercek_iade_tarihi
@@ -200,32 +206,31 @@ class odunclerRepository:
             return cursor.fetchall()
         finally:
             cursor.close()
-            
     def tum_kullanici_odunc_gecmisi_getir(self):
-        # Veritabanı bağlantısından dictionary formatında veri döndüren cursor oluştur.
-        cursor = self.conn.cursor(dictionary=True)
-
+        conn = database.baglanti_olustur(self.db_config)
+        cursor = conn.cursor(dictionary=True)
         try:
-            # Tüm kullanıcıların ödünç alma geçmişini listeleyen SQL sorgusu
             cursor.execute("""
-    SELECT 
-        o.id,                                           -- Ödünç kaydının ID'si
-        COALESCE(u.username, 'Bilinmeyen Kullanıcı') AS username,   -- Kullanıcı adı; boşsa default isim
-        k.isim AS kitap_adi,                            -- Kitabın adı
-        o.odunc_tarihi,                                 -- Ödünç alındığı tarih
-        o.gerekli_iade_tarihi,                          -- Geri getirilmesi gereken tarih
-        o.gercek_iade_tarihi                            -- Gerçekte teslim edildiği tarih (boş olabilir)
-    FROM oduncler o
-    LEFT JOIN kullanicilar u ON o.kullanici_id = u.id   -- Kullanıcı bilgisi; kullanıcı silinmiş olabilir
-    JOIN kitaplar k ON o.kitap_id = k.id                 -- Kitap bilgisi
-    ORDER BY o.odunc_tarihi DESC                         -- Tarihe göre tersten sıralama (yeniden eskiye)
-""")
-            # Tüm sonucu liste halinde döndür
+                SELECT 
+                    o.id,
+                    u.username,
+                    k.isim AS kitap_adi,
+                    o.odunc_tarihi,
+                    o.gerekli_iade_tarihi,
+                    o.gercek_iade_tarihi,
+                    k.resim AS kapak_url     
+                FROM oduncler o
+                LEFT JOIN kullanicilar u ON o.kullanici_id = u.id
+                LEFT JOIN kitaplar k ON o.kitap_id = k.id
+                ORDER BY o.id DESC
+            """)
             return cursor.fetchall()
-
+        except Exception as e:
+            print(f"SQL Hatası oluştu: {e}")
+            return []
         finally:
-            # Her durumda cursor kapanır
             cursor.close()
+            conn.close()
 
 
     def kullanici_aktif_odunc_detaylari_getir_repo(self, kullanici_id):
@@ -270,7 +275,6 @@ class odunclerRepository:
             conn.close()
 
     def kullanici_odenecek_cezalarini_getir_repo(self, kullanici_id):
-     # Kullanıcının ödenmemiş (odeme_durumu=0) tüm kayıtlı cezalarını çeker.
        
         conn = self._get_conn()
         cursor = conn.cursor(dictionary=True)

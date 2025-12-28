@@ -8,7 +8,6 @@ class AdminRepository:
         self.db_config = db_config
     
     def _get_connection(self):
-        """Her çağrıda yeni bir bağlantı oluşturur."""
         try:
             return database.baglanti_olustur(self.db_config)
         except Exception as e:
@@ -127,6 +126,7 @@ class AdminRepository:
             
     # gelen bilgiler ile şifreyi günceller
     def sifre_guncelle(self, username, yeni_hash):
+        
         conn = None
         try:
             conn = self._get_connection()
@@ -137,15 +137,22 @@ class AdminRepository:
                 (yeni_hash, username)
             )
             conn.commit()
-            
-            return {"success": True, "message": f"{cursor.rowcount} admin kullanıcısının şifresi güncellendi."}
-            
+
+            if cursor.rowcount > 0:
+                return {"success": True, "message": "Şifre başarıyla güncellendi."}
+            else:
+                return {"success": False, "message": "Admin bulunamadı veya şifre güncellenmedi."}
+
         except Exception as e:
-            if conn: conn.rollback()
-            logging.error(f"Admin şifre güncelleme hatası: {e}")
-            raise e
+            if conn:
+                conn.rollback()
+            logging.error(f"Admin şifre update hatası: {e}")
+            return {"success": False, "message": str(e)}
+
         finally:
-            if conn: conn.close()      
+            if conn:
+                conn.close()
+     
     
     def get_first_admin(self):
         conn = None
@@ -160,25 +167,4 @@ class AdminRepository:
         finally:
             if conn: conn.close()
     
-    def sifre_guncelle(self, admin_id, yeni_hash):
-        conn = None
-        cursor = None
-        try:
-            conn = database.baglanti_olustur(self.db_config)
-            cursor = conn.cursor()
-
-            # Tablo adı 'admins' olduğu için buraya dikkat!
-            cursor.execute(
-                "UPDATE admins SET password=%s WHERE id=%s",
-                (yeni_hash, admin_id)
-            )
-            conn.commit()
-            return cursor.rowcount > 0
-
-        except Exception as e:
-            if conn: conn.rollback()
-            print(f"Admin şifre update hatası: {e}")
-            return False
-        finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
+    

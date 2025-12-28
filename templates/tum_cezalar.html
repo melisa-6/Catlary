@@ -2,142 +2,224 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <title>Tüm Cezalar</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistemdeki Tüm Cezalar | Yönetim</title>
     <style>
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
         margin: 0;
-        padding: 0;
-        min-height: 100vh;
+        padding: 20px;
         background: url("{{ url_for('static', filename='images/kedi4.png') }}")
           no-repeat center center fixed;
         background-size: cover;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        color: #333;
       }
-
       .container {
-        background-color: rgba(255, 255, 255, 0.95);
+        max-width: 1300px;
+        margin: auto;
         padding: 30px;
-        margin: 40px;
+        background: rgba(255, 255, 255, 0.94);
         border-radius: 15px;
-        width: 100%;
-        max-width: 1200px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(8px);
       }
-
       h2 {
         text-align: center;
-        margin-bottom: 20px;
-        color: #6a0505;
+        margin-bottom: 25px;
+        color: #00796b;
+        font-size: 28px;
+        border-bottom: 2px solid #009688;
+        padding-bottom: 10px;
       }
-
+      .search-container {
+        text-align: center;
+        margin-bottom: 25px;
+      }
       #searchInput {
+        padding: 12px 25px;
         width: 100%;
-        max-width: 400px;
-        padding: 10px;
-        margin: 0 auto 20px auto;
-        display: block;
-        border-radius: 8px;
+        max-width: 500px;
+        border-radius: 30px;
         border: 1px solid #ccc;
+        font-size: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
       }
-
       table {
         width: 100%;
         border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
       }
-
-      th,
-      td {
-        padding: 12px;
-        border: 1px solid #ddd;
-      }
-
       th {
-        background-color: #6a0505;
+        background-color: #009688;
         color: white;
+        padding: 15px 10px;
+        text-align: left;
+        text-transform: uppercase;
+        font-size: 12px;
+      }
+      td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+        font-size: 14px;
+      }
+      tr:hover {
+        background-color: #f1f8f7;
+      }
+      .book-img {
+        width: 45px;
+        height: 65px;
+        object-fit: cover;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .date-box {
+        font-size: 11px;
+        line-height: 1.5;
+      }
+      .date-item {
+        margin-bottom: 2px;
       }
 
-      tr:nth-child(even) {
-        background-color: #f8f5f5;
+      /* Durum Etiketleri */
+      .badge {
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 11px;
+      }
+      .odendi {
+        background: #eafaf1;
+        color: #27ae60;
+      }
+      .odenmedi {
+        background: #fdf2f2;
+        color: #c0392b;
       }
 
-      button {
+      /* Buton Stili */
+      .btn-pay {
         background-color: #28a745;
         color: white;
         border: none;
-        padding: 6px 14px;
-        border-radius: 6px;
+        padding: 8px 15px;
+        border-radius: 20px;
         cursor: pointer;
+        font-weight: bold;
+        font-size: 11px;
+        transition: 0.3s;
       }
-
-      button:hover {
+      .btn-pay:hover {
         background-color: #218838;
+        transform: translateY(-1px);
       }
 
-      .disabled {
-        color: gray;
+      .disabled-text {
+        color: #999;
         font-style: italic;
+        font-size: 12px;
+      }
+      .warning-text {
+        color: #e67e22;
+        font-weight: bold;
+        font-size: 11px;
       }
 
       footer {
         margin-top: 30px;
         text-align: center;
       }
-
-      footer a {
+      .footer-link {
         text-decoration: none;
-        color: #6a0505;
+        color: white;
+        background: #009688;
+        padding: 10px 25px;
+        border-radius: 25px;
         font-weight: bold;
       }
     </style>
   </head>
-
   <body>
     <div class="container">
-      <h2>Tüm Cezalar</h2>
+      <h2>Sistemdeki Tüm Cezalar</h2>
 
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Kullanıcı veya kitap ara..."
-      />
+      <div class="search-container">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Kullanıcı, kitap veya tarih ile filtrele..."
+        />
+      </div>
 
       <table id="cezaTable">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Kullanıcı</th>
-            <th>Kitap</th>
-            <th>Ceza (₺)</th>
-            <th>Ödünç Tarihi</th>
-            <th>İade Tarihi</th>
+            <th>Kapak</th>
+            <th>Kullanıcı / Kitap</th>
+            <th>Miktar</th>
+            <th>Tarihler</th>
             <th>Durum</th>
             <th>İşlem</th>
           </tr>
         </thead>
-
         <tbody>
           {% for ceza in cezalar %}
           <tr>
-            <td>{{ ceza.id }}</td>
-            <td>{{ ceza.username }}</td>
-            <td>{{ ceza.kitap_adi }}</td>
-            <td>{{ "%.2f"|format(ceza.ceza_miktari) }}</td>
-            <td>{{ ceza.odunc_tarihi or "-" }}</td>
-            <td>{{ ceza.iade_tarihi or "-" }}</td>
-
-            {% if ceza.odeme_durumu %}
-            <td style="color: green; font-weight: bold">Ödendi</td>
-            <td class="disabled">—</td>
-            {% else %}
-            <td style="color: red; font-weight: bold">Ödenmedi</td>
+            <td><small>#{{ ceza.id }}</small></td>
             <td>
-              <button onclick="cezaOde({{ ceza.id }})">Ceza Öde</button>
+              <img
+                src="{{ ceza.kapak_url if ceza.kapak_url else 'https://via.placeholder.com/45x65?text=Yok' }}"
+                class="book-img"
+                alt="Kapak"
+                onerror="this.src='https://via.placeholder.com/45x65?text=Hata';"
+              />
             </td>
-            {% endif %}
+            <td>
+              <strong style="color: #00796b">{{ ceza.username }}</strong><br />
+              <span style="font-size: 13px">{{ ceza.kitap_adi }}</span>
+            </td>
+            <td style="font-weight: bold">
+              {{ "%.2f"|format(ceza.ceza_miktari) }} ₺
+            </td>
+
+            <td class="date-box">
+              <div class="date-item">
+                <b>Ödünç:</b> {{ ceza.odunc_tarihi.strftime('%d.%m.%Y %H:%M')
+                if ceza.odunc_tarihi else '-' }}
+              </div>
+              <div class="date-item" style="color: #d35400">
+                <b>Gerekli iade:</b> {{
+                ceza.gerekli_iade_tarihi.strftime('%d.%m.%Y %H:%M') if
+                ceza.gerekli_iade_tarihi else '-' }}
+              </div
+                
+                >
+              </div>
+            </td>
+
+            <td>
+              {% if ceza.odeme_durumu in [1, True, '1'] %}
+              <span class="badge odendi">✓ ÖDENDİ</span>
+              {% else %}
+              <span class="badge odenmedi">✗ ÖDENMEDİ</span>
+              {% endif %}
+            </td>
+
+            <td>
+             {% if ceza.odeme_durumu in [1, True,
+              '1'] %}
+              <span class="disabled-text">İşlem Tamamlandı</span>
+              {% elif ceza.gercek_iade_tarihi %}
+              <button class="btn-pay" onclick="cezaOde({{ ceza.id }})">
+                Ceza Öde
+              </button>
+              {% else %}
+              <span class="warning-text">Kitabı iade edin</span>
+              {% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -146,14 +228,18 @@
 
     <footer>
       {% if role == "admin" %}
-      <a href="{{ url_for('admin.admin_anasayfa') }}">← Admin Paneli</a>
-      {% elif role == "personel" %}
-      <a href="{{ url_for('personel.personel_sayfasi') }}">← Personel Paneli</a>
+      <a href="{{ url_for('admin.admin_anasayfa') }}" class="footer-link"
+        >← Admin Paneline Dön</a
+      >
+      {% else %}
+      <a href="{{ url_for('personel.personel_sayfasi') }}" class="footer-link"
+        >← Personel Paneline Dön</a
+      >
       {% endif %}
     </footer>
 
     <script>
-      // Arama
+      // Arama Fonksiyonu
       document
         .getElementById("searchInput")
         .addEventListener("keyup", function () {
@@ -165,11 +251,14 @@
           });
         });
 
-      // CEZA ÖDE
+      // Ceza Ödeme Fonksiyonu
       function cezaOde(cezaId) {
-        if (!confirm("Bu cezayı ödemek istiyor musunuz?")) return;
+        if (
+          !confirm("Seçilen cezayı ödendi olarak işaretlemek istiyor musunuz?")
+        )
+          return;
 
-        fetch("/cezaode", {
+        fetch("{{ url_for('ceza.ceza_ode') }}", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -177,13 +266,18 @@
           },
           body: JSON.stringify({ ceza_id: cezaId }),
         })
-          .then((res) => res.json())
-          .then((data) => {
-            alert(data.message);
-            if (data.success) location.reload();
+          .then(async (res) => {
+            const data = await res.json();
+            if (res.ok && data.success) {
+              alert(data.message);
+              location.reload();
+            } else {
+              alert(data.message || "Bir hata oluştu.");
+            }
           })
-          .catch(() => {
-            alert("Sunucu hatası oluştu.");
+          .catch((err) => {
+            console.error("Hata:", err);
+            alert("Sunucu bağlantı hatası!");
           });
       }
     </script>

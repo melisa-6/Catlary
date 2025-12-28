@@ -2,7 +2,7 @@ from flask import Blueprint, flash, render_template, request, jsonify, g, redire
 from sqlite3 import DatabaseError, IntegrityError, ProgrammingError
 
 # dependencies klasöründen gerekli fonksiyonları ve sınıfları çekiyoruz
-from depencies import  make_json_compatible,yayinevleri_controller
+from depencies import  make_json_compatible,yayinevi_controller
 
 from decorators import (admin_required,login_required,
     admin_or_personel_required)
@@ -12,7 +12,7 @@ yayinevi_bp = Blueprint('yayinevi', __name__)
 @login_required
 def yayinevleri_getir():
     # Controller'dan veriyi çek
-    yayinevleri = yayinevleri_controller.yayinevleri_getir_controller()
+    yayinevleri = yayinevi_controller.yayinevleri_getir_controller()
     
     # API isteği mi kontrol et (JSON isteniyorsa)
     if request.accept_mimetypes.best == "application/json" or request.is_json:
@@ -29,7 +29,7 @@ def yayinevi_ekle():
     ad = data.get("yayinevi_adi")
 
     # Controller'a gönder
-    success, msg = yayinevleri_controller.yayinevi_ekle(ad) # Controller'da bu metodun olduğundan emin ol
+    success, msg = yayinevi_controller.yayinevi_ekle(ad) # Controller'da bu metodun olduğundan emin ol
 
     # JSON İsteği ise
     if request.is_json or request.accept_mimetypes.best == "application/json":
@@ -50,7 +50,7 @@ def yayinevi_sil():
     data = request.get_json(silent=True) or request.form
     yayinevi_id = data.get("id")
 
-    success, msg = yayinevleri_controller.yayinevi_sil(yayinevi_id)
+    success, msg = yayinevi_controller.yayinevi_sil(yayinevi_id)
 
     # JSON Dönüşü
     if request.is_json or request.accept_mimetypes.best == "application/json":

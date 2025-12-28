@@ -9,14 +9,7 @@ from send_mail import send_mail_to_user
 from services.kullaniciService import kullaniciService
 from services.adminService import adminService
 from services.personelService import personelService
-db_config = {
-    "host": "127.0.0.1",
-    "user": "melisa",
-    "password": "",
-    "database": "kutuphane_db",
-    "port": 3306
-#mysql e baglanmak iicn gerekli bilgiler
-}
+from db_config import db_config
 kullanici_service = kullaniciService(db_config)
 admin_service = adminService(db_config)
 personel_service = personelService(db_config)  
@@ -33,12 +26,12 @@ class kullanicikontroller:
         # tum alanlarin dolulugunu kontrol eder
         if not all([username, email, sifre, sifre_tekrar]):
             flash("Tüm alanlar boş bırakılamaz.", "error")
-            return redirect(url_for('anasayfa'))
+            return redirect(url_for('genel.anasayfa'))
             
         #girilen sifrelerin eslesip eslesmedigini kontrol eder
         if sifre != sifre_tekrar:
             flash("Şifreler eşleşmiyor!", "error")
-            return redirect(url_for('anasayfa'))
+            return redirect(url_for('genel.anasayfa'))
             
         #sonuc degiskeni ile ilgili service fonksiyonuna yonlendiriyoruz
         sonuc = kullanici_service.kayit_ol(username, email, sifre, sifre_tekrar)
@@ -48,7 +41,7 @@ class kullanicikontroller:
             sonuc['message'],  # Service'den dönen mesaj
             "success" if sonuc.get('success') else "error"
         )
-        return redirect(url_for('anasayfa'))
+        return redirect(url_for('genel.anasayfa'))
         # Kullanıcıyı ana sayfaya yönlendir
   
 

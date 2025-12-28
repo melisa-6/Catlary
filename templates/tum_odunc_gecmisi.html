@@ -18,77 +18,96 @@
       }
 
       .container {
-        background-color: rgba(255, 255, 255, 0.95);
+        background-color: rgba(255, 255, 255, 0.96);
         padding: 30px;
         margin: 40px;
         border-radius: 20px;
         width: 100%;
-        max-width: 1200px;
+        max-width: 1250px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(5px);
       }
 
       h2 {
         text-align: center;
         color: #6a5aa3;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #a28fd0;
+        padding-bottom: 10px;
       }
 
       #searchInput {
         width: 100%;
-        max-width: 400px;
-        padding: 12px;
+        max-width: 450px;
+        padding: 12px 20px;
         margin: 0 auto 25px auto;
         display: block;
-        border-radius: 10px;
-        border: 1px solid #ccc;
+        border-radius: 25px;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
       }
 
       table {
         width: 100%;
         border-collapse: collapse;
       }
-
       th,
       td {
         padding: 12px;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid #eee;
+        text-align: left;
       }
-
       th {
         background-color: #a28fd0;
         color: white;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+      tr:hover {
+        background-color: #f8f6ff;
       }
 
-      tr:nth-child(even) {
-        background-color: #f6f2ff;
+      .book-img {
+        width: 45px;
+        height: 65px;
+        object-fit: cover;
+        border-radius: 5px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s;
+      }
+      .book-img:hover {
+        transform: scale(1.1);
       }
 
       button {
-        background-color: #5cb85c;
+        background-color: #28a745;
         color: white;
         border: none;
-        padding: 8px 14px;
-        border-radius: 8px;
+        padding: 8px 16px;
+        border-radius: 20px;
         cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
       }
-
       button:hover {
-        background-color: #4cae4c;
+        background-color: #218838;
       }
 
       .disabled {
-        color: gray;
-        font-style: italic;
+        color: #27ae60;
+        font-weight: bold;
+        font-style: normal;
       }
-
       footer {
-        margin-top: 25px;
+        margin: 25px 0;
         text-align: center;
       }
-
       footer a {
         text-decoration: none;
-        color: #7b61ff;
+        color: white;
+        background: #6a5aa3;
+        padding: 10px 20px;
+        border-radius: 20px;
         font-weight: bold;
       }
     </style>
@@ -101,13 +120,14 @@
       <input
         type="text"
         id="searchInput"
-        placeholder="Kullanıcı veya kitap ara..."
+        placeholder="Kullanıcı veya kitap ismi ile ara..."
       />
 
       <table id="oduncTable">
         <thead>
           <tr>
             <th>ID</th>
+            <th>Kapak</th>
             <th>Kullanıcı</th>
             <th>Kitap</th>
             <th>Ödünç Tarihi</th>
@@ -119,17 +139,27 @@
         <tbody>
           {% for odunc in tum_odunc_gecmisi %}
           <tr>
-            <td>{{ odunc.id }}</td>
-            <td>{{ odunc.username }}</td>
+            <td><small>#{{ odunc.id }}</small></td>
+
+            <td>
+              <img
+                src="{{ odunc.kapak_url if odunc.kapak_url else 'https://via.placeholder.com/45x65?text=Yok' }}"
+                alt="Kapak"
+                class="book-img"
+                onerror="this.src='https://via.placeholder.com/45x65?text=Hata';"
+              />
+            </td>
+
+            <td><strong>{{ odunc.username }}</strong></td>
             <td>{{ odunc.kitap_adi }}</td>
-            <td>{{ odunc.odunc_tarihi }}</td>
-            <td>{{ odunc.gerekli_iade_tarihi }}</td>
+            <td><small>{{ odunc.odunc_tarihi }}</small></td>
+            <td><small>{{ odunc.gerekli_iade_tarihi }}</small></td>
 
             {% if odunc.gercek_iade_tarihi %}
-            <td>{{ odunc.gercek_iade_tarihi }}</td>
-            <td class="disabled">İade Edildi</td>
+            <td style="color: #27ae60">{{ odunc.gercek_iade_tarihi }}</td>
+            <td class="disabled">✓ İade Alındı</td>
             {% else %}
-            <td>-</td>
+            <td style="color: #e67e22">Henüz iade edilmedi</td>
             <td>
               <form method="POST" action="{{ url_for('odunc.kitap_iade_al') }}">
                 <input type="hidden" name="odunc_id" value="{{ odunc.id }}" />
@@ -146,7 +176,7 @@
     <footer>
       {% if role == "admin" %}
       <a href="{{ url_for('admin.admin_anasayfa') }}">← Admin Paneli</a>
-      {% elif role == "personel" %}
+      {% else %}
       <a href="{{ url_for('personel.personel_sayfasi') }}">← Personel Paneli</a>
       {% endif %}
     </footer>

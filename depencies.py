@@ -19,13 +19,7 @@ from services.oduncService import oduncService
 from services.personelService import personelService
 from database import baglanti_olustur,tablolar_olustur
 # ------------------- VERİTABANI AYARLARI -------------------
-db_config = {
-    "host": "127.0.0.1",
-    "user": "melisa",
-    "password": "",
-    "database": "kutuphane_db",
-    "port": 3306
-}
+from db_config import db_config
 
 ceza_service_instance = cezaService(db_config) # Değişken adını karışıklık olmasın diye güncelledim
 kitap_islemleri = kitapService(db_config)

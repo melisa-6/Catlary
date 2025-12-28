@@ -72,5 +72,4 @@ def yazar_sil_route(id):
 
     # Web yanıtı ve yönlendirme
     flash(mesaj, "success" if basarili else "danger")
-    # Blueprint yapısında olduğumuz için 'yazar.' prefixi ekliyoruz
     return redirect(url_for("yazar.yazarlar_getir_route"))

@@ -1,19 +1,15 @@
 import mysql.connector
 
+from database import baglanti_olustur
+
 class YazarRepository:
     def __init__(self):
-        self.connection = mysql.connector.connect(
-            host="127.0.0.1",
-            user="melisa",
-            password="",
-            database="kutuphane_db",
-            port=3306
-        )
+        self.conn = baglanti_olustur()
 
     def tum_yazarlar(self):
         #yazarlar tablosundan tum yazarları ceker
         try:
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = self.conn.cursor(dictionary=True)
             #sonucları dict formatında dondurmesi icin 
             cursor.execute("SELECT * FROM yazarlar")
             sonuc = cursor.fetchall()
@@ -25,7 +21,7 @@ class YazarRepository:
 
     def yazar_bul(self, ad):
         try:
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = self.conn.cursor(dictionary=True)
             sql = "SELECT * FROM yazarlar WHERE ad = %s"
             cursor.execute(sql, (ad,))
             sonuc = cursor.fetchone()
@@ -37,10 +33,10 @@ class YazarRepository:
 
     def yazar_ekle(self, yazar_adi):
         try:
-            cursor = self.connection.cursor()
+            cursor = self.conn.cursor()
             query = "INSERT INTO yazarlar (ad) VALUES (%s)"
             cursor.execute(query, (yazar_adi,))
-            self.connection.commit()
+            self.conn.commit()
             cursor.close()
             return True
         except Exception as e:
@@ -49,9 +45,9 @@ class YazarRepository:
 
     def yazar_sil(self, id):
         try:
-            cursor = self.connection.cursor()
+            cursor = self.conn.cursor()
             cursor.execute("DELETE FROM yazarlar WHERE id = %s", (id,))
-            self.connection.commit()
+            self.conn.commit()
             cursor.close()
             return True
         except Exception as e:
@@ -60,7 +56,7 @@ class YazarRepository:
 
     def kitap_var_mi(self, yazar_id):
         try:
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = self.conn.cursor(dictionary=True)
             query = "SELECT COUNT(*) AS sayi FROM kitaplar WHERE yazar_id = %s"
             cursor.execute(query, (yazar_id,))
             sonuc = cursor.fetchone()

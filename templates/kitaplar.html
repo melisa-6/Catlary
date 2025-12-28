@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Kitap Listesi</title>
+
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -35,18 +36,6 @@
         padding: 30px;
         border-radius: 15px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        animation: fadeIn 0.8s ease-in-out;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
       }
 
       h2 {
@@ -55,49 +44,32 @@
       }
 
       h3 {
-        align-items: center;
-        margin: 20px 0 25px 0;
+        margin: 20px 0;
         font-size: 22px;
         color: #ffb266;
+        text-align: center;
       }
 
       .arama {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
+        justify-content: center;
         margin-bottom: 25px;
       }
 
-      .arama input[type="text"] {
-        padding: 12px 15px;
+      .arama input {
+        padding: 10px;
         width: 250px;
         border-radius: 8px;
         border: 1px solid #ccc;
-        font-size: 16px;
-        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s;
-      }
-
-      .arama input[type="text"]:focus {
-        outline: none;
-        border-color: #ffb266;
-        box-shadow: 0 0 8px rgba(255, 178, 102, 0.5);
+        margin-right: 10px;
       }
 
       .arama button {
         padding: 10px 20px;
-        border: none;
         border-radius: 8px;
+        border: none;
         background-color: #ffb266;
-        color: #4b3832;
-        font-size: 16px;
         cursor: pointer;
-        transition: 0.3s;
-      }
-
-      .arama button:hover {
-        background-color: #ffcc99;
       }
 
       table {
@@ -105,19 +77,16 @@
         border-collapse: collapse;
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
       th,
       td {
-        padding: 12px 15px;
+        padding: 12px;
         text-align: left;
       }
 
       th {
         background-color: #ffb266;
-        color: #4b3832;
-        font-weight: 600;
       }
 
       tr:nth-child(even) {
@@ -126,13 +95,6 @@
 
       tr:hover {
         background-color: #ffd9b3;
-        transition: 0.3s;
-      }
-
-      td[colspan] {
-        text-align: center;
-        color: #888;
-        font-style: italic;
       }
 
       .sil-btn {
@@ -142,74 +104,47 @@
         padding: 8px 12px;
         border-radius: 6px;
         cursor: pointer;
-        font-size: 14px;
-        transition: 0.3s;
       }
 
-      .sil-btn:hover {
-        background-color: #cc0000;
+      .duzenle-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-left: 5px;
+      }
+
+      .duzenle-btn:hover {
+        background-color: #218838;
       }
 
       footer {
         margin: 30px 0;
-        text-align: center;
       }
 
       footer a {
-        text-decoration: none;
         background-color: #ffb266;
-        color: #4b3832;
         padding: 12px 25px;
         border-radius: 8px;
-        transition: 0.3s;
-      }
-
-      footer a:hover {
-        background-color: #ffcc99;
-      }
-
-      @media (max-width: 768px) {
-        th,
-        td {
-          padding: 10px 8px;
-          font-size: 0.9em;
-        }
-        h3 {
-          font-size: 1.8em;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .arama input[type="text"] {
-          width: 80%;
-        }
-        table {
-          width: 95%;
-        }
+        text-decoration: none;
+        color: #4b3832;
       }
     </style>
   </head>
+
   <body>
     <header>
       <h2>Hoşgeldin, {{ username }}!</h2>
     </header>
 
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
-    <div style="margin-bottom: 15px">
-      {% for category, message in messages %}
-      <div
-        class="alert alert-{{ category }}"
-        style="padding: 10px 15px; border-radius: 6px; margin-bottom: 5px;
-                     background-color: {% if category=='success' %}#d4edda{% else %}#f8d7da{% endif %};
-                     color: {% if category=='success' %}#155724{% else %}#721c24{% endif %};
-                     border: 1px solid {% if category=='success' %}#c3e6cb{% else %}#f5c6cb{% endif %};"
-      >
-        {{ message }}
-      </div>
-      {% endfor %}
+    messages %} {% for category, message in messages %}
+    <div style="margin: 10px; padding: 10px; background: #eee">
+      {{ message }}
     </div>
-    {% endif %} {% endwith %}
+    {% endfor %} {% endif %} {% endwith %}
 
     <main>
       <h3>Kitap Listesi</h3>
@@ -219,7 +154,7 @@
           <input
             type="text"
             name="aranacak_kitap"
-            placeholder="Aramak istediğiniz kitap adı"
+            placeholder="Kitap adı"
             value="{{ aranan_kitap }}"
           />
           <button type="submit">Ara</button>
@@ -230,43 +165,65 @@
         <thead>
           <tr>
             <th>ID</th>
+            <th>Kapak</th>
             <th>Kitap İsmi</th>
             <th>Yazar</th>
             <th>Kategori</th>
+            <th>Yayınevi</th>
             <th>Stok</th>
             {% if admin_mi %}
             <th>İşlem</th>
             {% endif %}
           </tr>
         </thead>
+
         <tbody>
           {% if kitaplar %} {% for kitap in kitaplar %}
           <tr>
             <td>{{ kitap.id }}</td>
+
+            <td>
+              {% if kitap.resim %}
+              <img
+                src="{{ kitap.resim }}"
+                alt="Kapak"
+                style="width: 60px; border-radius: 6px"
+              />
+              {% else %}
+              <span style="color: #888">Resim yok</span>
+              {% endif %}
+            </td>
+
             <td>{{ kitap.isim }}</td>
             <td>{{ kitap.yazar_isim }}</td>
             <td>{{ kitap.kategori_isim }}</td>
-
-            <td>{{ kitap.stok }}</td>
+            <td>{{ kitap.yayinevi_isim or '-' }}</td>
+            <td id="stok-{{ kitap.id }}">{{ kitap.stok }}</td>
 
             {% if admin_mi %}
             <td>
               <form action="/kitapsil" method="POST" style="display: inline">
                 <input type="hidden" name="kitap_id" value="{{ kitap.id }}" />
                 <button
-                  type="submit"
                   class="sil-btn"
-                  onclick="return confirm('{{ kitap.isim }} (ID: {{ kitap.id }}) adlı kitabı silmek istediğinizden emin misiniz?')"
+                  onclick="return confirm('Silmek istiyor musunuz?')"
                 >
                   Sil
                 </button>
               </form>
+              <br /><br />
+              <button
+                class="duzenle-btn"
+                onclick="window.location.href='/kitap_duzenle/{{ kitap.id }}'"
+              >
+                Düzenle
+              </button>
             </td>
             {% endif %}
           </tr>
           {% endfor %} {% else %}
           <tr>
-            <td colspan="{% if admin_mi %}6{% else %}5{% endif %}">
+            <td colspan="{% if admin_mi %}8{% else %}7{% endif %}">
               Kitap bulunamadı
             </td>
           </tr>
@@ -277,16 +234,14 @@
 
     <footer>
       {% if role == 'admin' %}
-      <a href="{{ url_for('admin.admin_anasayfa') }}"
-        >← Admin Anasayfasına Dön</a
-      >
+      <a href="{{ url_for('admin.admin_anasayfa') }}">← Admin Anasayfa</a>
       {% elif role == 'personel' %}
       <a href="{{ url_for('personel.personel_sayfasi') }}"
-        >← Personel Anasayfasına Dön</a
+        >← Personel Anasayfa</a
       >
       {% else %}
       <a href="{{ url_for('kullanici.kullanici_sayfasi') }}"
-        >← Kullanıcı Anasayfasına Dön</a
+        >← Kullanıcı Anasayfa</a
       >
       {% endif %}
     </footer>

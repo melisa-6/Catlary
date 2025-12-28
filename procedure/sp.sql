@@ -1,7 +1,7 @@
-END CREATE DEFINER = `root` @`localhost` PROCEDURE `ceza`() BEGIN
-DECLARE v_gunluk_ceza DECIMAL(10, 2) DEFAULT 5.00;
-DECLARE v_islem_tarihi DATE;
-SET v_islem_tarihi = CURDATE();
+DELIMITER $$ CREATE DEFINER = `root` @`localhost` PROCEDURE `ceza`() BEGIN
+DECLARE v_dakika_ceza DECIMAL(10, 2) DEFAULT 1.00;
+DECLARE v_islem_zamani DATETIME;
+SET v_islem_zamani = NOW();
 INSERT INTO cezalar (
         kullanici_id,
         kitap_id,
@@ -14,32 +14,30 @@ INSERT INTO cezalar (
     )
 SELECT O.kullanici_id,
     O.kitap_id,
-    (
-        DATEDIFF(v_islem_tarihi, O.gerekli_iade_tarihi) * v_gunluk_ceza
-    ),
+    TIMESTAMPDIFF(MINUTE, O.gerekli_iade_tarihi, v_islem_zamani) * v_dakika_ceza,
     O.odunc_tarihi,
     O.gerekli_iade_tarihi,
     0,
-    v_islem_tarihi,
-    v_islem_tarihi
+    v_islem_zamani,
+    v_islem_zamani
 FROM oduncler O
 WHERE O.gercek_iade_tarihi IS NULL
-    AND O.gerekli_iade_tarihi < v_islem_tarihi
+    AND O.gerekli_iade_tarihi < v_islem_zamani
     AND NOT EXISTS (
         SELECT 1
         FROM cezalar C
         WHERE C.kullanici_id = O.kullanici_id
             AND C.kitap_id = O.kitap_id
+            AND C.odeme_durumu = 0
     );
 UPDATE cezalar C
     JOIN oduncler O ON C.kullanici_id = O.kullanici_id
     AND C.kitap_id = O.kitap_id
-SET C.ceza_miktari = (
-        DATEDIFF(v_islem_tarihi, O.gerekli_iade_tarihi) * v_gunluk_ceza
-    ),
-    C.son_mail_tarihi = v_islem_tarihi
+SET C.ceza_miktari = TIMESTAMPDIFF(MINUTE, O.gerekli_iade_tarihi, v_islem_zamani) * v_dakika_ceza,
+    C.son_mail_tarihi = v_islem_zamani
 WHERE O.gercek_iade_tarihi IS NULL
-    AND O.gerekli_iade_tarihi < v_islem_tarihi;
+    AND O.gerekli_iade_tarihi < v_islem_zamani
+    AND C.odeme_durumu = 0;
 INSERT INTO mailkuyrugu (
         AliciMail,
         AliciAdi,
@@ -50,23 +48,22 @@ INSERT INTO mailkuyrugu (
     )
 SELECT U.email,
     U.username,
-    'HATIRLATMA: Gecikmiş Kitap Borcunuz Arttı',
+    'ACİL: Kitap Süreniz Doldu (Test Sistemi)',
     CONCAT(
         'Sayın ',
         U.username,
-        ', gecikme devam etmektedir. Güncel borcunuz: ',
+        ', kitap süreniz dolmuştur. Güncel cezanız: ',
         C.ceza_miktari,
-        ' TL. Lütfen kitabınızı iade ediniz.'
+        ' TL.'
     ),
     'Beklemede',
     NOW()
 FROM cezalar C
     JOIN kullanicilar U ON C.kullanici_id = U.id
-    JOIN oduncler O ON C.kullanici_id = O.kullanici_id
-    AND C.kitap_id = O.kitap_id
-WHERE C.son_mail_tarihi = v_islem_tarihi
-    AND O.gercek_iade_tarihi IS NULL;
-END CREATE DEFINER = `root` @`localhost` PROCEDURE `iadebugunhatirlatmasi`() BEGIN
+WHERE C.son_mail_tarihi = v_islem_zamani
+    AND C.odeme_durumu = 0;
+END $$ DELIMITER;
+CREATE DEFINER = `root` @`localhost` PROCEDURE `iadebugunhatirlatmasi`() BEGIN
 INSERT INTO mailkuyrugu(AliciMail, AliciAdi, Konu, MesajIcerigi)
 SELECT U.email,
     U.username,

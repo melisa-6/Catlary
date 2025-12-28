@@ -1,13 +1,8 @@
 from flask import request, session, flash, redirect, url_for, render_template
 from services.adminService import adminService
+from db_config import db_config
 
 
-db_config = {
-    "host": "localhost",
-    "user": "melisa",
-    "password": "",
-    "database": "kutuphane_db"
-}
 admin_service = adminService(db_config)
 
 class adminkontroller:

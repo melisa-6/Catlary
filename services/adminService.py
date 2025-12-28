@@ -13,7 +13,6 @@ class adminService:
         self.repo = AdminRepository(db_config)
         self.kullanici_service = kullaniciService(db_config)
     
-        
     def admin_ekle(self, username, email, sifre, sifre_tekrar):
         #alan doluluklarını kontrol eder
         if not all([username, email, sifre, sifre_tekrar]):
@@ -39,7 +38,6 @@ class adminService:
             return 0 
         #sifreyi hashler ve ilgili repoya yonlendirir
         sifre_hash = generate_password_hash(sifre)
-        
         
         try:
             admin_id = self.repo.admin_ekle(username, email, sifre_hash)
@@ -106,39 +104,34 @@ class adminService:
         return self.repo.get_by_username(username) is not None
 
     def sifre_degistir(self, username, eski_sifre, yeni_sifre, yeni_sifre_tekrar):
-        # 3 şifrenin de gönderilmiş olması gerekiyor. Eksik varsa hata verir
+        # 3 şifrenin de gönderilmiş olması gerekiyor
         if not all([eski_sifre, yeni_sifre, yeni_sifre_tekrar]):
             return {"success": False, "message": "Tüm alanlar doldurulmalıdır."}
 
-        # Yeni şifre ile tekrar girilen şifre kontrol edilir
         if yeni_sifre != yeni_sifre_tekrar:
             return {"success": False, "message": "Yeni şifreler eşleşmiyor!"}
-       
-        # Yeni şifrenin minimum uzunluk kontrolü
+
         if len(yeni_sifre) < 6:
             return {"success": False, "message": "Şifre en az 6 karakter olmalı."}
 
-        # Veritabanından admin bilgisi alınır
         mevcut_admin = self.repo.get_by_username(username)
         if not mevcut_admin:
             return {"success": False, "message": "Admin bulunamadı!"}
 
-        # Yeni şifre eski şifreyle aynı mı kontrol edilir
         if check_password_hash(mevcut_admin['password'], yeni_sifre):
-           return {"success": False, "message": "Yeni şifre eski şifrenizle aynı olamaz!"}
-    
-        # Kullanıcıdan alınan eski şifre doğru mu diye kontrol edilir
+            return {"success": False, "message": "Yeni şifre eski şifrenizle aynı olamaz!"}
+
         if not check_password_hash(mevcut_admin['password'], eski_sifre):
             return {"success": False, "message": "Eski şifre yanlış!"}
 
-        # Yeni şifre hashlenir
         yeni_hash = generate_password_hash(yeni_sifre)
 
-        # Şifre veritabanında güncellenir
-        sonuc = self.repo.sifre_guncelle(username, yeni_hash)
-
-        # repo sonucu doğrudan döndürülür (success veya error)
-        return sonuc
+        # Repo boolean döndürüyor, bunu sözlük haline çeviriyoruz
+        guncelleme_sonucu = self.repo.sifre_guncelle(username, yeni_hash)
+        if guncelleme_sonucu:
+            return {"success": True, "message": "Şifre başarıyla değiştirildi."}
+        else:
+            return {"success": False, "message": "Şifre güncellenemedi!"}
 
     
     def get_admin_by_email(self, email):

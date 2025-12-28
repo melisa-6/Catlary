@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cezalarım</title>
+    <title>Cezalarım | Kütüphane Sistemi</title>
     <style>
       body {
-        font-family: "Segoe UI", Arial, sans-serif;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
         margin: 0;
         padding: 20px;
         background: url("{{ url_for('static', filename='images/kedi4.png') }}")
@@ -15,96 +15,115 @@
         color: #333;
       }
       .content-wrapper {
-        max-width: 950px;
+        max-width: 1100px;
         margin: auto;
         padding: 30px;
-        background: rgba(255, 255, 255, 0.85);
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(5px);
       }
       h2 {
         text-align: center;
         margin-bottom: 25px;
-        color: #009688;
+        color: #00796b;
         font-size: 28px;
+        border-bottom: 2px solid #009688;
+        padding-bottom: 10px;
+      }
+      .search-container {
+        text-align: center;
+        margin-bottom: 20px;
       }
       input[type="text"] {
-        display: block;
-        margin: 0 auto 20px auto;
-        padding: 10px 15px;
-        width: 320px;
-        border-radius: 8px;
-        border: 1px solid #bbb;
+        padding: 12px 20px;
+        width: 60%;
+        max-width: 400px;
+        border-radius: 25px;
+        border: 1px solid #ccc;
         font-size: 15px;
-        transition: 0.3s;
+        transition: all 0.3s ease;
       }
       input[type="text"]:focus {
         outline: none;
         border-color: #009688;
-        box-shadow: 0 0 8px rgba(0, 150, 136, 0.3);
+        box-shadow: 0 0 10px rgba(0, 150, 136, 0.2);
       }
       table {
         border-collapse: collapse;
         width: 100%;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 12px;
+        background: white;
+        border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-      th,
-      td {
-        padding: 14px 12px;
-        text-align: left;
-        border-bottom: 1px solid #eee;
       }
       th {
         background-color: #009688;
         color: white;
+        padding: 15px;
+        text-align: left;
         text-transform: uppercase;
-        font-size: 14px;
-        letter-spacing: 0.5px;
+        font-size: 13px;
       }
-      tr:nth-child(even) {
-        background-color: #f9f9f9;
+      td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
       }
       tr:hover {
-        background-color: #e0f2f1;
-        transition: 0.3s;
+        background-color: #f1f8f7;
+      }
+      .book-img {
+        width: 50px;
+        height: 75px;
+        object-fit: cover;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .date-box {
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .date-row {
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: flex-start;
+        gap: 5px;
       }
       .odendi {
-        color: #2ecc71;
-        font-weight: 600;
+        color: #27ae60;
+        background: #eafaf1;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 11px;
+        white-space: nowrap;
       }
       .odenmedi {
-        color: #e74c3c;
-        font-weight: 600;
+        color: #c0392b;
+        background: #fdf2f2;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 11px;
+        white-space: nowrap;
       }
       footer {
         margin-top: 30px;
         text-align: center;
       }
-      footer a {
-        display: inline-block;
+      .btn-back {
         text-decoration: none;
         background-color: #009688;
         color: white;
-        padding: 10px 22px;
-        border-radius: 8px;
+        padding: 12px 25px;
+        border-radius: 30px;
         transition: 0.3s;
-        font-size: 15px;
+        font-weight: 600;
+        display: inline-block;
       }
-      footer a:hover {
-        background-color: #00796b;
-      }
-      @media (max-width: 768px) {
-        th,
-        td {
-          padding: 10px 8px;
-          font-size: 13px;
-        }
-        input[type="text"] {
-          width: 85%;
-        }
+      .btn-back:hover {
+        background-color: #004d40;
+        transform: translateY(-2px);
       }
     </style>
   </head>
@@ -112,42 +131,84 @@
     <div class="content-wrapper">
       <h2>Cezalarım - {{ username }}</h2>
 
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Kitap veya tarih ara..."
-      />
+      <div class="search-container">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Kitap ismi veya tarih ile ara..."
+        />
+      </div>
 
       <table id="cezaTable">
         <thead>
           <tr>
-            <th>Ceza ID</th>
-            <th>Kitap</th>
-            <th>Ceza Miktarı (₺)</th>
-            <th>Ödünç Tarihi</th>
-            <th>İade Tarihi</th>
-            <th>Ödenme Durumu</th>
+            <th>Kapak</th>
+            <th>Kitap Bilgisi</th>
+            <th>Ceza Miktarı</th>
+            <th>Zaman Çizelgesi (Saatli)</th>
+            <th>Ödeme Durumu</th>
           </tr>
         </thead>
         <tbody>
           {% if cezalar %} {% for ceza in cezalar %}
           <tr>
-            <td>{{ ceza.id }}</td>
-            <td>{{ ceza.kitap_adi or 'BULUNAMADI' }}</td>
-            <td>{{ "%.2f"|format(ceza.ceza_miktari) }} TL</td>
-            <td>{{ ceza.odunc_tarihi or '-' }}</td>
-            <td>{{ ceza.iade_tarihi or 'Henüz iade edilmedi' }}</td>
-            <td
-              class="{% if ceza.odeme_durumu in [1, True, '1', 'True'] %}odendi{% else %}odenmedi{% endif %}"
-            >
-              {% if ceza.odeme_durumu in [1, True, '1', 'True'] %}Ödendi{% else
-              %}Ödenmedi{% endif %}
+            <td>
+              <img
+                src="{{ ceza.kapak_url if ceza.kapak_url else 'https://via.placeholder.com/50x75?text=Yok' }}"
+                alt="Kapak"
+                class="book-img"
+                onerror="this.src='https://via.placeholder.com/50x75?text=Hata';"
+              />
+            </td>
+            <td>
+              <strong style="font-size: 15px">{{ ceza.kitap_adi }}</strong
+              ><br />
+              <small style="color: #888">Ceza No: #{{ ceza.id }}</small>
+            </td>
+            <td style="font-weight: 700; color: #2c3e50">
+              {{ "%.2f"|format(ceza.ceza_miktari) }} TL
+            </td>
+            <td class="date-box">
+              <div class="date-row">
+                <span title="Kitabın Alındığı Tarih">
+                  <strong>Ödünç:</strong></span
+                >
+                <span
+                  >{{ ceza.odunc_tarihi.strftime('%d.%m.%Y %H:%M') if
+                  ceza.odunc_tarihi else '-' }}</span
+                >
+              </div>
+
+              <div class="date-row" style="color: #27ae60">
+                <span title="Kitabın Gerçekten Getirildiği Tarih">
+                  <strong>Gerekli İade:</strong></span
+                >
+                <span
+                  >{{ ceza.gercek_iade_tarihi.strftime('%d.%m.%Y %H:%M') if
+                  ceza.gercek_iade_tarihi else 'Bekleniyor...' }}</span
+                >
+              </div>
+            </td>
+            <td>
+              {% if ceza.odeme_durumu in [1, True, '1', 'True'] %}
+              <span class="odendi">✓ ÖDENDİ</span>
+              {% else %}
+              <span class="odenmedi">✗ ÖDENMEDİ</span>
+              {% endif %}
             </td>
           </tr>
           {% endfor %} {% else %}
           <tr>
-            <td colspan="6" style="text-align: center">
-              Kayıtlı ceza bulunamadı.
+            <td
+              colspan="5"
+              style="
+                text-align: center;
+                padding: 50px;
+                color: #999;
+                font-style: italic;
+              "
+            >
+              Henüz kayıtlı bir ceza kaydınız bulunmamaktadır.
             </td>
           </tr>
           {% endif %}
@@ -155,20 +216,23 @@
       </table>
 
       <footer>
-        <a href="{{ url_for('kullanici.kullanici_sayfasi') }}">← Geri Dön</a>
+        <a href="{{ url_for('kullanici.kullanici_sayfasi') }}" class="btn-back"
+          >← Panele Geri Dön</a
+        >
       </footer>
     </div>
 
     <script>
-      const searchInput = document.getElementById("searchInput");
-      searchInput.addEventListener("keyup", function () {
-        const filter = searchInput.value.toLowerCase();
-        const rows = document.querySelectorAll("#cezaTable tbody tr");
-        rows.forEach((row) => {
-          const text = row.textContent.toLowerCase();
-          row.style.display = text.includes(filter) ? "" : "none";
+      document
+        .getElementById("searchInput")
+        .addEventListener("keyup", function () {
+          const filter = this.value.toLowerCase();
+          const rows = document.querySelectorAll("#cezaTable tbody tr");
+          rows.forEach((row) => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+          });
         });
-      });
     </script>
   </body>
 </html>

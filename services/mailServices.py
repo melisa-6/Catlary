@@ -6,7 +6,7 @@ class mailService:
     def gonder(self, alici, konu, icerik):
         
         from_email = "infocatlary@gmail.com"
-        from_password = ""  # Gmail App Password
+        from_password = # Gmail App Password
 
         msg = MIMEMultipart()
         msg['From'] = from_email

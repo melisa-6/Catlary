@@ -13,21 +13,22 @@ class kullanicilarRepository:
         cursor = None
         try:
             conn = database.baglanti_olustur(self.db_config)
-            cursor = conn.cursor()
-            # Çakışma kontrolü yapar
+            cursor = conn.cursor(buffered=True)  
+
             cursor.execute(
                 "SELECT id FROM kullanicilar WHERE username=%s OR email=%s",
                 (username, email)
             )
-            if cursor.fetchone():
-                return False
-            #eger kullanici kayitlarda varsa buna gore geri dondurur
 
-            # Kullanıcı yoksa eklenir
+            mevcut = cursor.fetchone()
+            if mevcut:
+                return False
+
             cursor.execute(
                 "INSERT INTO kullanicilar (username, email, password) VALUES (%s,%s,%s)",
                 (username, email, hashed_password)
             )
+
             conn.commit()
             return True
 
@@ -38,9 +39,12 @@ class kullanicilarRepository:
             return False
 
         finally:
-            if cursor: cursor.close()
-            if conn: conn.close()
-            
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+                
             
     def kullanici_by_email(self, email):
         conn = None

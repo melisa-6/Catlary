@@ -38,17 +38,17 @@ class cezaController:
         return self.ceza_service.kullanici_cezalari_getir(kullanici['id'])
 
     def borc_getir_controller(self, username):
+    # .strip() ile boşlukları temizleyip .lower() ile harf farkını ortadan kaldır
+        temiz_username = username.strip().lower() 
         
-        kullanici = self.kullanici_service.get_by_username(username)
+        kullanici = self.kullanici_service.get_by_username(temiz_username)
+        
         if not kullanici:
-            print(f"Kullanıcı bulunamadı: {username}")
-            return 0  # Borç yok
+            print(f"HATA: '{username}' veritabanında bulunamadı! Lütfen veritabanını kontrol et.")
+            return 0  
 
         user_id = kullanici['id']
-        print(f"DEBUG: user_id: {user_id}")
         toplam_borc = self.ceza_service.kullanici_borc_getir_by_id(user_id)
-        print(f"DEBUG: {username} ödenmemiş toplam borç: {toplam_borc}")
-
         return toplam_borc
 
     def borc_getir_by_id(self, kullanici_id):

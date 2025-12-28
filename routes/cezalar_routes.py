@@ -1,11 +1,12 @@
-from flask import Blueprint, render_template, request, jsonify, g, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, g, redirect, session, url_for
 from sqlite3 import DatabaseError, IntegrityError, ProgrammingError
 
 # dependencies klasöründen gerekli fonksiyonları ve sınıfları çekiyoruz
 from depencies import ceza_controller_instance, make_json_compatible
 
-from decorators import (admin_required,login_required,
+from decorators import (admin_required, login_required,
     admin_or_personel_required)
+
 # Blueprint oluşturuluyor
 ceza_bp = Blueprint('ceza', __name__)
 
@@ -49,48 +50,41 @@ def ceza_tablosunu_goster():
             role=g.get('role'),
             cezalar=[]
         )
-
-@ceza_bp.route('/cezalarimigoster/<username>')   # URL içinde username parametresi alır
-@login_required                                # Giriş yapılmış kullanıcı olması şart
+@ceza_bp.route('/cezalarimigoster/<username>')
+@login_required
 def cezalarimigoster(username):
-    username = g.username    # Güvenlik için route parametresini değil session bilgisini kullanırız
+    # Güvenlik için session'daki kullanıcıyı alıyoruz
+    current_username = g.username 
     
     try:
-        # Kullanıcıya ait cezaları servis katmanından çeker
-        cezalar = ceza_controller_instance.kullanici_cezalarini_goster(username)
+        cezalar = ceza_controller_instance.kullanici_cezalarini_goster(current_username)
 
-        # JSON formatına uygun hale getirir 
+        # JSON uyumluluğu için formatla
         cezalar_json = make_json_compatible(cezalar)
 
-        # Eğer istek JSON kabul ediyorsa JSON döndürür
-        if request.accept_mimetypes.best == "application/json":
+        # Postman veya API istekleri için JSON döndür
+        if request.accept_mimetypes.best == "application/json" or request.is_json:
             return jsonify({
-                "username": username, 
+                "status": "success",
+                "username": current_username, 
+                "total_count": len(cezalar),
                 "cezalar": cezalar_json
             }), 200
         
-        # HTML döndürür cezalarim.html template’ine veri gönderir
+        # Tarayıcı için HTML döndür
         return render_template(
             'cezalarim.html', 
-            username=username, 
+            username=current_username, 
             cezalar=cezalar
         )
 
     except Exception as e:
-        # Hata oluşursa kullanıcıya mesaj verilir
-        mesaj = f"İşlem Başarısız: Sunucu tarafında beklenmedik bir hata oluştu: {str(e)}"
+        mesaj = f"Sunucu hatası: {str(e)}"
+        if request.accept_mimetypes.best == "application/json" or request.is_json:
+            return jsonify({"status": "error", "message": mesaj}), 500
+        
         print(f"HATA /cezalarimigoster: {e}")
-        
-        # JSON isteyen istemciye JSON hatası döndürülür
-        if request.accept_mimetypes.best == "application/json":
-            return jsonify({
-                "success": False, 
-                "message": mesaj
-            }), 500
-        
-        # HTML istemciyse kullanıcı ana sayfasına yönlendirilir
         return redirect(url_for('genel.anasayfa'))
-
 
 @ceza_bp.route('/ceza_sorgula', methods=['POST'])
 @admin_or_personel_required   # sadece admin veya personel erişebilir
@@ -129,45 +123,43 @@ def ceza_sorgula_api_route():
         "borc_miktari": sorgu_sonucu['miktar'],   # Borç tutarı
         "username": sorgu_sonucu['username']      # Kullanıcı adı
     }), 200
-
+    
+    
 @ceza_bp.route('/cezaode', methods=['POST'])
-@admin_or_personel_required   # sadece admin/personel yapabilir
+@admin_or_personel_required
 def ceza_ode():
-    
-    # JSON veya form datası alınır
     data = request.get_json(silent=True) or {}
-    
-    # Kullanıcıdan ceza ID alınır
     ceza_id = data.get("ceza_id")
-
-    # Ceza ID eksikse hata dön
+    
     if not ceza_id:
         return jsonify({"success": False, "message": "Ceza ID belirtilmedi."}), 400
 
-    # Ceza ID sayı mı kontrol edilir
     try:
         ceza_id = int(ceza_id)
-    except ValueError:
-        return jsonify({"success": False, "message": "Geçersiz Ceza ID."}), 400
+        mevcut_ceza = ceza_controller_instance.ceza_bilgilerini_getir(ceza_id)
 
-    try:
-        # Controller üzerinden ceza ödeme işlemi yapılır
+        if not mevcut_ceza:
+            return jsonify({"success": False, "message": "Ceza kaydı bulunamadı."}), 404
+
+        asıl_borclu = mevcut_ceza.get('username') 
+
+        if mevcut_ceza.get('gercek_iade') is None:
+            return jsonify({
+                "success": False, 
+                "message": f"DİKKAT: {asıl_borclu} isimli kullanıcı bu kitabı henüz iade etmemiş!"
+            }), 400
+        
+        # Ödeme Durumu Kontrolü
+        if mevcut_ceza.get('odendi_mi') == 1:
+             return jsonify({"success": False, "message": "Bu ceza zaten ödenmiş."}), 400
+
+        # Servis katmanından ödemeyi yap
         success, message = ceza_controller_instance.ceza_ode(ceza_id)
-
-    # MySQL’den gelebilecek özel veritabanı hataları yakalanır
-    except (DatabaseError, IntegrityError, ProgrammingError) as e:
         
-        # Kitap iade edilmeden ödeme yapılamaz
-        if "1644" in str(e) or "45000" in str(e):
-            return jsonify({"success": False, "message": "Kitap iade edilmeden ceza ödenemez."}), 400
-        
-        # Genel veritabanı hatası
-        return jsonify({"success": False, "message": "Veritabanı hatası oluştu."}), 500
+        # Her zaman JSON döndür
+        return jsonify({"success": success, "message": message}), 200 if success else 400
 
-    # Herhangi başka bir hata gelirse yakalanır
     except Exception as e:
-        print("CEZA ÖDEME HATA:", e)
-        return jsonify({"success": False, "message": "Beklenmeyen bir sunucu hatası oluştu."}), 500
-
-    # İşlem başarılı mı değil mi duruma göre yanıt dön
-    return jsonify({"success": success, "message": message}), 200 if success else 400
+        print(f"CEZA ÖDEME HATASI: {e}")
+        # Hata durumunda da JSON döndür (HTML değil!)
+        return jsonify({"success": False, "message": f"Sunucu hatası: {str(e)}"}), 500

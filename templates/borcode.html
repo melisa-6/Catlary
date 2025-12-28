@@ -57,7 +57,7 @@
         font-weight: bold;
         color: #ff6b6b;
       }
-      /* Dinamik Alert Stilleri */
+
       .alert {
         padding: 15px;
         border-radius: 12px;
@@ -83,22 +83,21 @@
         align-items: center;
       }
       input[type="text"],
-      input[type="number"],
-      input[type="month"],
-      select {
+      input[type="month"] {
         width: 100%;
         padding: 12px 15px;
         border-radius: 10px;
         border: 1px solid #ccc;
         font-size: 16px;
         transition: 0.3s;
-        box-sizing: border-box; /* Input taşmasını engeller */
+        box-sizing: border-box;
       }
       input:focus {
         outline: none;
         border-color: #4b4b8f;
         box-shadow: 0 0 8px rgba(75, 75, 143, 0.2);
       }
+
       .button {
         background: linear-gradient(90deg, #4b4b8f, #6a6aff);
         border: none;
@@ -115,7 +114,8 @@
         background: linear-gradient(90deg, #6a6aff, #4b4b8f);
         transform: scale(1.02);
       }
-      a {
+
+      .back-link {
         display: inline-block;
         margin-top: 25px;
         text-decoration: none;
@@ -123,7 +123,7 @@
         font-weight: 600;
         transition: 0.3s;
       }
-      a:hover {
+      .back-link:hover {
         color: #1a237e;
       }
     </style>
@@ -140,17 +140,18 @@
       </div>
       {% endif %}
 
-      <p>Toplam Borç Miktarı:</p>
-
+      <p>Ödenebilir (İade Edilmiş) Borç Miktarı:</p>
       <p
         class="borc"
         style="color: {{ 'green' if toplam_borc == 0 else '#ff6b6b' }}"
       >
-        {{ toplam_borc }} TL
+        {{ "%.2f"|format(toplam_borc) }} TL
       </p>
 
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0" />
       {% if toplam_borc|float > 0 %}
-      <p>Borç ödemeden yeni kitap ödünç alamazsınız!</p>
+
+      <p>İade ettiğiniz kitapların borcunu aşağıdan ödeyebilirsiniz.</p>
 
       <form
         method="POST"
@@ -188,20 +189,36 @@
         </div>
 
         <button type="submit" class="button">
-          Ödemeyi Tamamla ({{ toplam_borc }} TL)
+          Ödemeyi Tamamla ({{ "%.2f"|format(toplam_borc) }} TL)
         </button>
       </form>
-
+      {% if iade_edilmemis_var %}
+      <div class="alert alert-danger" style="margin-top: 20px; font-size: 14px">
+        <strong>NOT:</strong> Elinizde henüz teslim etmediğiniz kitaplar da
+        bulunmaktadır. Onların cezası iade ettiğinizde bu listeye eklenecektir.
+      </div>
+      {% endif %} {# SENARYO 2: Ödenebilir borç yoksa ama elinde iade edilmemiş
+      kitap varsa #} {% elif iade_edilmemis_var %}
+      <div class="alert alert-danger">
+        <h4 style="margin: 0 0 10px 0">ÖDEME BEKLENİYOR</h4>
+        Elinizdeki kitapların süresi geçmiş olabilir, ancak ödeme yapabilmek
+        için önce kitapları teslim etmelisiniz.
+      </div>
+      <p style="font-size: 14px; color: #666; font-style: italic">
+        Kitabınızı iade ettikten sonra borcunuz burada görünecektir.
+      </p>
       {% else %}
-      <div class="alert alert-success" style="margin-top: 20px">
+      <div class="alert alert-success">
         Şu an ödenmesi gereken bir borcunuz bulunmamaktadır. Keyifli okumalar!
       </div>
       {% endif %}
 
       <a
+        class="back-link"
         href="{{ url_for('kullanici.kullanici_sayfasi', username=g.username) }}"
-        >← Anasayfaya Dön</a
       >
+        ← Anasayfaya Dön
+      </a>
     </main>
   </body>
 </html>

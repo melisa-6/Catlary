@@ -1,14 +1,9 @@
 import mysql.connector
 from werkzeug.security import generate_password_hash
 from datetime import date
-
-def baglanti_olustur(db_config=None):
-    cfg = db_config or {
-        "host": "localhost",
-        "user": "melisa",
-        "password": "",
-        "database": "kutuphane_db"
-    }    
+from db_config import db_config
+def baglanti_olustur(config=None):
+    cfg = db_config
     
     return mysql.connector.connect(
         host=cfg["host"],

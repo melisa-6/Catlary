@@ -29,7 +29,7 @@ class oduncService:
     def kitap_oduncte_mi(self, kitap_id: int) -> bool:
         return self.repo.kitap_oduncte_mi(kitap_id)
 
-    def odunc_ver(self, kullanici_mail, kitap_id, verildigi_tarih_str=None):
+    def odunc_ver(self, kullanici_mail, kitap_id, verildigi_tarih_str,gerekli_iade_tarihi):
 
         #  Kullanıcı tarih girmemişse otomatik olarak bugünün tarihini alir
         if not verildigi_tarih_str:
@@ -57,13 +57,6 @@ class oduncService:
                 "success": False,
                 "message": "Kullanıcının ödenmemiş cezası var!"
             }
-
-        # Kitabın teslim edilmesi gereken tarih ödünç verildiği tarihten 15 gün sonrası olarak otomatik ayarlanır
-        verildigi_tarih = datetime.strptime(verildigi_tarih_str, "%Y-%m-%d")
-        gerekli_iade_tarihi = (
-            verildigi_tarih + timedelta(days=15)
-        ).strftime("%Y-%m-%d")
-
         # Repo katmanı çağrılır
         sonuc = self.repo.odunc_ver(
             kullanici["id"],       # kullanıcı ID
@@ -87,7 +80,7 @@ class oduncService:
     def odunc_iade(self, odunc_id):
 
         # Şu anki tarihi iade tarihi olarak alıyoruz 
-        iade_tarihi = datetime.now().strftime("%Y-%m-%d")
+        iade_tarihi = datetime.now()
 
         # Repo katmanına iade işlemini yaptırıyoruz
         odunc = self.repo.odunc_iade(odunc_id, iade_tarihi)
@@ -100,7 +93,6 @@ class oduncService:
         #    odunc sözlüğünden kullanıcı ID alınır → veritabanından kullanıcı bulunur
         kullanici = self.kullanici_service.get_kullanici_by_id(odunc['kullanici_id'])
 
-        # Service katmanı ile kitap bilgisi çekilir
         #    odunc sözlüğünden kitap ID alınır ve veritabanından kitap bulunur
         kitap = self.kitap_service.get_by_id(odunc['kitap_id'])
 

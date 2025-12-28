@@ -6,7 +6,7 @@ from depencies import (
     kategoriler_controller,
     yazarlar_controller,
     personel_controller_instance,
-    make_json_compatible
+    make_json_compatible,yayinevi_controller,kitap_islemleri
 )
 
 # decorators dosyasından yetki kontrollerini çekiyoruz
@@ -24,8 +24,10 @@ def personel_sayfasi():
     username = g.username
     role = g.role
     #kategori ve yazarları dbden cekerek html sayfasına gonderiri
-    kategoriler=kategoriler_controller.tum_kategorileri_getir_controller()
-    yazarlar=yazarlar_controller.tum_yazarlari_getir_controller()
+    yazarlar = yazarlar_controller.tum_yazarlari_getir_controller()
+    kategoriler = kategoriler_controller.tum_kategorileri_getir_controller()
+    kitaplar = kitap_islemleri.tum_kitaplari_getir()
+    yayinevleri = yayinevi_controller.yayinevleri_getir_controller()
     #eger API formatında istek geldi mi kontrolu
     is_api_request = request.accept_mimetypes.best == "application/json"
     #eger json istegi ise json formatında cikti verir
@@ -43,7 +45,9 @@ def personel_sayfasi():
                            kullanici_rolu=role,
                            user_id=user_id,
                            kategoriler=kategoriler,
-                           yazarlar=yazarlar)
+                           yazarlar=yazarlar,
+                           yayinevleri=yayinevleri,
+                           kitaplar=kitaplar)
 
 
 @personel_bp.route("/personel_ekle", methods=["POST"])
@@ -159,7 +163,7 @@ def admin_personel_sifre_sifirla_route():
         # Başarısız ise hata mesajı döner.
         return jsonify({"success": False, "message": mesaj}), 400
 
-    # API değilse flash mesaj gösterip yönlendirir.
+    # API değilse flash mesaj gösterip yönlendirir
     flash(mesaj, "success" if basarili_mi else "danger")
     return redirect(url_for('admin.admin_anasayfa'))
 
@@ -276,7 +280,7 @@ def personel_aktiflik_degistir_route():
         flash(mesaj, "error")
 
     # Web istekleri işlemin sonunda her zaman listeye yönlendirilir
-    return redirect(url_for('personel.personel_listesi_goster'))
+    return redirect(url_for('admin.admin_anasayfa'))
 
 @personel_bp.route("/personel_sifre_degistir", methods=["POST"])  
 @admin_or_personel_required  # Bu fonksiyon çalışmadan önce kullanıcının Admin veya Personel olup olmadığı kontrol eder

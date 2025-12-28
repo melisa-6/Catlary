@@ -5,11 +5,15 @@ class YayineviController:
         self.service = YayineviService(db_config)
         
     def yayinevleri_getir_controller(self):
-        try:
-             return self.service.tum_yayinevleri()
-        except Exception as e:
-            print(f"Controller HATA: Yayınevleri çekilemedi: {e}") 
-            return []
+     rows = self.service.tum_yayinevleri()
+     return [
+        {
+            "id": row["id"],
+            "yayinevi_adi": row["yayinevi_adi"]
+        }
+        for row in rows
+    ]
+
 
     def yayinevi_ekle(self, ad):
         try:

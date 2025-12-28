@@ -7,6 +7,7 @@ from depencies import (
     kategoriler_controller, 
     kitap_islemleri, 
     make_json_compatible,
+    yayinevi_controller 
 )
 
 from decorators import (admin_required, 
@@ -25,13 +26,14 @@ def admin_anasayfa():
     yazarlar = yazarlar_controller.tum_yazarlari_getir_controller()
     kategoriler = kategoriler_controller.tum_kategorileri_getir_controller()
     kitaplar = kitap_islemleri.tum_kitaplari_getir()
-    
+    yayinevleri = yayinevi_controller.yayinevleri_getir_controller()
+
     # Eğer kullanıcı API üzerinden JSON formatında istiyorsa
     if request.accept_mimetypes.best == "application/json":
         return jsonify({"username": username, "message": "Admin sayfası erişimi başarılı"}), 200
     
     # Eger json formatında istek gelmediyse html arayuzu doner
-    return render_template("admin.html", kitaplar=kitaplar, username=username, yazarlar=yazarlar, kategoriler=kategoriler)
+    return render_template("admin.html", kitaplar=kitaplar, username=username,yayinevleri=yayinevleri, yazarlar=yazarlar, kategoriler=kategoriler)
 
 
 @admin_bp.route('/adminekle', methods=['POST'])

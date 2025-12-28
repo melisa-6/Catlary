@@ -3,10 +3,8 @@ from email.mime.text import MIMEText
 import sys
 import os
 
-# Ana dizindeki database.py dosyasına erişebilmek için yol ayarı
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Veritabanı bağlantısını merkezi dosyadan alıyoruz
 try:
     from database import baglanti_olustur
 except ImportError:
@@ -16,29 +14,27 @@ except ImportError:
 # Mail Ayarları
 SMTP_USER = "infocatlary@gmail.com"
 SMTP_PASS =
-
 def send_mail_to_user(to_email, subject, content):
-    """Tek bir kullanıcıya mail gönderir ve (Basari, Mesaj) döner"""
     try:
-        msg = MIMEText(content)
+        msg = MIMEText(content, "plain", "utf-8")
         msg['Subject'] = subject
         msg['From'] = SMTP_USER
         msg['To'] = to_email
 
-        # Gmail sunucusuna bağlan
-        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=20)
+        server.ehlo()          
         server.starttls()
+        server.ehlo()          
         server.login(SMTP_USER, SMTP_PASS)
         server.sendmail(SMTP_USER, to_email, msg.as_string())
         server.quit()
-        
+
         print(f"Mail başarıyla gönderildi: {to_email}")
-        return True, "Başarılı" 
-        
+        return True, "Başarılı"
+
     except Exception as e:
         print(f"Mail gönderilemedi: {to_email} - {e}")
-        return False, str(e)    
-
+        return False, str(e)
 
 def send_pending_mails():
     """Veritabanındaki bekleyen mailleri gönderir"""
@@ -91,4 +87,5 @@ def send_pending_mails():
             conn.close()
 
 if __name__ == "__main__":
-    send_pending_mails()
+    send_pending_mails()   # Sonra mailleri gönder
+    input("İşlem tamamlandı. Çıkmak için Enter'a basın...")

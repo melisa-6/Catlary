@@ -10,13 +10,7 @@ from database import baglanti_olustur
 import secrets
 import string
 
-db_config = {
-    "host": "127.0.0.1",
-    "user": "melisa",
-    "password": "",
-    "database": "kutuphane_db",
-    "port": 3306
-}
+from db_config import db_config
 
 class kullaniciService:
     def __init__(self, db_config=None):

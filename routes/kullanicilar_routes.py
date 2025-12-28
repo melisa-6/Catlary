@@ -62,130 +62,58 @@ def kullanici_ekle_route():
         return redirect(url_for("personel.personel_sayfasi"))
 
     return render_template("admin.html", username=getattr(g, "username", ""))
-
-
 @kullanici_bp.route('/kendiborc_ode/<username>', methods=['GET', 'POST'])
 @login_required
-#kullanicinin bu route a erisebilmesi icin giris yapması gerkir
 def kendiborc_ode(username):
-    #API istegi gelmisse
+    # API kontrolü
     is_api_request = request.is_json or request.headers.get('Accept') == 'application/json'
-#kullanılan isim ile sessiondan alınan isim aynı deilse yetkisiz erisim kontrolu
+
     if username != g.username:
-        msg = "Yetkisiz işlem: Sadece kendi borcunuzu ödeyebilirsiniz."
-       #API istegi ise json formatında cevap verir
-        if is_api_request:
-            return jsonify({"success": False, "message": msg}), 403
-        flash(msg, "danger")
-        #API istegi deil ise 
         return redirect(url_for('genel.anasayfa'))
-#iligli controllera yonlendirerek kullanicinin borcunu alır
+
+    # Elinde iade edilmemiş kitap olsa bile SADECE bilgi için tutuyoruz
+    iade_edilmemis_var = ceza_controller_instance.iade_edilmemis_kitap_var_mi_controller(username)
+
+    # ÖNEMLİ: Bu fonksiyon sadece iade edilenlerin borcunu (2.00 TL) getiriyor
     toplam_borc = ceza_controller_instance.borc_getir_controller(username)
     
     mesaj = None
     odeme_basarili = False
-#eger post istegi geldiyse
+
     if request.method == "POST":
-     # Verileri JSON veya formdan al
         data = request.json if request.is_json else request.form
-
-        kart_sahibi = data.get("kart_sahibi")
-        kart_numarasi = data.get("kart_numarasi")
-        kart_son_kullanma = data.get("kart_son_kullanma")
-        cvv = data.get("cvv")
-
-        error_msg = ""
-            # Kart ve borç kontrolü
-        if not all([kart_sahibi, kart_numarasi, kart_son_kullanma, cvv]):
-            error_msg = "Eksik kart bilgisi! Lütfen tüm alanları doldurun."
-        elif toplam_borc <= 0:
-            error_msg = "Şu an ödenecek bir borcunuz bulunmamaktadır."
-#eger hata mesaji varsa
-        if error_msg:
-            #ve json istegi ise json formatında dondurur
-            if is_api_request:
-                return jsonify({"success": False, "message": error_msg}), 400
+        
+        # --- DÜZELTME: ARTIK BURADA 'iade_edilmemis_var' KONTROLÜYLE ENGELLEME YAPMIYORUZ ---
+        try:
+            kart_sahibi = data.get("kart_sahibi")
+            kart_numarasi = data.get("kart_numarasi")
+            
+            if not kart_sahibi or not kart_numarasi:
+                mesaj = "Eksik kart bilgisi!"
+            elif toplam_borc <= 0:
+                mesaj = "Ödenecek (iade edilmiş kitap) borcunuz bulunmamaktadır."
             else:
-                #web istegi iseflash mesajı ve odeme basarisiz mesaji verir
-                mesaj = error_msg
-                odeme_basarili = False
-        else:
-            #hata yoksa odeme baslatir
-            try:
-                 # Ödeme için benzersiz sipariş numarası oluştur
-                merchant_oid = f"SIP_{random.randint(10000,99999)}_{g.user_id}"
-                 # Ödeme tutarı kurus cinsinden
-                payment_amount = int(toplam_borc * 100) 
-                 # Kullanıcı IP ve e-posta
-                user_ip = request.remote_addr or "127.0.0.1"
-                email = getattr(g, 'user_email', "test@test.com")
-                #paytr token uretir 
-                hash_str = f"{PAYTR_MERCHANT_ID}{user_ip}{merchant_oid}{email}{payment_amount}"
-                paytr_token = base64.b64encode(
-                    hmac.new(
-                        PAYTR_MERCHANT_KEY.encode(), 
-                        (hash_str + PAYTR_MERCHANT_SALT).encode(), 
-                        hashlib.sha256
-                    ).digest()
-                ).decode()
-
-                print(f"DEBUG: PayTR Token Üretildi: {paytr_token}")
-
-                paytr_response_success = True 
- # Ödeme başarılı ise borcu ödemesi icin ilgili controllera yonlendirir
-                if paytr_response_success:
-                    gelen_cevap = ceza_controller_instance.ceza_odendi_yap(
-                        kullanici_id=g.user_id,
-                        odeme_yapilsin_mi=True
-                    )
-                    #gelen cevabı kontrol eder ve geri dondurulebilecek hale getirir
-                    if isinstance(gelen_cevap, (tuple, list)):
-                        sonuc = gelen_cevap[0]       
-                        islem_durumu = gelen_cevap[1] if len(gelen_cevap) > 1 else False
-                    elif isinstance(gelen_cevap, dict):
-                        islem_durumu = gelen_cevap.get('success', False)
-                        sonuc = gelen_cevap.get('message', str(gelen_cevap))
-                    else:
-                        sonuc = str(gelen_cevap)
-                        islem_durumu = False
-                    #gelen islem durumuna gore degiskenlere deger atar
-                    if islem_durumu:
-                        mesaj = "Ödeme işleminiz başarıyla tamamlandı. Teşekkürler!"
-                        odeme_basarili = True
-                        toplam_borc = 0 
-                    else:
-                        mesaj = f" işlem tamamlanamadı: {sonuc}"
-                        odeme_basarili = False
+                # Ödeme başarılı kabul ediliyor
+                gelen_cevap = ceza_controller_instance.ceza_odendi_yap(
+                    kullanici_id=g.user_id,
+                    odeme_yapilsin_mi=True
+                )
+                
+                if isinstance(gelen_cevap, dict) and gelen_cevap.get('success'):
+                    mesaj = "İade ettiğiniz kitapların borcu başarıyla ödendi!"
+                    odeme_basarili = True
+                    toplam_borc = 0 
                 else:
-                    #basarisiz ise
-                    mesaj = "Banka ödeme işlemini reddetti."
-                    odeme_basarili = False
+                    mesaj = "Ödeme yapılamadı."
+        except Exception as e:
+            mesaj = "Sunucu hatası oluştu."
 
-            except Exception as e:
-                print(f"Sistem Hatası: {e}")
-                mesaj = "Sistemde bir hata oluştu, lütfen yöneticinize başvurun."
-                odeme_basarili = False
-#api istegi ise basarili ise 200 ok deil ise 400 mesaji dondurur
-            if is_api_request:
-                status = 200 if odeme_basarili else 400
-                return jsonify({
-                    "success": odeme_basarili,
-                    "message": mesaj,
-                    "kalan_borc": toplam_borc
-                }), status
-#get istegi ise ve APİ istegi ise buna uygun json dondurur
-    if request.method == "GET" and is_api_request:
-        return jsonify({
-            "username": username,
-            "borc_durumu": toplam_borc,
-            "message": "Ödeme yapmak için kart bilgilerini POST edin."
-        }), 200
-#web istegi ise
+    # HTML'e iade_edilmemis_var bilgisini hala gönderiyoruz ama HTML'de bunu ENGEL olarak kullanmayacağız
     return render_template("borcode.html", 
                            toplam_borc=toplam_borc, 
                            mesaj=mesaj, 
-                           odeme_basarili=odeme_basarili)
-    
+                           odeme_basarili=odeme_basarili,
+                           iade_edilmemis_var=iade_edilmemis_var)
 @kullanici_bp.route('/kullanici_durum_degistir', methods=['POST'])
 @admin_or_personel_required
 #personel veya admin bu route a erisebilir sadece

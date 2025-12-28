@@ -26,18 +26,16 @@ class YayineviService:
 
     def yayinevi_sil(self, id):
         try:
-            print(f"--- SİLME İŞLEMİ BAŞLADI (ID: {id}) ---") # Ajan 1
+            print(f"--- SİLME İŞLEMİ BAŞLADI (ID: {id}) ---") 
             
-            # 1. Kontrol
             kitap_sayisi = self.repo.yayinevine_ait_kitap_sayisi(id)
-            print(f"--- BULUNAN KİTAP SAYISI: {kitap_sayisi} ---") # Ajan 2 (Burası 0 mı çıkıyor?)
+            print(f"--- BULUNAN KİTAP SAYISI: {kitap_sayisi} ---") 
             
             if kitap_sayisi > 0:
-                print("--- SİLME İPTAL EDİLDİ (KİTAP VAR) ---") # Ajan 3
+                print("--- SİLME İPTAL EDİLDİ (KİTAP VAR) ---") 
                 return False, f"Bu yayınevine bağlı {kitap_sayisi} kitap var! Silemezsiniz."
 
-            # 2. Silme
-            print("--- KİTAP YOK, SİLİNİYOR... ---") # Ajan 4
+            print("--- KİTAP YOK, SİLİNİYOR... ---") 
             self.repo.yayinevi_sil(id)
             return True, "Yayınevi başarıyla silindi."
             

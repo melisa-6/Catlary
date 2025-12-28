@@ -2,13 +2,7 @@ from flask import flash, jsonify, render_template, request
 
 from services import cezaService
 from services.oduncService import oduncService 
-
-db_config = {
-    "host": "localhost",
-    "user": "melisa",
-    "password": "",
-    "database": "kutuphane_db"
-}
+from db_config import db_config
 
 class odunccontroller:
     def __init__(self,db_config):
@@ -31,35 +25,36 @@ class odunccontroller:
         # Formdan gelen verileri alıyoruz
         kullanici_mail = form_data.get("kullanici_mail")
         kitap_id = form_data.get("kitap_id")
-        odunc_tarihi = form_data.get("verildigi_tarih")
 
         # Gelen verilerden herhangi biri eksikse işlem durdurulur
-        if not kullanici_mail or not kitap_id or not odunc_tarihi:
+        if not kullanici_mail or not kitap_id:
             return {
-                "success": False,               # İşlem başarısız
-                "message": "Eksik bilgi gönderildi.",  # Kullanıcıya hata mesajı
-                "odunc_id": None               # Ödünç ID yok çünkü işlem yapılmadı
+                "success": False,
+                "message": "Eksik bilgi gönderildi.",
+                "odunc_id": None
             }
 
-        # controller sadece yönlendiriyouz
+        # Otomatik tarihleri oluştur
+        from datetime import datetime, timedelta
+        odunc_tarihi = datetime.now()
+        iade_tarihi = odunc_tarihi + timedelta(minutes=1)
+
+        # Controller sadece yönlendiriyor
         result = self.service.odunc_ver(
             kullanici_mail,
             kitap_id,
-            odunc_tarihi
+            odunc_tarihi,
+            iade_tarihi
         )
 
-        # Service düzgün bir sözlük dönmedi ise hata kabul edilir
         if not isinstance(result, dict):
             return {
-                "success": False,       # Başarısız kabul edilir
-                "message": str(result), # Service'in döndüğü hata mesajı yazılır
-                "odunc_id": None        # İşlem tamamlanmadığı için ID yok
+                "success": False,
+                "message": str(result),
+                "odunc_id": None
             }
 
-        # İşlem başarılı ise service'ten gelen sonuç aynen döndürülür
         return result
-
-
     
     def odunc_iade_controller(self, form_data):
         # HTML formundan gelen verilerden ödünç ID bilgisi alınır
@@ -70,15 +65,14 @@ class odunccontroller:
             return "Hata: İade edilecek ödünç ID'si (odunc_id) bulunamadı."
         
         try:
-            # ID string gelmesi ihtimali olduğu için önce boşluklar temizlenir
-            # Ardından integer'a çevrilir — geçerli bir sayı olup olmadığı kontrol edilir
+            # ID string gelmesi ihtimali olduğu için önce boşluklar temizlenip
+            # Ardından integer'a çevririr ve geçerli bir sayı olup olmadığı kontrol edilir
             odunc_id = int(odunc_id_raw.strip()) 
         except ValueError:
             # Eğer integer dönüşümü başarısız olursa format hatası döner
             return "Hata: Ödünç ID geçerli bir sayı formatında değil."
         
-        #  Buraya kadar geldiysek ID geçerli olur ve service katmanına teslim edilir
-        #  Service katmanı tüm iş mantığını yürütür ve sonucu döner
+        #  Buraya kadar geldiysek ID geçerli olur ve service katmanına yönlendirilir
         return self.service.odunc_iade(odunc_id)
 
   

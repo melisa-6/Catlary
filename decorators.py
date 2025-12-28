@@ -3,7 +3,7 @@ from flask import request, jsonify, g, session, redirect, url_for, flash
 import jwt
 
 # JWT  imzalama ve çözme işlemleri için kullanılan gizli anahtar
-JWT_SECRET = ""
+JWT_SECRET = "56925541090436581"
 
 def login_required(f):
     
@@ -61,9 +61,6 @@ def login_required(f):
 
     return decorated_function
 
-# -------------------------------------------------------------------------
-# SADECE ADMIN YETKİSİ (ADMIN REQUIRED)
-# -------------------------------------------------------------------------
 def admin_required(f):
 
 #    Sadece rolü 'admin' olan kullanıcıların erişmesine izin verir.
@@ -82,8 +79,8 @@ def admin_required(f):
             
             # Kullanıcıyı rolüne göre uygun sayfaya geri gönder
             if g.role == "personel":
-                return redirect(url_for("personel_sayfasi"))
-            return redirect(url_for("kullanici_sayfasi"))
+                return redirect(url_for("personel.personel_sayfasi"))
+            return redirect(url_for("kullanici.kullanici_sayfasi"))
             
         # Admin ise fonksiyonu çalıştır.
         return f(*args, **kwargs)

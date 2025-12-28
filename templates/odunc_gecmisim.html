@@ -136,9 +136,18 @@
           <tr>
             <td>{{ odunc.id }}</td>
             <td>{{ odunc.kitap_adi }}</td>
-            <td>{{ odunc.odunc_tarihi }}</td>
-            <td>{{ odunc.gerekli_iade_tarihi }}</td>
-            <td>{{ odunc.gercek_iade_tarihi or "-" }}</td>
+            <td>
+              {{ odunc.odunc_tarihi.strftime('%d.%m.%Y %H:%M') if
+              odunc.odunc_tarihi else '-' }}
+            </td>
+            <td>
+              {{ odunc.gerekli_iade_tarihi.strftime('%d.%m.%Y %H:%M') if
+              odunc.gerekli_iade_tarihi else '-' }}
+            </td>
+            <td>
+              {{ odunc.gercek_iade_tarihi.strftime('%d.%m.%Y %H:%M') if
+              odunc.gercek_iade_tarihi else '-' }}
+            </td>
           </tr>
           {% endfor %}
         </tbody>

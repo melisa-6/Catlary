@@ -15,12 +15,10 @@
     />
 
     <style>
-      /* Select2 Düzenlemeleri */
       .select2-container {
         width: 100% !important;
         text-align: left;
       }
-      /* Select2 kutusunun modalın (gizli alanın) üzerinde görünmesi için z-index ayarı */
       .select2-dropdown {
         z-index: 10001;
       }
@@ -318,6 +316,17 @@
           min="0"
           required
         />
+        <div class="form-group">
+          <label for="resim_url">Kitap Kapak Resmi (URL)</label>
+          <input
+            type="text"
+            class="form-control"
+            id="resim_url"
+            name="resim_url"
+            placeholder="https://ornek.com/kitap.jpg"
+          />
+        </div>
+
         <input
           type="number"
           name="baski_yili"
@@ -325,15 +334,22 @@
           min="0"
           required
         />
-        <input
-          type="text"
-          name="kitap_yayini"
-          placeholder="Yayınevi"
-          required
-        />
+        <div class="form-group mb-2">
+          <select
+            name="yayinevi_id"
+            class="form-control select-search"
+            required
+          >
+            <option value="">Yayınevi Seçin</option>
+            {% for y in yayinevleri %}
+            <option value="{{ y['id'] }}">{{ y['yayinevi_adi'] }}</option>
+
+            {% endfor %}
+          </select>
+        </div>
 
         <div style="margin-top: 15px">
-          <button type="submit">Ekle</button>
+          <button type="submit" class="btn btn-primary">Kaydet</button>
           <button
             type="button"
             onclick="toggleAlan('kitapEkleAlani')"
@@ -344,7 +360,6 @@
         </div>
       </form>
     </div>
-
     <div class="gizli-alan" id="kullanicisifreSifirlaAlani">
       <h3>Kullanıcı Şifresini Sıfırla</h3>
       <form

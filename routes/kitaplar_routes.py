@@ -5,7 +5,7 @@ from depencies import (
     kitap_controller, 
     yazarlar_controller, 
     kategoriler_controller, 
-    make_json_compatible
+    make_json_compatible,yayinevi_controller
 )
 
 
@@ -52,15 +52,13 @@ def kitap_sil():
     # HTML İstek Karşılığı
     flash(mesaj, "success" if basarili_mi else "danger")
     
-    # Sayfayı gönderilen yere geri yönlendirir, yoksa kitap listelemeye dön
-    # Blueprint içinde olduğumuz için 'kitap.kitaplari_goruntule' kullanıyoruz
     return redirect(request.referrer or url_for('kitap.kitaplari_goruntule'))
 
 
 @kitap_bp.route("/kitapekle", methods=["GET", "POST"])
 def kitap_ekle_route():
 
-    # Eğer sayfaya POST isteği geliyorsa — yani kitap ekleme işlemi yapılacaksa
+    # Eğer sayfaya POST isteği geliyorsa
     if request.method == "POST":
         try:
             # API tarafında JSON ile veri gelmişse bu blok çalışır
@@ -73,7 +71,8 @@ def kitap_ekle_route():
                 stok_miktari = data.get("stok_miktari")
                 raf_no = data.get("raf_no")
                 baski_yili = data.get("baski_yili")
-                yayinevi = data.get("kitap_yayini")
+                yayinevi = data.get("yayinevi_id")
+                resim_url = data.get("resim_url")
 
             # Formdan gelen HTML istekleri buradan okunur
             else:
@@ -84,13 +83,14 @@ def kitap_ekle_route():
                 stok_miktari = request.form.get("stok_miktari")
                 raf_no = request.form.get("raf_no")
                 baski_yili = request.form.get("baski_yili")
-                yayinevi = request.form.get("kitap_yayini")
-
+                yayinevi = request.form.get("yayinevi_id")
+                resim_url = request.form.get("resim_url")
             # Controller katmanına aktarır
             kitap_controller.kitap_ekle_controller(
-                kitap_adi, yazar_id, kategori_id, sayfa_sayisi,
-                stok_miktari, raf_no, baski_yili, yayinevi
-            )
+    kitap_adi, yazar_id, kategori_id, sayfa_sayisi,
+    stok_miktari, raf_no, baski_yili, yayinevi, resim_url
+)
+
 
             # Eğer istek JSON ise API'ye özel başarı mesajı dön
             if request.is_json:
@@ -105,9 +105,7 @@ def kitap_ekle_route():
 
                 # Eğer kullanıcı personelse personel anasayfaya yönlendir
                 if rol == 'personel':
-                    # NOT: Personel blueprinti oluşturulunca 'personel.anasayfa' olarak güncellenmeli
-                    # Şimdilik varsayılan isimlendirmeyi kullanıyorum.
-                    return redirect(url_for('personel.personel_anasayfa_route')) 
+                    return redirect(url_for('personel.personel_sayfasi')) 
                 
                 # Değilse admin sayfasına yönlendir
                 else:
@@ -159,7 +157,6 @@ def kitaplari_goruntule():
 
     # URL üzerinden kitap arama parametresini al 
     aranan_kitap = request.args.get('aranacak_kitap', '')
-
     # Kitapları getir + admin/personel bilgisi controllerdan döner
     kitaplar, admin_mi = kitap_controller.kitaplari_goruntule_controller(
         username, role, aranan_kitap
@@ -189,3 +186,40 @@ def kitaplari_goruntule():
         admin_mi=admin_mi,
         role=role
     )
+@kitap_bp.route('/kitap_duzenle/<int:kitap_id>', methods=['GET', 'POST'])
+@admin_or_personel_required
+def duzenle_kitap(kitap_id):
+    
+    if request.method == 'GET':
+        kitap = kitap_controller.kitap_getir(kitap_id)
+        yazarlar = yazarlar_controller.tum_yazarlari_getir_controller()
+        kategoriler = kategoriler_controller.tum_kategorileri_getir_controller()
+        yayinevleri = yayinevi_controller.yayinevleri_getir_controller()
+        return render_template(
+            'kitap_duzenle.html',
+            kitap=kitap,
+            yazarlar=yazarlar,
+            kategoriler=kategoriler,
+            yayinevleri=yayinevleri
+        )
+    
+    if request.method == 'POST':
+        data = request.form
+        
+        eski_resim = kitap_controller.kitap_getir(kitap_id)['resim']
+
+        kitap_controller.kitap_guncelle(
+            kitap_id,
+            kitap_adi=data['kitap_adi'],
+            yazar_id=data['yazar_id'],
+            kategori_id=data['kategori_id'],
+            yayinevi_id=data['yayinevi_id'],
+            sayfa_sayisi=data['kitap_sayfa_sayisi'],
+            stok_miktari=data['stok_miktari'],
+            raf_no=data['raf_no'],
+            baski_yili=data['baski_yili'],
+            resim=data.get('resim_url') or eski_resim 
+        )
+        flash("Kitap başarıyla güncellendi!", "success")
+        return redirect(url_for('kitap.kitaplari_goruntule'))  
+

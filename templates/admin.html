@@ -255,7 +255,11 @@
       >
         Personel Listesi ve Yönetimi
       </button>
-
+      <button
+        onclick="window.location.href='{{ url_for('yayinevi.yayinevleri_getir') }}'"
+      >
+        Yayinevleri ve Yönetimi
+      </button>
       <button
         onclick="window.location.href='{{ url_for('admin.adminler_goster') }}'"
       >
@@ -320,6 +324,17 @@
           min="0"
           required
         />
+        <div class="form-group">
+          <label for="resim_url">Kitap Kapak Resmi (URL)</label>
+          <input
+            type="text"
+            class="form-control"
+            id="resim_url"
+            name="resim_url"
+            placeholder="https://ornek.com/kitap.jpg"
+          />
+        </div>
+
         <input
           type="number"
           name="baski_yili"
@@ -327,12 +342,19 @@
           min="0"
           required
         />
-        <input
-          type="text"
-          name="kitap_yayini"
-          placeholder="Yayınevi"
-          required
-        />
+        <div class="form-group mb-2">
+          <select
+            name="yayinevi_id"
+            class="form-control select-search"
+            required
+          >
+            <option value="">Yayınevi Seçin</option>
+            {% for y in yayinevleri %}
+            <option value="{{ y['id'] }}">{{ y['yayinevi_adi'] }}</option>
+
+            {% endfor %}
+          </select>
+        </div>
 
         <div style="margin-top: 15px">
           <button type="submit" class="btn btn-primary">Kaydet</button>
@@ -535,7 +557,6 @@
             }
           }
 
-          // Hashlenmiş verilerle formu sunucuya gönder
           this.submit();
         });
       });

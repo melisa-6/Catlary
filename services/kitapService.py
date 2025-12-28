@@ -9,15 +9,28 @@ class kitapService:
     # Tüm kitapları getirmesi icin ilgili repoya yonlendirir
     def tum_kitaplari_getir(self):
         return self.repo.tum_kitaplari_getir()
-
+    def kitap_guncelle(self, kitap_id, isim, 
+                        sayfa_sayisi, stok, raf_no, baski_yili,yazar_id, kategori_id, yayinevi_id, resim=None):
+        try:
+            success = self.repo.kitap_guncelle(
+                kitap_id, isim,
+                sayfa_sayisi, stok, raf_no, baski_yili,  yazar_id, kategori_id,yayinevi_id, resim
+            )
+            if success:
+                return {"success": True, "message": "Kitap başarıyla güncellendi."}
+            else:
+                return {"success": False, "message": "Kitap bulunamadı veya değişiklik yapılmadı."}
+        except Exception as e:
+            print(f"Service Hata: {e}")
+            return {"success": False, "message": f"Beklenmeyen hata: {str(e)}"}
         
     #repositorydeki ilgili fonksiyona iletiyoruz
     def kitap_ekle(self, isim, yazar_id, kategori_list, yayinevi,
-               sayfa_sayisi, stok, raf_no, baski_yili):
+               sayfa_sayisi, stok, raf_no, baski_yili,resim):
 
         return self.repo.kitap_ekle(
             isim, yazar_id, kategori_list, yayinevi,
-            sayfa_sayisi, stok, raf_no, baski_yili
+            sayfa_sayisi, stok, raf_no, baski_yili,resim
         )
 
 

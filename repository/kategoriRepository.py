@@ -3,11 +3,7 @@ import mysql.connector
 class KategoriRepository:
     def __init__(self):
         self.connection = mysql.connector.connect(
-            host="127.0.0.1",
-            user="melisa",
-            password="",
-            database="kutuphane_db",
-            port=3306
+         
         )
         self.cursor = self.connection.cursor(dictionary=True)
 

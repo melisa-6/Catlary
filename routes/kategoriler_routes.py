@@ -30,12 +30,10 @@ def kategorileri_getir_route():
             "kategoriler": kategoriler
         }), 200
 
-    # Eğer istek tarayıcıdan geliyorsa HTML şablonunu kategoriler.html render eder
-    # Şablona kategorileri ve kullanıcı adını gönderiyoruz
     return render_template(
         "kategoriler.html",
         kategoriler=kategoriler,
-        username=getattr(g, "username", "") # g.username yoksa boş string ver.
+        username=getattr(g, "username", "") # g.username yoksa boş string verir
     )
     
    

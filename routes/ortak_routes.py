@@ -57,7 +57,6 @@ def kayit_ol():
 @genel_bp.route("/girisyap", methods=["POST"])
 def girisyap():
     #sifre dogrulama ve token olusturmak icin seccret key
-    # NOT: SECRET global değişkeni yerine uygulamanın secret key'ini kullanıyoruz
     SECRET2 = current_app.secret_key 
      # Eğer API üzerinden JSON formatında veri gelmişse
     if request.is_json:

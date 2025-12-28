@@ -123,15 +123,9 @@ END IF;
 END;
 // DELIMITER;
 DELIMITER // CREATE TRIGGER trg_ceza_odeme_kontrol BEFORE
-UPDATE ON cezalar FOR EACH ROW BEGIN
-DECLARE v_iade_tarihi DATE;
-IF NEW.odeme_durumu = 1
-AND OLD.odeme_durumu = 0 THEN
-SELECT gercek_iade_tarihi INTO v_iade_tarihi
-FROM oduncler
-WHERE id = NEW.odunc_id;
-IF v_iade_tarihi IS NULL THEN SIGNAL SQLSTATE '45000'
-SET MESSAGE_TEXT = 'HATA: Kitap iade edilmeden ceza ödemesi yapılamaz! Önce kitabı teslim alın.';
+UPDATE ON cezalar FOR EACH ROW BEGIN IF NEW.odeme_durumu = 1
+    AND OLD.odeme_durumu = 0 THEN IF NEW.iade_tarihi IS NULL THEN SIGNAL SQLSTATE '45000'
+SET MESSAGE_TEXT = 'HATA: Kitap iade edilmeden ceza ödemesi yapılamaz!';
 END IF;
 END IF;
 END;
