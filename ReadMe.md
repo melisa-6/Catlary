@@ -436,3 +436,5 @@ Ve PayTR odeme sistemi entegre edilmeye çalışıldı.
 ### 23.12.2025 tarihinde yapılan güncellemeler ile ;
 
 şifremi unuttum kısmı ve yayınevi yönetim kısmı eklendi.
+
+### Eksiklikleri tamamlayıp sunumunu gerçekleştirdim ve geçer not aldım :)
